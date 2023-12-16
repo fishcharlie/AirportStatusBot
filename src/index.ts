@@ -87,6 +87,9 @@ async function run (firstRun: boolean) {
 		console.log("All delays:");
 		console.log(delays.map((delay) => delay.toPost()));
 
+		console.log("Removed delays:");
+		console.log(previousDelays.filter((previousDelay) => !delays.find((delay) => delay.comparisonHash === previousDelay.comparisonHash)).map((delay) => delay.toPost()));
+
 		const poster = new Poster(config);
 		for (const delay of newDelays) {
 			if (delay.type.type === TypeEnum.CLOSURE) {
