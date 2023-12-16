@@ -1,3 +1,10 @@
+# Custom
+
+config.json
+cache
+
+######################
+
 # Logs
 logs
 *.log
