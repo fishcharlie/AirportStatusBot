@@ -1,5 +1,9 @@
 export interface Config {
 	socialNetworks: SocialNetwork[];
+	/**
+	 * The interval in seconds to check for updates.
+	 */
+	refreshInterval: number;
 }
 
 interface MastodonSocialNetwork {

@@ -10,7 +10,7 @@ let config: Config;
 try {
 	config = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "config.json"), "utf8"));
 } catch (e) {
-	config = {"socialNetworks": []};
+	config = {"socialNetworks": [], "refreshInterval": 60};
 }
 
 const ENDPOINT = "https://nasstatus.faa.gov/api/airport-status-information";
@@ -119,7 +119,7 @@ async function run (firstRun: boolean) {
 	let firstRun = true;
 	while (true) {
 		await run(firstRun);
-		await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+		await new Promise((resolve) => setTimeout(resolve, config.refreshInterval * 1000));
 		firstRun = false;
 	}
 })();
