@@ -73,7 +73,7 @@ async function run (firstRun: boolean) {
 	}).parse(xmlResult);
 
 	if (!firstRun || process.env.NODE_ENV !== "production") {
-		const delaysRaw: { [key: string]: any }[] = jsonResult.AIRPORT_STATUS_INFORMATION.Delay_type;
+		const delaysRaw: { [key: string]: any }[] = jsonResult.AIRPORT_STATUS_INFORMATION.Delay_type ?? [];
 		const delays: Status[] = delaysRaw.flatMap((delay) => Status.fromRaw(delay)).filter((delay) => delay !== undefined) as Status[];
 
 		const previousDelaysRaw: { [key: string]: any }[] = previous?.AIRPORT_STATUS_INFORMATION.Delay_type ?? [];
