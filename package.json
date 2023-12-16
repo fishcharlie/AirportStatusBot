@@ -1,8 +1,13 @@
 {
   "name": "airportstatusbot",
   "version": "0.1.0",
-  "description": "This is a social media bot that will post status updates for airports in the United States.",
+  "description": "This is a social media bot that will post delay information for airports in the United States.",
   "main": "dist/index.js",
+  "homepage": "https://mastodon.social/@AirportStatusBot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fishcharlie/AirportStatusBot.git"
+  },
   "scripts": {
     "prepare": "npm run build:clean && npm run build",
     "build": "tsc",

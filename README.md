@@ -1,8 +1,8 @@
 # AirportStatusBot
 
-This is a bot that posts delay information for airports in the United States.
+This is a social media bot that will post delay information for airports in the United States.
 
-You can find it on Mastodon at [@AirportStatusBot@mastodon.social](https://mastodon.social/@AirportStatusBot).
+You can find it on Mastodon at <a href="https://mastodon.social/@AirportStatusBot" rel="me">@AirportStatusBot@mastodon.social</a>.
 
 ## License
 
