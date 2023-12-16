@@ -3,6 +3,7 @@ enum ParentType {
 	TRAFFIC_MANAGEMENT = "TM Initiatives",
 	RUNWAY = "RWY",
 	VOLUME = "VOL",
+	STAFF = "STAFF",
 }
 
 export class Reason {
@@ -73,6 +74,11 @@ export class Reason {
 					case "Volume":
 					default:
 						return "high traffic volume";
+				}
+			case ParentType.STAFF:
+				switch(subPartsStr) {
+					default:
+						return "staffing constraints";
 				}
 			default:
 				return undefined;

@@ -12,7 +12,8 @@ describe("parts()", () => {
 		["TM Initiatives:MIT:WX", ["TM Initiatives", "MIT", "WX"]],
 		["VOL:Compacted Demand", ["VOL", "Compacted Demand"]],
 		["VOL:Multi-taxi", ["VOL", "Multi-taxi"]],
-		["VOL:Volume", ["VOL", "Volume"]]
+		["VOL:Volume", ["VOL", "Volume"]],
+		["STAFF:ZNY STAFFING", ["STAFF", "ZNY STAFFING"]]
 	];
 
 	test.each(tests)("parts(%p) === %p", (input, expected) => {
@@ -33,7 +34,8 @@ describe("parentType()", () => {
 		["TM Initiatives:MIT:WX", "TM Initiatives"],
 		["VOL:Compacted Demand", "VOL"],
 		["VOL:Multi-taxi", "VOL"],
-		["VOL:Volume", "VOL"]
+		["VOL:Volume", "VOL"],
+		["STAFF:ZNY STAFFING", "STAFF"]
 	];
 
 	test.each(tests)("parts(%p) === %p", (input, expected) => {
@@ -54,7 +56,8 @@ describe("toString()", () => {
 		["TM Initiatives:MIT:WX", "weather"],
 		["VOL:Compacted Demand", "traffic management initiatives"],
 		["VOL:Multi-taxi", "traffic management initiatives"],
-		["VOL:Volume", "high traffic volume"]
+		["VOL:Volume", "high traffic volume"],
+		["STAFF:ZNY STAFFING", "staffing constraints"]
 	];
 
 	test.each(tests)("parts(%p) === %p", (input, expected) => {
