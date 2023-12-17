@@ -20,8 +20,9 @@ export class Poster {
 				switch (socialNetwork.type) {
 					case "mastodon":
 						const mastodon = new TuskMastodon({
-							"api_url": socialNetwork.credentials.endpoint,
+							"api_url": `${socialNetwork.credentials.endpoint}/api/v1/`,
 							"access_token": socialNetwork.credentials.password,
+							"timeout_ms": 60 * 1000,
 						});
 						await mastodon.post("statuses", {
 							"status": message
