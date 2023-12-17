@@ -40,6 +40,7 @@ export class Poster {
 							"Body": `${message}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`,
 							"Key": `${Date.now()}.txt`
 						});
+						break;
 					default:
 						throw new Error(`Unknown social network (${socialNetwork.name}): ${socialNetwork.type}`);
 				}
