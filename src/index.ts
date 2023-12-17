@@ -74,13 +74,13 @@ async function run (firstRun: boolean) {
 
 	if (!firstRun || process.env.NODE_ENV !== "production") {
 		let delaysRaw: { [key: string]: any }[] = jsonResult.AIRPORT_STATUS_INFORMATION.Delay_type ?? [];
-		if (typeof delaysRaw === "object" && Array.isArray(delaysRaw)) {
+		if (typeof delaysRaw === "object" && !Array.isArray(delaysRaw)) {
 			delaysRaw = [delaysRaw];
 		}
 		const delays: Status[] = delaysRaw.flatMap((delay) => Status.fromRaw(delay)).filter((delay) => delay !== undefined) as Status[];
 
 		let previousDelaysRaw: { [key: string]: any }[] = previous?.AIRPORT_STATUS_INFORMATION.Delay_type ?? [];
-		if (typeof previousDelaysRaw === "object" && Array.isArray(previousDelaysRaw)) {
+		if (typeof previousDelaysRaw === "object" && !Array.isArray(previousDelaysRaw)) {
 			previousDelaysRaw = [previousDelaysRaw];
 		}
 		const previousDelays: Status[] = previousDelaysRaw.flatMap((delay) => Status.fromRaw(delay)).filter((delay) => delay !== undefined) as Status[];
