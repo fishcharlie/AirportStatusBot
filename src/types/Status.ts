@@ -2,8 +2,9 @@ import * as objectUtilities from "js-object-utilities";
 import { startsWithVowel } from "../utils/startsWithVowel";
 import { Airport } from "./Airport";
 import * as luxon from "luxon";
-import { find as findTZ } from "geo-tz";
 import { Reason } from "./Reason";
+import { parseDurationString } from "../utils/parseDurationString";
+import { minutesToDurationString } from "../utils/minutesToDurationString";
 
 export class Status {
 	airportCode: string;
@@ -14,8 +15,12 @@ export class Status {
 		"end"?: Date;
 	}
 	length: {
+		// In minutes
 		"min"?: number;
+		// In minutes
 		"max"?: number;
+		// In minutes
+		"average"?: number;
 		"trend"?: "increasing" | "decreasing";
 	}
 
@@ -67,17 +72,32 @@ export class Status {
 			timing["end"] = luxon.DateTime.fromFormat(detailsObject["Reopen"], formatString, {
 				"zone": "utc"
 			}).toJSDate();
+		} else if (detailsObject["End_Time"]) {
+			timing["end"] = luxon.DateTime.fromFormat(detailsObject["End_Time"], "h:mm a z").toJSDate();
 		}
 
-		let length: { "min"?: number, "max"?: number, "trend"?: "increasing" | "decreasing" } = {};
+		let length: { "min"?: number, "max"?: number, "average"?: number, "trend"?: "increasing" | "decreasing" } = {};
 		if (detailsObject.Arrival_Departure) {
-			if (/^([0-9]+) minutes?$/.test(detailsObject.Arrival_Departure.Min) && /^([0-9]+) minutes?$/.test(detailsObject.Arrival_Departure.Max)) {
-				length.min = parseInt(/^([0-9]+) minutes?$/.exec(detailsObject.Arrival_Departure.Min)![1]);
-				length.max = parseInt(/^([0-9]+) minutes?$/.exec(detailsObject.Arrival_Departure.Max)![1]);
+			if (parseDurationString(detailsObject.Arrival_Departure.Min)) {
+				length.min = parseDurationString(detailsObject.Arrival_Departure.Min);
 			}
+			if (parseDurationString(detailsObject.Arrival_Departure.Max)) {
+				length.max = parseDurationString(detailsObject.Arrival_Departure.Max);
+			}
+
 			length.trend = detailsObject.Arrival_Departure.Trend.toLowerCase() as "increasing" | "decreasing";
 			if (length.trend !== "increasing" && length.trend !== "decreasing") {
 				length.trend = undefined;
+			}
+		}
+		if (detailsObject.Avg) {
+			if (parseDurationString(detailsObject.Avg)) {
+				length.average = parseDurationString(detailsObject.Avg);
+			}
+		}
+		if (detailsObject.Max) {
+			if (parseDurationString(detailsObject.Max)) {
+				length.max = parseDurationString(detailsObject.Max);
 			}
 		}
 
@@ -104,14 +124,29 @@ export class Status {
 		const reasonString = this.reason.toString();
 
 		if (!typeString) {
-			return undefined
+			return undefined;
 		}
 
-		const airportString = this.airport ? `${this.airport.name} (#${this.airportCode})` : this.airportCode;
+		const airport = this.airport;
 
-		let sentences: string[] = [
-			`A${startsWithVowel(typeString) ? "n" : ""} ${typeString} has been issued for ${airportString}${reasonString ? ` due to ${reasonString}` : ""}`
-		];
+		if (!airport) {
+			return undefined;
+		}
+
+		const airportString = airport ? `${airport.name} (#${this.airportCode})` : this.airportCode;
+
+		let tz = this.airport?.tz();
+
+		let sentences: string[] = [];
+
+		if (this.type.type === TypeEnum.GROUND_STOP) {
+			sentences.push(`Inbound aircraft to ${airportString} are currently being held at their origin airport${reasonString ? ` due to ${reasonString}` : ""}`);
+		} else if (this.type.type === TypeEnum.GROUND_DELAY) {
+			sentences.push(`Inbound aircraft to ${airportString} are currently being delayed at their origin airport${reasonString ? ` due to ${reasonString}` : ""}`);
+		} else {
+			sentences.push(`A${startsWithVowel(typeString) ? "n" : ""} ${typeString} has been issued for ${airportString}${reasonString ? ` due to ${reasonString}` : ""}`);
+		}
+
 		if (this.type.type === TypeEnum.DELAY) {
 			if (this.length.min && this.length.max && this.length.trend) {
 				if (this.length.min === this.length.max) {
@@ -123,21 +158,7 @@ export class Status {
 		}
 		if (this.type.type === TypeEnum.CLOSURE) {
 			if (this.timing.end) {
-				let hadToFallbackTZ = false;
-				let tz: string = "UTC";
-				if (this.airport) {
-					const tmptz = findTZ(this.airport.latitude_deg, this.airport.longitude_deg)[0];
-
-					if (!tmptz) {
-						hadToFallbackTZ = true;
-					} else {
-						tz = tmptz;
-					}
-				} else {
-					hadToFallbackTZ = true;
-				}
-
-				const luxonDate = luxon.DateTime.fromJSDate(this.timing.end).setZone(tz);
+				const luxonDate = luxon.DateTime.fromJSDate(this.timing.end).setZone(tz ?? "UTC");
 				const currentLuxonDate = luxon.DateTime.local({
 					"zone": tz
 				});
@@ -146,14 +167,34 @@ export class Status {
 				const isSameYear = luxonDate.hasSame(currentLuxonDate, "year");
 
 				if (isToday) {
-					sentences.push(`The airport is expected to reopen at ${luxonDate.toFormat("t")}${hadToFallbackTZ ? ` ${tz}` : ""}`);
+					sentences.push(`The airport is expected to reopen at ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}`);
 				} else if (isSameWeek) {
-					sentences.push(`The airport is expected to reopen ${luxonDate.toFormat("cccc")} at ${luxonDate.toFormat("t")}${hadToFallbackTZ ? ` ${tz}` : ""}`);
+					sentences.push(`The airport is expected to reopen ${luxonDate.toFormat("cccc")} at ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}`);
 				} else if (isSameYear) {
-					sentences.push(`The airport is expected to reopen ${luxonDate.toFormat("LLLL L")} at ${luxonDate.toFormat("t")}${hadToFallbackTZ ? ` ${tz}` : ""}`);
+					sentences.push(`The airport is expected to reopen ${luxonDate.toFormat("LLLL L")} at ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}`);
 				}
 			} else {
 				sentences.push(`It is currently unknown when the airport will reopen`);
+			}
+		}
+		if (this.type.type === TypeEnum.GROUND_STOP) {
+			if (this.timing.end) {
+				const luxonDate = luxon.DateTime.fromJSDate(this.timing.end).setZone(tz ?? "UTC");
+
+				sentences.push(`Operations are expected to resume at ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}`);
+			} else {
+				sentences.push(`It is currently unknown when operations will resume`);
+			}
+		}
+		if (this.type.type === TypeEnum.GROUND_DELAY) {
+			if (this.length.average && this.length.max) {
+				sentences.push(`Delays are currently averaging ${minutesToDurationString(this.length.average)} and are up to ${minutesToDurationString(this.length.max)}`);
+			} else if (this.length.average) {
+				sentences.push(`Delays are currently averaging ${minutesToDurationString(this.length.average)}`);
+			} else if (this.length.max) {
+				sentences.push(`Delays are currently up to ${minutesToDurationString(this.length.max)}`);
+			} else {
+				sentences.push(`It is currently unknown how long the delays are`);
 			}
 		}
 		return sentences.join(". ") + ". #AirportStatusBot";
@@ -162,6 +203,7 @@ export class Status {
 
 export enum TypeEnum {
 	GROUND_STOP = "Ground Stop Programs",
+	GROUND_DELAY = "Ground Delay Programs",
 	CLOSURE = "Airport Closures",
 	DELAY = "General Arrival/Departure Delay Info"
 }
@@ -169,15 +211,26 @@ class Type {
 	type: TypeEnum;
 	#direction?: "arrival" | "departure";
 
-	constructor(type: TypeEnum, direction?: "Departure") {
+	constructor(type: TypeEnum, direction?: "Departure" | "Arrival") {
 		this.type = type;
-		this.#direction = direction === "Departure" ? "departure" : undefined;
+		this.#direction = (() => {
+			switch (direction) {
+				case "Departure":
+					return "departure";
+				case "Arrival":
+					return "arrival";
+				default:
+					return undefined;
+			}
+		})();
 	}
 
 	toString(): string | undefined {
 		switch (this.type) {
 			case TypeEnum.GROUND_STOP:
 				return "ground stop";
+			case TypeEnum.GROUND_DELAY:
+				return "ground delay";
 			case TypeEnum.CLOSURE:
 				return "airport closure";
 			case TypeEnum.DELAY:
@@ -190,7 +243,9 @@ class Type {
 	detailsObjectPath(): string | undefined {
 		switch (this.type) {
 			case TypeEnum.GROUND_STOP:
-				return undefined;
+				return "Ground_Stop_List.Program";
+			case TypeEnum.GROUND_DELAY:
+				return "Ground_Delay_List.Ground_Delay";
 			case TypeEnum.CLOSURE:
 				return "Airport_Closure_List.Airport";
 			case TypeEnum.DELAY:

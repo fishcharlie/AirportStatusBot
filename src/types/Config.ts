@@ -7,6 +7,7 @@ export interface Config {
 }
 
 interface MastodonSocialNetwork {
+	uuid: `${string}-${string}-${string}-${string}-${string}`
 	name: string;
 	type: SocialNetworkType.mastodon;
 	credentials: {
@@ -16,6 +17,7 @@ interface MastodonSocialNetwork {
 	contentType: ContentTypeEnum;
 }
 interface S3SocialNetwork {
+	uuid: `${string}-${string}-${string}-${string}-${string}`
 	name: string;
 	type: SocialNetworkType.s3;
 	credentials: {

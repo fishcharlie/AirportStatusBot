@@ -1,6 +1,7 @@
 import { parse as csvparse } from 'csv-parse/sync';
 import * as path from "path";
 import * as fs from "fs";
+import { find as findTZ } from "geo-tz";
 
 export class Airport {
 	id: string;
@@ -51,5 +52,9 @@ export class Airport {
 
 		const airport = parsedData.find((airport: any) => airport.local_code === code && airport.iso_country === "US");
 		return airport ? new Airport(airport) : undefined;
+	}
+
+	tz(): string | undefined {
+		return findTZ(this.latitude_deg, this.longitude_deg)[0];
 	}
 }

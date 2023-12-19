@@ -18,12 +18,16 @@ const USER_AGENT = `AirportStatusBot/${packageJSON.version} (+${packageJSON.home
 
 let lastUpdatedCache: Date | undefined = undefined;
 async function updateCache () {
-	// Only run if the cache is older than 1 day.
-	if (lastUpdatedCache && lastUpdatedCache.getTime() > Date.now() - 24 * 60 * 60 * 1000) {
+	const cachePath = path.join(__dirname, "..", "cache", "ourairports", "airports.csv");
+	const cacheExists = fs.existsSync(cachePath);
+
+	// Only run if the cache is older than 1 day
+	if (cacheExists && lastUpdatedCache && lastUpdatedCache.getTime() > Date.now() - 24 * 60 * 60 * 1000) {
 		return;
 	}
 
 	try {
+		console.log("Updating cache");
 		const csvResult = await (await fetch("https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv", {
 			"method": "GET",
 			"headers": {
@@ -33,7 +37,7 @@ async function updateCache () {
 		await fs.promises.mkdir(path.join(__dirname, "..", "cache", "ourairports"), {
 			"recursive": true
 		});
-		await fs.promises.writeFile(path.join(__dirname, "..", "cache", "ourairports", "airports.csv"), csvResult);
+		await fs.promises.writeFile(cachePath, csvResult);
 		lastUpdatedCache = new Date();
 	} catch (e) {
 		console.error("Failed to update cache");
@@ -87,14 +91,49 @@ async function run (firstRun: boolean) {
 
 		const newDelays = delays.filter((delay) => !previousDelays.find((previousDelay) => previousDelay.comparisonHash === delay.comparisonHash));
 
-		console.log("New delays:");
-		console.log(newDelays.map((delay) => delay.toPost()));
+		const removedDelays = previousDelays.filter((previousDelay) => !delays.find((delay) => delay.comparisonHash === previousDelay.comparisonHash));
 
-		console.log("All delays:");
-		console.log(delays.map((delay) => delay.toPost()));
+		const updatedDelays = delays.filter((delay) => {
+			const previousDelay = previousDelays.find((previousDelay) => previousDelay.comparisonHash === delay.comparisonHash);
+			if (previousDelay) {
+				const previousText = previousDelay.toPost();
+				const newText = delay.toPost();
+
+				if (previousText !== newText) {
+					return true;
+				}
+			}
+		});
+
+		console.log("\n\nAll delays:");
+		console.log(delays.map((delay) => delay.toPost()).filter(Boolean));
+
+		console.log("New delays:");
+		console.log(newDelays.map((delay) => delay.toPost()).filter(Boolean));
 
 		console.log("Removed delays:");
-		console.log(previousDelays.filter((previousDelay) => !delays.find((delay) => delay.comparisonHash === previousDelay.comparisonHash)).map((delay) => delay.toPost()));
+		console.log(removedDelays.map((delay) => delay.toPost()).filter(Boolean));
+
+		console.log("Updated delays:");
+		console.log(updatedDelays.map((delay) => {
+			const previousDelay = previousDelays.find((previousDelay) => previousDelay.comparisonHash === delay.comparisonHash);
+
+			if (!previousDelay) {
+				return undefined;
+			}
+
+			const newDelayText = delay.toPost();
+			const previousText = previousDelay?.toPost();
+
+			if (!newDelayText || !newDelayText) {
+				return undefined;
+			}
+
+			return {
+				"previous": previousText,
+				"new": newDelayText
+			};
+		}).filter(Boolean));
 
 		const poster = new Poster(config);
 		for (const delay of newDelays) {
@@ -110,11 +149,20 @@ async function run (firstRun: boolean) {
 			const post = delay.toPost();
 			if (post) {
 				if (process.env.NODE_ENV === "production") {
-					await poster.post(post, xmlResult, [ContentTypeEnum.ALL_FAA]);
+					const postResponse = await poster.post(post, xmlResult, [ContentTypeEnum.ALL_FAA]);
+					console.log(`Posted: '${post}'`);
+
+					const comparisonHash = delay.comparisonHash;
+					await fs.promises.mkdir(path.join(__dirname, "..", "cache", "posts", comparisonHash), { "recursive": true });
+					await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(postResponse));
 				} else {
 					console.warn(`Not posting: '${post}' due to NODE_ENV not being production.`);
 				}
 			}
+		}
+		for (const delay of removedDelays) {
+			const comparisonHash = delay.comparisonHash;
+			await fs.promises.rm(path.join(__dirname, "..", "cache", "posts", comparisonHash), { "recursive": true, "force": true });
 		}
 	}
 

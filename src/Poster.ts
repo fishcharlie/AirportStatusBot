@@ -9,7 +9,16 @@ export class Poster {
 		this.#config = config;
 	}
 
-	async post(message: string, rawXML: string, contentTypes: ContentTypeEnum[]) {
+	/**
+	 * Post a message to social networks.
+	 * @param message The message to post
+	 * @param rawXML The raw XML to include in S3 objects. This is useful for debugging issues and being able to reproduce using the raw FAA XML data.
+	 * @param contentTypes The content types to post to. This will be used in the future to filter out airport specific accounts.
+	 * @returns An object with the key as the UUID of the social network in the configuration and the value set to the result of the post response.
+	 */
+	async post(message: string, rawXML: string, contentTypes: ContentTypeEnum[]): Promise<{ [key: string]: any }> {
+		let returnObject: { [key: string]: any } = {};
+
 		await Promise.all(this.#config.socialNetworks.map(async (socialNetwork) => {
 			if (!contentTypes.includes(socialNetwork.contentType)) {
 				console.log(`Skipping ${socialNetwork.name} for post ('${message}') because it doesn't support ${contentTypes.join(", ")}.`);
@@ -24,9 +33,10 @@ export class Poster {
 							"access_token": socialNetwork.credentials.password,
 							"timeout_ms": 60 * 1000,
 						});
-						await mastodon.post("statuses", {
+						const result = await mastodon.post("statuses", {
 							"status": message
 						});
+						returnObject[socialNetwork.uuid] = result;
 						break;
 					case "s3":
 						const client = new S3({
@@ -36,10 +46,11 @@ export class Poster {
 							},
 							"region": "us-west-2"
 						});
+						const key = `${Date.now()}.txt`;
 						await client.putObject({
 							"Bucket": socialNetwork.credentials.bucket,
 							"Body": `${message}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`,
-							"Key": `${Date.now()}.txt`
+							"Key": key
 						});
 						break;
 					default:
@@ -49,5 +60,7 @@ export class Poster {
 				console.error(e);
 			}
 		}));
+
+		return returnObject;
 	}
 }
