@@ -6,10 +6,21 @@ enum ParentType {
 	STAFF = "STAFF",
 }
 
+// Sometimes for ground delays & ground stops the FAA API returns reasons that don't match the style of other reasons in the API...
+// This map maps the reason that doesn't match the standard (ground delay & ground stop reasons) to the reason that does match the standard they use elsewhere.
+// Not sure why they couldn't have just made it consistent...
+const customReasonMaps: { [key: string]: string } = {
+	"wind": "WX:Wind",
+}
+
 export class Reason {
 	#raw: string;
 
 	constructor(raw: string) {
+		if (customReasonMaps[raw]) {
+			raw = customReasonMaps[raw];
+		}
+
 		this.#raw = raw;
 	}
 
@@ -43,6 +54,8 @@ export class Reason {
 						return "low ceilings";
 					case "Thunderstorms":
 						return "thunderstorms";
+					case "Wind":
+						return "wind";
 					default:
 						return "weather";
 				}
