@@ -123,7 +123,7 @@ async function run (firstRun: boolean) {
 			}
 
 			const newDelayText = delay.toPost();
-			const previousText = previousDelay?.toPost();
+			const previousText = previousDelay.toPost();
 
 			if (!newDelayText || !newDelayText) {
 				return undefined;
@@ -168,7 +168,7 @@ async function run (firstRun: boolean) {
 		}
 	}
 
-	await fs.promises.writeFile(previousPath, JSON.stringify(xmlResult));
+	await fs.promises.writeFile(previousPath, xmlResult);
 }
 
 (async () => {
