@@ -154,7 +154,9 @@ async function run (firstRun: boolean) {
 
 					const comparisonHash = delay.comparisonHash;
 					await fs.promises.mkdir(path.join(__dirname, "..", "cache", "posts", comparisonHash), { "recursive": true });
-					await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(postResponse));
+					console.log("Post response: \n", postResponse);
+					// @TODO: `postResponse` is currently a circular reference. So we can't `JSON.stringify` it.
+					// await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(postResponse));
 				} else {
 					console.warn(`Not posting: '${post}' due to NODE_ENV not being production.`);
 				}
