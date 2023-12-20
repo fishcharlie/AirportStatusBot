@@ -4,6 +4,7 @@ describe("parts()", () => {
 	const tests = [
 		["WX:Fog", ["WX", "Fog"]],
 		["WX:Low Ceilings", ["WX", "Low Ceilings"]],
+		["low ceilings", ["WX", "Low Ceilings"]],
 		["WX:Thunderstorms", ["WX", "Thunderstorms"]],
 		["WX:Wind", ["WX", "Wind"]],
 		["wind", ["WX", "Wind"]],
@@ -32,6 +33,7 @@ describe("parentType()", () => {
 	const tests = [
 		["WX:Fog", "WX"],
 		["WX:Low Ceilings", "WX"],
+		["low ceilings", "WX"],
 		["WX:Thunderstorms", "WX"],
 		["WX:Wind", "WX"],
 		["wind", "WX"],
@@ -60,6 +62,7 @@ describe("toString()", () => {
 	const tests = [
 		["WX:Fog", "fog"],
 		["WX:Low Ceilings", "low ceilings"],
+		["low ceilings", "low ceilings"],
 		["WX:Thunderstorms", "thunderstorms"],
 		["WX:Wind", "wind"],
 		["wind", "wind"],
