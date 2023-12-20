@@ -11,6 +11,9 @@ enum ParentType {
 // Not sure why they couldn't have just made it consistent...
 const customReasonMaps: { [key: string]: string } = {
 	"wind": "WX:Wind",
+	"low ceilings": "WX:Low Ceilings",
+	// "runway configuration change"
+	"airport volume": "VOL:Volume",
 }
 
 export class Reason {
@@ -24,8 +27,20 @@ export class Reason {
 		this.#raw = raw;
 	}
 
+	zone(): string | undefined {
+		if (this.#raw.includes("/")) {
+			return this.#raw.split("/")[0];
+		} else {
+			return undefined;
+		}
+	}
+
 	parts(): string[] {
-		return this.#raw.split(":");
+		if (this.zone()) {
+			return this.#raw.split("/")[1].split(":");
+		} else {
+			return this.#raw.split(":");
+		}
 	}
 
 	parentType(): ParentType | undefined {
