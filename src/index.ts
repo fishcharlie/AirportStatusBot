@@ -4,6 +4,7 @@ import { XMLParser } from "fast-xml-parser";
 import { Status, TypeEnum } from "./types/Status";
 import { Poster } from "./Poster";
 import { Config, ContentTypeEnum } from "./types/Config";
+import * as objectUtils from "js-object-utilities";
 
 const packageJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
 let config: Config;
@@ -155,8 +156,12 @@ async function run (firstRun: boolean) {
 					const comparisonHash = delay.comparisonHash;
 					await fs.promises.mkdir(path.join(__dirname, "..", "cache", "posts", comparisonHash), { "recursive": true });
 					console.log("Post response: \n", postResponse);
-					// @TODO: `postResponse` is currently a circular reference. So we can't `JSON.stringify` it.
-					// await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(postResponse));
+
+					const newPostResponse = {...postResponse};
+					objectUtils.circularKeys(newPostResponse).forEach((key) => {
+						objectUtils.set(newPostResponse, key, "[Circular]");
+					});
+					await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponse));
 				} else {
 					console.warn(`Not posting: '${post}' due to NODE_ENV not being production.`);
 				}

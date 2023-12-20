@@ -33,7 +33,7 @@
     "csv-parse": "^5.5.3",
     "fast-xml-parser": "^4.3.2",
     "geo-tz": "^7.0.7",
-    "js-object-utilities": "^2.1.0",
+    "js-object-utilities": "^2.2.0",
     "luxon": "^3.4.4",
     "tusk-mastodon": "^2.0.4"
   }
