@@ -1,6 +1,7 @@
-import { Config, ContentTypeEnum } from "./types/Config";
-import TuskMastodon from "tusk-mastodon";
+import { Config, ContentTypeEnum, SocialNetwork, defaultIncludeHashtags } from "./types/Config";
 import { S3 } from "@aws-sdk/client-s3";
+import TuskMastodon from "tusk-mastodon";
+import { BskyAgent, RichText } from "@atproto/api";
 
 export class Poster {
 	#config: Config;
@@ -25,6 +26,8 @@ export class Poster {
 				return;
 			}
 
+			message = this.#formatMessage(message, socialNetwork);
+
 			try {
 				switch (socialNetwork.type) {
 					case "mastodon":
@@ -37,6 +40,26 @@ export class Poster {
 							"status": message
 						});
 						returnObject[socialNetwork.uuid] = result;
+						break;
+					case "bluesky":
+						const bluesky = new BskyAgent({
+							"service": socialNetwork.credentials.endpoint
+						});
+
+						await bluesky.login({
+							"identifier": socialNetwork.credentials.username ?? "",
+							"password": socialNetwork.credentials.password ?? ""
+						});
+
+						const rt = new RichText({
+							"text": message
+						});
+						await rt.detectFacets(bluesky);
+						const postRecord = {
+							"text": rt.text,
+							"facets": rt.facets
+						};
+						await bluesky.post(postRecord);
 						break;
 					case "s3":
 						const client = new S3({
@@ -62,5 +85,18 @@ export class Poster {
 		}));
 
 		return returnObject;
+	}
+
+	#formatMessage(message: string, config: SocialNetwork): string {
+		let returnMessage = `${message}`;
+		const includeHashtags = config.settings?.includeHashtags ?? defaultIncludeHashtags(config.type);
+
+		if (includeHashtags) {
+			returnMessage += " #AirportStatusBot";
+		} else {
+			returnMessage = returnMessage.replaceAll(/#(\w+)/gmu, "$1");
+		}
+
+		return returnMessage;
 	}
 }

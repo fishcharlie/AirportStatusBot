@@ -197,7 +197,7 @@ export class Status {
 				sentences.push(`It is currently unknown how long the delays are`);
 			}
 		}
-		return sentences.join(". ") + ". #AirportStatusBot";
+		return sentences.join(". ") + ".";
 	}
 }
 

@@ -3,7 +3,7 @@
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"lib": [
-			"es2015"
+			"ES2022"
 		],
 		"target": "es2017",
 		"outDir": "dist",
@@ -12,6 +12,7 @@
 		"noImplicitThis": true,
 		"strict": true,
 		"esModuleInterop": true,
+		"skipLibCheck": true,
 	},
 	"include": [
 		"./src/**/*"
