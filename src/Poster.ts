@@ -26,7 +26,7 @@ export class Poster {
 				return;
 			}
 
-			message = this.#formatMessage(message, socialNetwork);
+			const socialMessage = this.#formatMessage(message, socialNetwork);
 
 			try {
 				switch (socialNetwork.type) {
@@ -37,7 +37,7 @@ export class Poster {
 							"timeout_ms": 60 * 1000,
 						});
 						const mastodonResult = await mastodon.post("statuses", {
-							"status": message
+							"status": socialMessage
 						});
 						returnObject[socialNetwork.uuid] = mastodonResult;
 						break;
@@ -52,7 +52,7 @@ export class Poster {
 						});
 
 						const rt = new RichText({
-							"text": message
+							"text": socialMessage
 						});
 						await rt.detectFacets(bluesky);
 						const postRecord = {
@@ -73,7 +73,7 @@ export class Poster {
 						const key = `${Date.now()}.txt`;
 						await client.putObject({
 							"Bucket": socialNetwork.credentials.bucket,
-							"Body": `${message}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`,
+							"Body": `${socialMessage}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`,
 							"Key": key
 						});
 						break;
@@ -90,7 +90,7 @@ export class Poster {
 
 	#formatMessage(message: string, config: SocialNetwork): string {
 		let returnMessage = `${message}`;
-		const includeHashtags = config.settings?.includeHashtags ?? defaultIncludeHashtags(config.type);
+		const includeHashtags: boolean = config.settings?.includeHashtags ?? defaultIncludeHashtags(config.type);
 
 		if (includeHashtags) {
 			returnMessage += " #AirportStatusBot";
