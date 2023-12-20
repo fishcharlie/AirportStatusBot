@@ -36,10 +36,10 @@ export class Poster {
 							"access_token": socialNetwork.credentials.password,
 							"timeout_ms": 60 * 1000,
 						});
-						const result = await mastodon.post("statuses", {
+						const mastodonResult = await mastodon.post("statuses", {
 							"status": message
 						});
-						returnObject[socialNetwork.uuid] = result;
+						returnObject[socialNetwork.uuid] = mastodonResult;
 						break;
 					case "bluesky":
 						const bluesky = new BskyAgent({
@@ -59,7 +59,8 @@ export class Poster {
 							"text": rt.text,
 							"facets": rt.facets
 						};
-						await bluesky.post(postRecord);
+						const blueskyResult = await bluesky.post(postRecord);
+						returnObject[socialNetwork.uuid] = blueskyResult;
 						break;
 					case "s3":
 						const client = new S3({
