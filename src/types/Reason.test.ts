@@ -20,7 +20,8 @@ describe("parts()", () => {
 		["VOL:Volume", ["VOL", "Volume"]],
 		["airport volume", ["VOL", "Volume"]],
 		["ZDC/VOL:Volume", ["VOL", "Volume"]],
-		["STAFF:ZNY STAFFING", ["STAFF", "ZNY STAFFING"]]
+		["STAFF:ZNY STAFFING", ["STAFF", "ZNY STAFFING"]],
+		["EQ:RWY08R LGTG OTS", ["EQ", "RWY08R LGTG OTS"]]
 	];
 
 	test.each(tests)("parts(%p) === %p", (input, expected) => {
@@ -49,7 +50,8 @@ describe("parentType()", () => {
 		["VOL:Volume", "VOL"],
 		["airport volume", "VOL"],
 		["ZDC/VOL:Volume", "VOL"],
-		["STAFF:ZNY STAFFING", "STAFF"]
+		["STAFF:ZNY STAFFING", "STAFF"],
+		["EQ:RWY08R LGTG OTS", "EQ"]
 	];
 
 	test.each(tests)("parts(%p) === %p", (input, expected) => {
@@ -78,7 +80,12 @@ describe("toString()", () => {
 		["VOL:Volume", "high traffic volume"],
 		["airport volume", "high traffic volume"],
 		["ZDC/VOL:Volume", "high traffic volume"],
-		["STAFF:ZNY STAFFING", "staffing constraints"]
+		["STAFF:ZNY STAFFING", "staffing constraints"],
+		// I THINK this means "Equipment: Runway 08R Lighting Out of Service"
+		// The FAA Glossary (https://www.fly.faa.gov/Products/Glossary_of_Terms/glossary_of_terms.html) confirms that "OTS" means "Out of Service"
+		// It says "EQUIP" is "Equipment", not "EQ"... (so not sure if `EQ` means something different)
+		// But for now, we'll go with this until we figure out something different.
+		["EQ:RWY08R LGTG OTS", "equipment failure"]
 	];
 
 	test.each(tests)("parts(%p) === %p", (input, expected) => {

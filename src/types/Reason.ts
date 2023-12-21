@@ -4,6 +4,8 @@ enum ParentType {
 	RUNWAY = "RWY",
 	VOLUME = "VOL",
 	STAFF = "STAFF",
+	// NOT 100% on this one. See the comment in src/types/Reason.test.ts above the `EQ:RWY08R LGTG OTS` test for more info.
+	EQUIPMENT = "EQ",
 }
 
 // Sometimes for ground delays & ground stops the FAA API returns reasons that don't match the style of other reasons in the API...
@@ -108,6 +110,8 @@ export class Reason {
 					default:
 						return "staffing constraints";
 				}
+			case ParentType.EQUIPMENT:
+				return "equipment failure";
 			default:
 				return undefined;
 		}
