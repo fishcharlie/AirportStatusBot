@@ -169,7 +169,34 @@ async function run (firstRun: boolean) {
 			}
 		}
 		for (const delay of removedDelays) {
+			const post = delay.toEndedPost();
 			const comparisonHash = delay.comparisonHash;
+			if (post) {
+				if (process.env.NODE_ENV === "production") {
+					if (fs.existsSync(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"))) {
+						const postResponseText = await fs.promises.readFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), "utf8");
+						const postResponse = JSON.parse(postResponseText);
+
+						let newPostResponse: objectUtils.GeneralObject<any> = {};
+						const entries = Object.entries(postResponse);
+						for (const entry of entries) {
+							const socialNetworkUUID: string = entry[0];
+							const value: any = entry[1];
+
+							const postResponse = await poster.reply(socialNetworkUUID, value, post, xmlResult);
+							newPostResponse[socialNetworkUUID] = postResponse;
+							console.log(`[${socialNetworkUUID}] Replied: '${post}'`);
+						}
+
+						await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponse));
+					} else {
+						console.warn(`Not replying: '${post}' due to no previous postResponse.json file.`);
+					}
+				} else {
+					console.warn(`Not posting: '${post}' due to NODE_ENV not being production.`);
+				}
+			}
+
 			rimraf.rimrafSync(path.join(__dirname, "..", "cache", "posts", comparisonHash));
 		}
 	}

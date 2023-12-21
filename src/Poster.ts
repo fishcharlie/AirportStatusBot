@@ -95,93 +95,97 @@ export class Poster {
 		return returnObject;
 	}
 
-	async reply(replyTo: GeneralObject<any>, message: string, rawXML: string, contentTypes: ContentTypeEnum[]): Promise<{ [key: string]: any }> {
+	async reply(socialNetworkUUID: string, replyTo: GeneralObject<any>, message: string, rawXML: string): Promise<{ [key: string]: any }> {
 		let returnObject: { [key: string]: any } = {};
 
-		await Promise.all(this.#config.socialNetworks.map(async (socialNetwork) => {
-			if (!contentTypes.includes(socialNetwork.contentType)) {
-				console.log(`Skipping ${socialNetwork.name} for post ('${message}') because it doesn't support ${contentTypes.join(", ")}.`);
-				return;
+		const socialNetwork = this.#config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === socialNetworkUUID);
+
+		if (!socialNetwork) {
+			throw `Unknown social network UUID: ${socialNetworkUUID}`;
+		}
+
+		const socialMessage = this.#formatMessage(message, socialNetwork);
+
+		try {
+			switch (socialNetwork.type) {
+				case "mastodon":
+					console.log("Not currently replying to Mastodon posts.");
+					// const mastodon = new TuskMastodon({
+					// 	"api_url": `${socialNetwork.credentials.endpoint}/api/v1/`,
+					// 	"access_token": socialNetwork.credentials.password,
+					// 	"timeout_ms": 60 * 1000,
+					// });
+					// const mastodonResult = await mastodon.post("statuses", {
+					// 	"status": socialMessage,
+					// 	"in_reply_to_id": replyTo.data.id,
+					// });
+					// returnObject = mastodonResult;
+					break;
+				case "bluesky":
+					console.log("Not currently replying to Bluesky posts.");
+					// const bluesky = new BskyAgent({
+					// 	"service": socialNetwork.credentials.endpoint
+					// });
+
+					// await bluesky.login({
+					// 	"identifier": socialNetwork.credentials.username ?? "",
+					// 	"password": socialNetwork.credentials.password ?? ""
+					// });
+
+					// const rt = new RichText({
+					// 	"text": socialMessage
+					// });
+					// await rt.detectFacets(bluesky);
+					// const postRecord: Partial<AppBskyFeedPost.Record> & Omit<AppBskyFeedPost.Record, "createdAt"> = {
+					// 	"text": rt.text,
+					// 	"facets": rt.facets,
+					// 	"reply": {
+					// 		"root": {
+					// 			"uri": replyTo.root.uri,
+					// 			"cid": replyTo.root.cid
+					// 		},
+					// 		"parent": {
+					// 			"uri": replyTo.parent.uri,
+					// 			"cid": replyTo.parent.cid
+					// 		}
+					// 	}
+					// };
+					// const blueskyResult = await bluesky.post(postRecord);
+					// returnObject = {
+					// 	"root": replyTo.root,
+					// 	"parent": blueskyResult
+					// };
+					break;
+				case "s3":
+					const client = new S3({
+						"credentials": {
+							"accessKeyId": socialNetwork.credentials.accessKeyId,
+							"secretAccessKey": socialNetwork.credentials.secretAccessKey
+						},
+						"region": "us-west-2"
+					});
+					const key = replyTo.key;
+
+					const existingContent = await client.getObject({
+						"Bucket": socialNetwork.credentials.bucket,
+						"Key": key
+					});
+					const existingContentString = await existingContent.Body?.transformToString();
+					await client.putObject({
+						"Bucket": socialNetwork.credentials.bucket,
+						"Body": `${existingContentString}\n\n\n\n\n\n<><><><><>\n\n\n\n\n\n` + `${socialMessage}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`,
+						"Key": key
+					});
+					returnObject = {
+						key
+					};
+					break;
+				default:
+					throw new Error(`Unknown social network (${socialNetwork.name}): ${socialNetwork.type}`);
 			}
-
-			const socialMessage = this.#formatMessage(message, socialNetwork);
-
-			try {
-				switch (socialNetwork.type) {
-					case "mastodon":
-						// const mastodon = new TuskMastodon({
-						// 	"api_url": `${socialNetwork.credentials.endpoint}/api/v1/`,
-						// 	"access_token": socialNetwork.credentials.password,
-						// 	"timeout_ms": 60 * 1000,
-						// });
-						// const mastodonResult = await mastodon.post("statuses", {
-						// 	"status": socialMessage,
-						// 	"in_reply_to_id": replyTo.data.id,
-						// });
-						// returnObject[socialNetwork.uuid] = mastodonResult;
-						break;
-					case "bluesky":
-						// const bluesky = new BskyAgent({
-						// 	"service": socialNetwork.credentials.endpoint
-						// });
-
-						// await bluesky.login({
-						// 	"identifier": socialNetwork.credentials.username ?? "",
-						// 	"password": socialNetwork.credentials.password ?? ""
-						// });
-
-						// const rt = new RichText({
-						// 	"text": socialMessage
-						// });
-						// await rt.detectFacets(bluesky);
-						// const postRecord: Partial<AppBskyFeedPost.Record> & Omit<AppBskyFeedPost.Record, "createdAt"> = {
-						// 	"text": rt.text,
-						// 	"facets": rt.facets,
-						// 	"reply": {
-						// 		"root": {
-						// 			"uri": replyTo.root.uri,
-						// 			"cid": replyTo.root.cid
-						// 		},
-						// 		"parent": {
-						// 			"uri": replyTo.parent.uri,
-						// 			"cid": replyTo.parent.cid
-						// 		}
-						// 	}
-						// };
-						// const blueskyResult = await bluesky.post(postRecord);
-						// returnObject[socialNetwork.uuid] = {
-						// 	"root": replyTo.root,
-						// 	"parent": blueskyResult
-						// };
-						break;
-					case "s3":
-						const client = new S3({
-							"credentials": {
-								"accessKeyId": socialNetwork.credentials.accessKeyId,
-								"secretAccessKey": socialNetwork.credentials.secretAccessKey
-							},
-							"region": "us-west-2"
-						});
-						const key = replyTo.key;
-
-						const existingContent = await client.getObject({
-							"Bucket": socialNetwork.credentials.bucket,
-							"Key": key
-						});
-						const existingContentString = await existingContent.Body?.transformToString();
-						await client.putObject({
-							"Bucket": socialNetwork.credentials.bucket,
-							"Body": `${existingContentString}\n\n\n\n\n\n<><><><><>\n\n\n\n\n\n` + `${socialMessage}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`,
-							"Key": key
-						});
-						break;
-					default:
-						throw new Error(`Unknown social network (${socialNetwork.name}): ${socialNetwork.type}`);
-				}
-			} catch (e) {
-				console.error(e);
-			}
-		}));
+		} catch (e) {
+			console.error(e);
+		}
 
 		return returnObject;
 	}
