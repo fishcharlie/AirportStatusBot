@@ -5,6 +5,7 @@ import { Status, TypeEnum } from "./types/Status";
 import { Poster } from "./Poster";
 import { Config, ContentTypeEnum } from "./types/Config";
 import * as objectUtils from "js-object-utilities";
+import * as rimraf from "rimraf";
 
 const packageJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
 let config: Config;
@@ -169,7 +170,7 @@ async function run (firstRun: boolean) {
 		}
 		for (const delay of removedDelays) {
 			const comparisonHash = delay.comparisonHash;
-			await fs.promises.rm(path.join(__dirname, "..", "cache", "posts", comparisonHash), { "recursive": true, "force": true });
+			rimraf.rimrafSync(path.join(__dirname, "..", "cache", "posts", comparisonHash));
 		}
 	}
 
