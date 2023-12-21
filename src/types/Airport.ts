@@ -3,6 +3,14 @@ import * as path from "path";
 import * as fs from "fs";
 import { find as findTZ } from "geo-tz";
 
+function dataPath(): string {
+	if (typeof jest === "undefined") {
+		return path.join(__dirname, "..", "..", "cache", "ourairports", "airports.csv");
+	} else {
+		return path.join(__dirname, "..", "..", "test_utilities", "data", "ourairports", "airports.csv");
+	}
+}
+
 export class Airport {
 	id: string;
 	ident: string;
@@ -45,7 +53,7 @@ export class Airport {
 	}
 
 	static fromFAACode(code: string): Airport | undefined {
-		const rawData = fs.readFileSync(path.join(__dirname, "..", "..", "cache", "ourairports", "airports.csv"), "utf8");
+		const rawData = fs.readFileSync(dataPath(), "utf8");
 		const parsedData = csvparse(rawData, {
 			"columns": true
 		});

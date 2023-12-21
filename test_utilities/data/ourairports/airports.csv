@@ -1,0 +1,2 @@
+"id","ident","type","name","latitude_deg","longitude_deg","elevation_ft","continent","iso_country","iso_region","municipality","scheduled_service","gps_code","iata_code","local_code","home_link","wikipedia_link","keywords"
+1,"AAAA","large_airport","Test Airport A",39.861698150635,-104.672996521,5431,"NA","US","US-AA","Emeraldville","yes","AAAA","AAA","AAA","https://charlie.fish/","https://en.wikipedia.org/wiki/Earth","TEST"
