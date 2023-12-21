@@ -119,6 +119,45 @@ export class Status {
 		}
 	}
 
+	/**
+	 * When a given status is no longer active, this method will return a string to post to social media.
+	 */
+	toEndedPost(): string | undefined {
+		const typeString = this.type.toString();
+		const reasonString = this.reason.toString();
+
+		if (!typeString) {
+			return undefined;
+		}
+
+		const airport = this.airport;
+
+		if (!airport) {
+			return undefined;
+		}
+
+		const airportString = airport ? `${airport.name} (#${this.airportCode})` : this.airportCode;
+
+		let sentences: string[] = [];
+
+		if (this.type.type === TypeEnum.GROUND_STOP) {
+			sentences.push(`Inbound operations to ${airportString} have resumed`);
+		} else if (this.type.type === TypeEnum.GROUND_DELAY) {
+			sentences.push(`Inbound aircraft to ${airportString} are no longer being delayed`);
+		} else if (this.type.type === TypeEnum.CLOSURE) {
+			sentences.push(`${airportString} has reopened`);
+		} else if (this.type.type === TypeEnum.DELAY) {
+			sentences.push(`The ${typeString} for ${airportString} is no longer in effect`);
+		}
+
+		if (sentences.length === 0) {
+			return undefined;
+		}
+		return sentences.join(". ") + ".";
+	}
+	/**
+	 * This method will return a string to post to social media when this status is newly active.
+	 */
 	toPost(): string | undefined {
 		const typeString = this.type.toString();
 		const reasonString = this.reason.toString();

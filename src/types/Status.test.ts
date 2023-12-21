@@ -78,3 +78,100 @@ describe("Status.fromRAW().toPost()", () => {
 		});
 	});
 });
+
+describe("Status.fromRAW().toEndedPost()", () => {
+	const tests = [
+		[
+			{},
+			undefined
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "46 minutes",
+							"Max": "1 hour",
+						},
+					}
+				}
+			},
+			"The departure delay for Test Airport A (#AAA) is no longer in effect."
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Arrival",
+							"Trend": "Increasing",
+							"Min": "46 minutes",
+							"Max": "1 hour",
+						},
+					}
+				}
+			},
+			"The arrival delay for Test Airport A (#AAA) is no longer in effect."
+		],
+		[
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AIRPORT CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 13 at 23:59 UTC."
+					}
+				}
+			},
+			"Test Airport A (#AAA) has reopened."
+		],
+		[
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL"
+					}
+				}
+			},
+			"Inbound aircraft to Test Airport A (#AAA) are no longer being delayed."
+		],
+		[
+			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL"
+					}
+				}
+			},
+			"Inbound operations to Test Airport A (#AAA) have resumed."
+		]
+	];
+
+	tests.forEach(([obj, expected]) => {
+		test(`Status.fromRAW(${obj}).toEndedPost() === ${expected}`, () => {
+			const status: Status | Status[] | undefined = Status.fromRaw(obj as any);
+
+			if (status instanceof Array) {
+				expect(status.map((s) => s.toEndedPost())).toStrictEqual(expected);
+			} else if (status === undefined) {
+				expect(status).toStrictEqual(expected);
+			} else {
+				expect(status.toEndedPost()).toStrictEqual(expected);
+			}
+		});
+	});
+});
