@@ -60,7 +60,10 @@ export class Poster {
 							"facets": rt.facets
 						};
 						const blueskyResult = await bluesky.post(postRecord);
-						returnObject[socialNetwork.uuid] = blueskyResult;
+						returnObject[socialNetwork.uuid] = {
+							"root": blueskyResult,
+							"parent": blueskyResult
+						};
 						break;
 					case "s3":
 						const client = new S3({
