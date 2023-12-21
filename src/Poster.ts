@@ -76,6 +76,9 @@ export class Poster {
 							"Body": `${socialMessage}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`,
 							"Key": key
 						});
+						returnObject[socialNetwork.uuid] = {
+							key
+						};
 						break;
 					default:
 						throw new Error(`Unknown social network (${socialNetwork.name}): ${socialNetwork.type}`);
