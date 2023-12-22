@@ -27,7 +27,7 @@ export class Status {
 	#ourAirportsDataManager?: OurAirportsDataManager;
 
 	get comparisonHash(): string {
-		return `${this.airportCode}-${this.type.type}`;
+		return `${this.airportCode}-${this.type.type}-${this.type.direction ?? "no_direction"}`;
 	}
 
 	constructor(airportCode: string, type: Type, reason: Reason, timing: { "start"?: Date, "end"?: Date } = {}, length: { "min"?: number, "max"?: number, "trend"?: "increasing" | "decreasing" } = {}, ourAirportsDataManager?: OurAirportsDataManager) {
@@ -257,11 +257,11 @@ export enum TypeEnum {
 }
 class Type {
 	type: TypeEnum;
-	#direction?: "arrival" | "departure";
+	direction?: "arrival" | "departure";
 
 	constructor(type: TypeEnum, direction?: "Departure" | "Arrival") {
 		this.type = type;
-		this.#direction = (() => {
+		this.direction = (() => {
 			switch (direction) {
 				case "Departure":
 					return "departure";
@@ -282,7 +282,7 @@ class Type {
 			case TypeEnum.CLOSURE:
 				return "airport closure";
 			case TypeEnum.DELAY:
-				return `${this.#direction ? `${this.#direction} ` : ""}delay`;
+				return `${this.direction ? `${this.direction} ` : ""}delay`;
 			default:
 				return undefined;
 		}
