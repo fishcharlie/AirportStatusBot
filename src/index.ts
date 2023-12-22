@@ -194,7 +194,11 @@ async function run (firstRun: boolean) {
 						}
 						console.log(`Post response: \n`, newPostResponse);
 
-						await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponse));
+						const newPostResponseClean = {...newPostResponse};
+						objectUtils.circularKeys(newPostResponseClean).forEach((key) => {
+							objectUtils.set(newPostResponseClean, key, "[Circular]");
+						});
+						await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponseClean));
 					} else {
 						console.warn(`Not replying: '${post}' due to no previous postResponse.json file.`);
 					}
