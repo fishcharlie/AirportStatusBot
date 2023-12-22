@@ -109,17 +109,16 @@ export class Poster {
 		try {
 			switch (socialNetwork.type) {
 				case "mastodon":
-					console.log("Not currently replying to Mastodon posts.");
-					// const mastodon = new TuskMastodon({
-					// 	"api_url": `${socialNetwork.credentials.endpoint}/api/v1/`,
-					// 	"access_token": socialNetwork.credentials.password,
-					// 	"timeout_ms": 60 * 1000,
-					// });
-					// const mastodonResult = await mastodon.post("statuses", {
-					// 	"status": socialMessage,
-					// 	"in_reply_to_id": replyTo.data.id,
-					// });
-					// returnObject = mastodonResult;
+					const mastodon = new TuskMastodon({
+						"api_url": `${socialNetwork.credentials.endpoint}/api/v1/`,
+						"access_token": socialNetwork.credentials.password,
+						"timeout_ms": 60 * 1000,
+					});
+					const mastodonResult = await mastodon.post("statuses", {
+						"status": socialMessage,
+						"in_reply_to_id": replyTo.data.id,
+					});
+					returnObject = mastodonResult;
 					break;
 				case "bluesky":
 					console.log("Not currently replying to Bluesky posts.");
