@@ -199,3 +199,14 @@ async function run (firstRun: boolean) {
 		firstRun = false;
 	}
 })();
+
+// On SIGINT, SIGTERM, etc. exit gracefully
+process.on("SIGINT", exitHandler);
+process.on("SIGTERM", exitHandler);
+
+async function exitHandler() {
+	console.log("Exiting gracefully...");
+	await ourAirportsDataManager.close();
+	console.log("Done. Exiting.");
+	process.exit(0);
+}

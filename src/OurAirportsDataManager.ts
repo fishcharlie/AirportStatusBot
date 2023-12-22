@@ -20,7 +20,7 @@ export class OurAirportsDataManager {
 	userAgent: string;
 
 	#_db: Database<sqlite3.Database, sqlite3.Statement> | undefined;
-	async getDB() {
+	async #getDB() {
 		if (!this.#_db) {
 			this.#_db = await openSQLite({
 				"filename": path.join(__dirname, "..", "cache", "ourairports", "airports.sqlite"),
@@ -77,7 +77,7 @@ export class OurAirportsDataManager {
 		const parsedData: GeneralObject<any>[] = csvparse(csvText, {
 			"columns": true
 		});
-		const db = await this.getDB();
+		const db = await this.#getDB();
 		const importUUID = crypto.randomUUID();
 
 		for (const row of parsedData) {
@@ -122,7 +122,7 @@ export class OurAirportsDataManager {
 			});
 			airport = parsedData.find((airport: any) => airport.local_code === code && airport.iso_country === "US");
 		} else {
-			const db = await this.getDB();
+			const db = await this.#getDB();
 			airport = await db.get("SELECT * FROM airports WHERE local_code = :code AND iso_country = 'US'", {
 				":code": code
 			});
@@ -130,5 +130,13 @@ export class OurAirportsDataManager {
 
 
 		return airport ? new Airport(airport) : undefined;
+	}
+
+	/**
+	 * Closes the database connection
+	 */
+	async close() {
+		const db = await this.#getDB();
+		await db.close();
 	}
 }
