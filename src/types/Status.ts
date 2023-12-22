@@ -5,6 +5,7 @@ import * as luxon from "luxon";
 import { Reason } from "./Reason";
 import { parseDurationString } from "../utils/parseDurationString";
 import { minutesToDurationString } from "../utils/minutesToDurationString";
+import { OurAirportsDataManager } from "../OurAirportsDataManager";
 
 export class Status {
 	airportCode: string;
@@ -23,20 +24,22 @@ export class Status {
 		"average"?: number;
 		"trend"?: "increasing" | "decreasing";
 	}
+	#ourAirportsDataManager?: OurAirportsDataManager;
 
 	get comparisonHash(): string {
 		return `${this.airportCode}-${this.type.type}`;
 	}
 
-	constructor(airportCode: string, type: Type, reason: Reason, timing: { "start"?: Date, "end"?: Date } = {}, length: { "min"?: number, "max"?: number, "trend"?: "increasing" | "decreasing" } = {}) {
+	constructor(airportCode: string, type: Type, reason: Reason, timing: { "start"?: Date, "end"?: Date } = {}, length: { "min"?: number, "max"?: number, "trend"?: "increasing" | "decreasing" } = {}, ourAirportsDataManager?: OurAirportsDataManager) {
 		this.airportCode = airportCode;
 		this.type = type;
 		this.reason = reason;
 		this.timing = timing;
 		this.length = length;
+		this.#ourAirportsDataManager = ourAirportsDataManager;
 	}
 
-	static fromRaw(raw: { [key: string]: any }): Status | Status[] | undefined {
+	static fromRaw(raw: { [key: string]: any }, ourAirportsDataManager: OurAirportsDataManager): Status | Status[] | undefined {
 		const tmpType = new Type(raw.Name);
 
 		const detailsObjectPath = tmpType.detailsObjectPath();
@@ -52,7 +55,7 @@ export class Status {
 					...raw
 				};
 				objectUtilities.set(newRaw, detailsObjectPath, detailsObject);
-				return Status.fromRaw(newRaw);
+				return Status.fromRaw(newRaw, ourAirportsDataManager);
 			}) as Status[];
 			return returnArray;
 		}
@@ -101,20 +104,26 @@ export class Status {
 			}
 		}
 
-		return new Status(airportCode, type, reason, timing, length);
+		return new Status(airportCode, type, reason, timing, length, ourAirportsDataManager);
 	}
 
 	#cachedAirport?: Airport;
-	get airport(): Airport | undefined {
+	async airport(): Promise<Airport | undefined> {
 		if (this.#cachedAirport) {
 			return this.#cachedAirport;
 		}
 
-		let airport: Airport | undefined = Airport.fromFAACode(this.airportCode);
+		if (!this.#ourAirportsDataManager) {
+			console.warn("No OurAirportsDataManager provided to Status.airport().");
+			return undefined;
+		}
+
+		let airport: Airport | undefined = await Airport.fromFAACode(this.airportCode, this.#ourAirportsDataManager);
 		if (airport) {
 			this.#cachedAirport = airport;
 			return airport;
 		} else {
+			console.warn(`Failed to find airport with code ${this.airportCode}`);
 			return undefined;
 		}
 	}
@@ -122,7 +131,7 @@ export class Status {
 	/**
 	 * When a given status is no longer active, this method will return a string to post to social media.
 	 */
-	toEndedPost(): string | undefined {
+	async toEndedPost(): Promise<string | undefined> {
 		const typeString = this.type.toString();
 		const reasonString = this.reason.toString();
 
@@ -130,7 +139,7 @@ export class Status {
 			return undefined;
 		}
 
-		const airport = this.airport;
+		const airport = await this.airport();
 
 		if (!airport) {
 			return undefined;
@@ -158,7 +167,7 @@ export class Status {
 	/**
 	 * This method will return a string to post to social media when this status is newly active.
 	 */
-	toPost(): string | undefined {
+	async toPost(): Promise<string | undefined> {
 		const typeString = this.type.toString();
 		const reasonString = this.reason.toString();
 
@@ -166,7 +175,7 @@ export class Status {
 			return undefined;
 		}
 
-		const airport = this.airport;
+		const airport: Airport | undefined = await this.airport();
 
 		if (!airport) {
 			return undefined;
@@ -174,7 +183,7 @@ export class Status {
 
 		const airportString = airport ? `${airport.name} (#${this.airportCode})` : this.airportCode;
 
-		let tz = this.airport?.tz();
+		let tz = airport.tz();
 
 		let sentences: string[] = [];
 

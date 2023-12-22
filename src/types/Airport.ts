@@ -2,14 +2,7 @@ import { parse as csvparse } from 'csv-parse/sync';
 import * as path from "path";
 import * as fs from "fs";
 import { find as findTZ } from "geo-tz";
-
-function dataPath(): string {
-	if (typeof jest === "undefined") {
-		return path.join(__dirname, "..", "..", "cache", "ourairports", "airports.csv");
-	} else {
-		return path.join(__dirname, "..", "..", "test_utilities", "data", "ourairports", "airports.csv");
-	}
-}
+import { OurAirportsDataManager } from '../OurAirportsDataManager';
 
 export class Airport {
 	id: string;
@@ -52,14 +45,8 @@ export class Airport {
 		this.keywords = obj.keywords.split(", ");
 	}
 
-	static fromFAACode(code: string): Airport | undefined {
-		const rawData = fs.readFileSync(dataPath(), "utf8");
-		const parsedData = csvparse(rawData, {
-			"columns": true
-		});
-
-		const airport = parsedData.find((airport: any) => airport.local_code === code && airport.iso_country === "US");
-		return airport ? new Airport(airport) : undefined;
+	static async fromFAACode(code: string, ourAirportsDataManager: OurAirportsDataManager): Promise<Airport | undefined> {
+		return await ourAirportsDataManager.getAirportByFAACode(code);
 	}
 
 	tz(): string | undefined {

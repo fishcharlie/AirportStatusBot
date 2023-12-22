@@ -6,6 +6,7 @@ import { Poster } from "./Poster";
 import { Config, ContentTypeEnum } from "./types/Config";
 import * as objectUtils from "js-object-utilities";
 import * as rimraf from "rimraf";
+import { OurAirportsDataManager } from "./OurAirportsDataManager";
 
 const packageJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
 let config: Config;
@@ -18,37 +19,10 @@ try {
 const ENDPOINT = "https://nasstatus.faa.gov/api/airport-status-information";
 const USER_AGENT = `AirportStatusBot/${packageJSON.version} (+${packageJSON.homepage})`;
 
-let lastUpdatedCache: Date | undefined = undefined;
-async function updateCache () {
-	const cachePath = path.join(__dirname, "..", "cache", "ourairports", "airports.csv");
-	const cacheExists = fs.existsSync(cachePath);
-
-	// Only run if the cache is older than 1 day
-	if (cacheExists && lastUpdatedCache && lastUpdatedCache.getTime() > Date.now() - 24 * 60 * 60 * 1000) {
-		return;
-	}
-
-	try {
-		console.log("Updating cache");
-		const csvResult = await (await fetch("https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv", {
-			"method": "GET",
-			"headers": {
-				"User-Agent": USER_AGENT
-			}
-		})).text();
-		await fs.promises.mkdir(path.join(__dirname, "..", "cache", "ourairports"), {
-			"recursive": true
-		});
-		await fs.promises.writeFile(cachePath, csvResult);
-		lastUpdatedCache = new Date();
-	} catch (e) {
-		console.error("Failed to update cache");
-		console.error(e);
-	}
-}
+const ourAirportsDataManager = new OurAirportsDataManager(USER_AGENT);
 
 async function run (firstRun: boolean) {
-	await updateCache();
+	await ourAirportsDataManager.updateCache();
 
 	let xmlResult: string;
 	try {
@@ -64,6 +38,7 @@ async function run (firstRun: boolean) {
 		return;
 	}
 
+	console.time("Run Parse");
 	const previousPath = path.join(__dirname, "..", "cache", "previous.xml");
 	let previousXML: string | undefined;
 	let previous: { [key: string]: any } | undefined;
@@ -83,49 +58,50 @@ async function run (firstRun: boolean) {
 		if (typeof delaysRaw === "object" && !Array.isArray(delaysRaw)) {
 			delaysRaw = [delaysRaw];
 		}
-		const delays: Status[] = delaysRaw.flatMap((delay) => Status.fromRaw(delay)).filter((delay) => delay !== undefined) as Status[];
+		const delays: Status[] = delaysRaw.flatMap((delay) => Status.fromRaw(delay, ourAirportsDataManager)).filter((delay) => delay !== undefined) as Status[];
 
 		let previousDelaysRaw: { [key: string]: any }[] = previous?.AIRPORT_STATUS_INFORMATION.Delay_type ?? [];
 		if (typeof previousDelaysRaw === "object" && !Array.isArray(previousDelaysRaw)) {
 			previousDelaysRaw = [previousDelaysRaw];
 		}
-		const previousDelays: Status[] = previousDelaysRaw.flatMap((delay) => Status.fromRaw(delay)).filter((delay) => delay !== undefined) as Status[];
+		const previousDelays: Status[] = previousDelaysRaw.flatMap((delay) => Status.fromRaw(delay, ourAirportsDataManager)).filter((delay) => delay !== undefined) as Status[];
 
 		const newDelays = delays.filter((delay) => !previousDelays.find((previousDelay) => previousDelay.comparisonHash === delay.comparisonHash));
 
 		const removedDelays = previousDelays.filter((previousDelay) => !delays.find((delay) => delay.comparisonHash === previousDelay.comparisonHash));
 
-		const updatedDelays = delays.filter((delay) => {
+		const updatedDelays: Status[] = (await Promise.all(delays.map(async (delay) => {
 			const previousDelay = previousDelays.find((previousDelay) => previousDelay.comparisonHash === delay.comparisonHash);
 			if (previousDelay) {
-				const previousText = previousDelay.toPost();
-				const newText = delay.toPost();
+				const previousText: string | undefined = await previousDelay.toPost();
+				const newText: string | undefined = await delay.toPost();
 
 				if (previousText !== newText) {
-					return true;
+					return delay
 				}
 			}
-		});
+			return undefined;
+		}))).filter((delay) => delay !== undefined) as Status[];
 
 		console.log("\n\nAll delays:");
-		console.log(delays.map((delay) => delay.toPost()).filter(Boolean));
+		console.log((await Promise.all(delays.map((delay) => delay.toPost()))).filter(Boolean));
 
 		console.log("New delays:");
-		console.log(newDelays.map((delay) => delay.toPost()).filter(Boolean));
+		console.log((await Promise.all(newDelays.map((delay) => delay.toPost()))).filter(Boolean));
 
 		console.log("Removed delays:");
-		console.log(removedDelays.map((delay) => delay.toPost()).filter(Boolean));
+		console.log((await Promise.all(removedDelays.map((delay) => delay.toPost()))).filter(Boolean));
 
 		console.log("Updated delays:");
-		console.log(updatedDelays.map((delay) => {
+		console.log((await Promise.all(updatedDelays.map(async (delay) => {
 			const previousDelay = previousDelays.find((previousDelay) => previousDelay.comparisonHash === delay.comparisonHash);
 
 			if (!previousDelay) {
 				return undefined;
 			}
 
-			const newDelayText = delay.toPost();
-			const previousText = previousDelay.toPost();
+			const newDelayText: string | undefined = await delay.toPost();
+			const previousText: string | undefined = await previousDelay.toPost();
 
 			if (!newDelayText || !newDelayText) {
 				return undefined;
@@ -135,7 +111,8 @@ async function run (firstRun: boolean) {
 				"previous": previousText,
 				"new": newDelayText
 			};
-		}).filter(Boolean));
+		}))).filter(Boolean));
+		console.timeEnd("Run Parse");
 
 		const poster = new Poster(config);
 		for (const delay of newDelays) {
@@ -148,7 +125,7 @@ async function run (firstRun: boolean) {
 				// @TODO: fix this so that the `toPost` method returns a closure post that is more accurate to the actual closure, and doesn't mislead or confuse people.
 				continue;
 			}
-			const post = delay.toPost();
+			const post = await delay.toPost();
 			if (post) {
 				if (process.env.NODE_ENV === "production") {
 					const postResponse = await poster.post(post, xmlResult, [ContentTypeEnum.ALL_FAA]);
@@ -169,7 +146,7 @@ async function run (firstRun: boolean) {
 			}
 		}
 		for (const delay of removedDelays) {
-			const post = delay.toEndedPost();
+			const post = await delay.toEndedPost();
 			const comparisonHash = delay.comparisonHash;
 			if (post) {
 				if (process.env.NODE_ENV === "production") {

@@ -1,3 +1,4 @@
+import { OurAirportsDataManager } from "../OurAirportsDataManager";
 import { Status } from "./Status";
 
 describe("Status.fromRAW().toPost()", () => {
@@ -65,15 +66,15 @@ describe("Status.fromRAW().toPost()", () => {
 	];
 
 	tests.forEach(([obj, expected]) => {
-		test(`Status.fromRAW(${obj}).toPost() === ${expected}`, () => {
-			const status: Status | Status[] | undefined = Status.fromRaw(obj as any);
+		test(`Status.fromRAW(${obj}).toPost() === ${expected}`, async () => {
+			const status: Status | Status[] | undefined = Status.fromRaw(obj as any, new OurAirportsDataManager("Test"));
 
 			if (status instanceof Array) {
-				expect(status.map((s) => s.toPost())).toStrictEqual(expected);
+				expect((await Promise.all(status.map((s) => s.toPost())))).toStrictEqual(expected);
 			} else if (status === undefined) {
 				expect(status).toStrictEqual(expected);
 			} else {
-				expect(status.toPost()).toStrictEqual(expected);
+				expect(await status.toPost()).toStrictEqual(expected);
 			}
 		});
 	});
@@ -162,15 +163,15 @@ describe("Status.fromRAW().toEndedPost()", () => {
 	];
 
 	tests.forEach(([obj, expected]) => {
-		test(`Status.fromRAW(${obj}).toEndedPost() === ${expected}`, () => {
-			const status: Status | Status[] | undefined = Status.fromRaw(obj as any);
+		test(`Status.fromRAW(${obj}).toEndedPost() === ${expected}`, async () => {
+			const status: Status | Status[] | undefined = Status.fromRaw(obj as any, new OurAirportsDataManager("Test"));
 
 			if (status instanceof Array) {
-				expect(status.map((s) => s.toEndedPost())).toStrictEqual(expected);
+				expect((await Promise.all(status.map((s) => s.toEndedPost())))).toStrictEqual(expected);
 			} else if (status === undefined) {
 				expect(status).toStrictEqual(expected);
 			} else {
-				expect(status.toEndedPost()).toStrictEqual(expected);
+				expect(await status.toEndedPost()).toStrictEqual(expected);
 			}
 		});
 	});
