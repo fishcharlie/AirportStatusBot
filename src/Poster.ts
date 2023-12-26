@@ -162,39 +162,38 @@ export class Poster {
 					returnObject = mastodonResult;
 					break;
 				case SocialNetworkType.bluesky:
-					console.log("Not currently replying to Bluesky posts.");
-					// const bluesky = new BskyAgent({
-					// 	"service": socialNetwork.credentials.endpoint
-					// });
+					const bluesky = new BskyAgent({
+						"service": socialNetwork.credentials.endpoint
+					});
 
-					// await bluesky.login({
-					// 	"identifier": socialNetwork.credentials.username ?? "",
-					// 	"password": socialNetwork.credentials.password ?? ""
-					// });
+					await bluesky.login({
+						"identifier": socialNetwork.credentials.username ?? "",
+						"password": socialNetwork.credentials.password ?? ""
+					});
 
-					// const rt = new RichText({
-					// 	"text": socialMessage
-					// });
-					// await rt.detectFacets(bluesky);
-					// const postRecord: Partial<AppBskyFeedPost.Record> & Omit<AppBskyFeedPost.Record, "createdAt"> = {
-					// 	"text": rt.text,
-					// 	"facets": rt.facets,
-					// 	"reply": {
-					// 		"root": {
-					// 			"uri": replyTo.root.uri,
-					// 			"cid": replyTo.root.cid
-					// 		},
-					// 		"parent": {
-					// 			"uri": replyTo.parent.uri,
-					// 			"cid": replyTo.parent.cid
-					// 		}
-					// 	}
-					// };
-					// const blueskyResult = await bluesky.post(postRecord);
-					// returnObject = {
-					// 	"root": replyTo.root,
-					// 	"parent": blueskyResult
-					// };
+					const rt = new RichText({
+						"text": socialMessage
+					});
+					await rt.detectFacets(bluesky);
+					const postRecord: Partial<AppBskyFeedPost.Record> & Omit<AppBskyFeedPost.Record, "createdAt"> = {
+						"text": rt.text,
+						"facets": rt.facets,
+						"reply": {
+							"root": {
+								"uri": replyTo.root.uri,
+								"cid": replyTo.root.cid
+							},
+							"parent": {
+								"uri": replyTo.parent.uri,
+								"cid": replyTo.parent.cid
+							}
+						}
+					};
+					const blueskyResult = await bluesky.post(postRecord);
+					returnObject = {
+						"root": replyTo.root,
+						"parent": blueskyResult
+					};
 					break;
 				case SocialNetworkType.s3:
 					const client = new S3({
