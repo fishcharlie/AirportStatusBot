@@ -115,7 +115,7 @@ export class OurAirportsDataManager {
 	async getAirportByFAACode(code: string): Promise<Airport | undefined> {
 		let airport: { [key: string]: any } | undefined;
 
-		if (true) {
+		if (typeof jest !== "undefined") {
 			const rawData = fs.readFileSync(dataPath(), "utf8");
 			const parsedData = csvparse(rawData, {
 				"columns": true
