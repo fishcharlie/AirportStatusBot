@@ -49,17 +49,33 @@ interface S3SocialNetwork {
 	}
 	contentType: ContentTypeEnum;
 }
-export type SocialNetwork = MastodonSocialNetwork | BlueskySocialNetwork | S3SocialNetwork;
+interface NostrSocialNetwork {
+	uuid: `${string}-${string}-${string}-${string}-${string}`
+	name: string;
+	type: SocialNetworkType.nostr;
+	credentials: {
+		privateKey: string;
+		publicKey: string;
+		relays: string[];
+	};
+	settings?: {
+		includeHashtags?: boolean;
+	};
+	contentType: ContentTypeEnum;
+}
+export type SocialNetwork = MastodonSocialNetwork | S3SocialNetwork | BlueskySocialNetwork | NostrSocialNetwork;
 
 export enum SocialNetworkType {
 	mastodon = "mastodon",
 	s3 = "s3",
 	bluesky = "bluesky",
+	nostr = "nostr",
 }
 
 export function defaultIncludeHashtags(type: SocialNetworkType): boolean {
 	switch (type) {
 		case SocialNetworkType.mastodon:
+		case SocialNetworkType.nostr:
 			return true;
 		case SocialNetworkType.bluesky:
 		case SocialNetworkType.s3:

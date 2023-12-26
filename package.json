@@ -34,9 +34,11 @@
     "geo-tz": "^7.0.7",
     "js-object-utilities": "^2.2.0",
     "luxon": "^3.4.4",
+    "nostr-tools": "^2.1.1",
     "rimraf": "^5.0.5",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.6",
-    "tusk-mastodon": "^2.0.4"
+    "tusk-mastodon": "^2.0.4",
+    "websocket-polyfill": "^0.0.3"
   }
 }

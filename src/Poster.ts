@@ -1,8 +1,11 @@
-import { Config, ContentTypeEnum, SocialNetwork, defaultIncludeHashtags } from "./types/Config";
+import "websocket-polyfill";
+import { Config, ContentTypeEnum, SocialNetwork, SocialNetworkType, defaultIncludeHashtags } from "./types/Config";
 import { S3 } from "@aws-sdk/client-s3";
 import TuskMastodon from "tusk-mastodon";
 import { BskyAgent, RichText, AppBskyFeedPost } from "@atproto/api";
 import { GeneralObject } from "js-object-utilities";
+import * as nostrtools from "nostr-tools";
+import { parseHashtags } from "./utils/parseHashtags";
 
 const hashtagWords = [
 	"weather",
@@ -90,8 +93,40 @@ export class Poster {
 							key
 						};
 						break;
-					default:
-						throw new Error(`Unknown social network (${socialNetwork.name}): ${socialNetwork.type}`);
+					case "nostr":
+						const pool = new nostrtools.SimplePool();
+						const privateKey = nostrtools.nip19.decode(socialNetwork.credentials.privateKey);
+						if (privateKey.type !== "nsec") {
+							console.error(`Invalid private key type: ${privateKey.type}`);
+							break;
+						}
+						let tags: string[][] = [];
+						if (socialNetwork.settings?.includeHashtags) {
+							tags = parseHashtags(socialMessage).map((tag) => ["t", tag]);
+						}
+						const event = nostrtools.finalizeEvent({
+							"kind": 1,
+							"created_at": Math.floor(Date.now() / 1000),
+							"tags": tags,
+							"content": socialMessage
+						}, privateKey.data);
+						const promises = pool.publish(socialNetwork.credentials.relays, event);
+						let results: { [key: string]: string } = {};
+						for (const index in promises) {
+							const promise = promises[index];
+							const relay = socialNetwork.credentials.relays[index];
+							try {
+								const result = await promise;
+								results[relay] = result;
+							} catch (e) {
+								console.error(`Error posting to: ${relay}\n${e}`);
+							}
+						}
+						returnObject[socialNetwork.uuid] = {
+							event,
+							results
+						};
+						break;
 				}
 			} catch (e) {
 				console.error(e);
@@ -114,7 +149,7 @@ export class Poster {
 
 		try {
 			switch (socialNetwork.type) {
-				case "mastodon":
+				case SocialNetworkType.mastodon:
 					const mastodon = new TuskMastodon({
 						"api_url": `${socialNetwork.credentials.endpoint}/api/v1/`,
 						"access_token": socialNetwork.credentials.password,
@@ -126,7 +161,7 @@ export class Poster {
 					});
 					returnObject = mastodonResult;
 					break;
-				case "bluesky":
+				case SocialNetworkType.bluesky:
 					console.log("Not currently replying to Bluesky posts.");
 					// const bluesky = new BskyAgent({
 					// 	"service": socialNetwork.credentials.endpoint
@@ -161,7 +196,7 @@ export class Poster {
 					// 	"parent": blueskyResult
 					// };
 					break;
-				case "s3":
+				case SocialNetworkType.s3:
 					const client = new S3({
 						"credentials": {
 							"accessKeyId": socialNetwork.credentials.accessKeyId,
@@ -185,8 +220,9 @@ export class Poster {
 						key
 					};
 					break;
-				default:
-					throw new Error(`Unknown social network (${socialNetwork.name}): ${socialNetwork.type}`);
+				case SocialNetworkType.nostr:
+					console.log("Not currently replying to Nostr posts.");
+					break;
 			}
 		} catch (e) {
 			console.error(e);
