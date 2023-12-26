@@ -51,7 +51,7 @@ interface S3SocialNetwork {
 }
 export type SocialNetwork = MastodonSocialNetwork | BlueskySocialNetwork | S3SocialNetwork;
 
-enum SocialNetworkType {
+export enum SocialNetworkType {
 	mastodon = "mastodon",
 	s3 = "s3",
 	bluesky = "bluesky",

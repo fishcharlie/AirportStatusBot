@@ -4,6 +4,12 @@ import TuskMastodon from "tusk-mastodon";
 import { BskyAgent, RichText, AppBskyFeedPost } from "@atproto/api";
 import { GeneralObject } from "js-object-utilities";
 
+const hashtagWords = [
+	"weather",
+	"airport",
+	"thunderstorms",
+];
+
 export class Poster {
 	#config: Config;
 
@@ -27,7 +33,7 @@ export class Poster {
 				return;
 			}
 
-			const socialMessage = this.#formatMessage(message, socialNetwork);
+			const socialMessage = this.formatMessage(message, socialNetwork);
 
 			try {
 				switch (socialNetwork.type) {
@@ -104,7 +110,7 @@ export class Poster {
 			throw `Unknown social network UUID: ${socialNetworkUUID}`;
 		}
 
-		const socialMessage = this.#formatMessage(message, socialNetwork);
+		const socialMessage = this.formatMessage(message, socialNetwork);
 
 		try {
 			switch (socialNetwork.type) {
@@ -189,12 +195,19 @@ export class Poster {
 		return returnObject;
 	}
 
-	#formatMessage(message: string, config: SocialNetwork): string {
+	formatMessage(message: string, config: SocialNetwork): string {
 		let returnMessage = `${message}`;
 		const includeHashtags: boolean = config.settings?.includeHashtags ?? defaultIncludeHashtags(config.type);
 
 		if (includeHashtags) {
 			returnMessage += " #AirportStatusBot";
+			returnMessage = returnMessage.split(" ").map((word) => {
+				if (hashtagWords.includes(word.replaceAll(".", "").toLowerCase())) {
+					return `#${word}`;
+				} else {
+					return word;
+				}
+			}).join(" ");
 		} else {
 			returnMessage = returnMessage.replaceAll(/#(\w+)/gmu, "$1");
 		}
