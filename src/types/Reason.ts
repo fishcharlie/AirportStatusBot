@@ -16,6 +16,7 @@ const customReasonMaps: { [key: string]: string } = {
 	"low ceilings": "WX:Low Ceilings",
 	// "runway configuration change"
 	"airport volume": "VOL:Volume",
+	// "low visibility": ""
 }
 
 export class Reason {
