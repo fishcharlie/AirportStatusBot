@@ -278,7 +278,9 @@ export class Poster {
 						"content": JSON.stringify(socialNetwork.profile),
 						"tags": []
 					}, privateKey.data);
-					await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
+					try {
+						await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
+					} catch (e) {}
 
 					break;
 			}
