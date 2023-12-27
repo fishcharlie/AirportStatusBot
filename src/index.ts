@@ -25,11 +25,13 @@ if (config.webServer) {
 			"pong": true
 		});
 	});
-	if (fs.existsSync(path.join(__dirname, "..", "Logo.png"))) {
-		app.get("/assets/images/logo.png", (_req, res) => {
+	app.get("/assets/images/logo.png", (_req, res, next) => {
+		if (fs.existsSync(path.join(__dirname, "..", "Logo.png"))) {
 			res.sendFile(path.join(__dirname, "..", "Logo.png"));
-		});
-	}
+		} else {
+			next();
+		}
+	});
 	app.listen(config.webServer.port, () => {
 		console.log(`Web server listening on port ${config.webServer?.port}`);
 	});
