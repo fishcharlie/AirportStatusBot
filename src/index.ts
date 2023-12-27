@@ -8,6 +8,7 @@ import * as objectUtils from "js-object-utilities";
 import * as rimraf from "rimraf";
 import { OurAirportsDataManager } from "./OurAirportsDataManager";
 import { ImageGenerator } from "./ImageGenerator";
+import express from "express";
 
 const packageJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
 let config: Config;
@@ -15,6 +16,23 @@ try {
 	config = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "config.json"), "utf8"));
 } catch (e) {
 	config = {"socialNetworks": [], "refreshInterval": 60};
+}
+
+if (config.webServer) {
+	const app = express();
+	app.get("/ping", (_req, res) => {
+		res.send({
+			"pong": true
+		});
+	});
+	if (fs.existsSync(path.join(__dirname, "..", "Logo.png"))) {
+		app.get("/assets/images/logo.png", (_req, res) => {
+			res.sendFile(path.join(__dirname, "..", "Logo.png"));
+		});
+	}
+	app.listen(config.webServer.port, () => {
+		console.log(`Web server listening on port ${config.webServer?.port}`);
+	});
 }
 
 const ENDPOINT = "https://nasstatus.faa.gov/api/airport-status-information";

@@ -4,6 +4,10 @@ export interface Config {
 	 * The interval in seconds to check for updates.
 	 */
 	refreshInterval: number;
+
+	webServer?: {
+		port: number;
+	}
 }
 
 interface MastodonSocialNetwork {
