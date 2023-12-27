@@ -6,5 +6,7 @@ services:
       - .:/project
     working_dir: /project
     command: "node dist/index.js"
+    ports:
+      - 3005:3005
     environment:
       - NODE_ENV=production
