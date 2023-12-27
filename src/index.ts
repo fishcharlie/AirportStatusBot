@@ -22,6 +22,8 @@ const USER_AGENT = `AirportStatusBot/${packageJSON.version} (+${packageJSON.home
 
 const ourAirportsDataManager = new OurAirportsDataManager(USER_AGENT);
 
+const poster = new Poster(config);
+
 async function run (firstRun: boolean) {
 	await ourAirportsDataManager.updateCache();
 
@@ -115,7 +117,6 @@ async function run (firstRun: boolean) {
 		}))).filter(Boolean));
 		console.timeEnd("Run Parse");
 
-		const poster = new Poster(config);
 		for (const delay of newDelays) {
 			if (delay.type.type === TypeEnum.CLOSURE) {
 				// Currently an airport closure isn't really a complete airport closure.
