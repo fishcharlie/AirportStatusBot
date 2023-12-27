@@ -272,41 +272,13 @@ export class Poster {
 						break;
 					}
 
-					const events = (await pool.querySync(socialNetwork.credentials.relays, {
-						"kinds": [0],
-						"authors": [
-							publicKey.data
-						]
-					})).map((event, index) => {
-						return {
-							"event": event,
-							"relay": socialNetwork.credentials.relays[index]
-						};
-					});
-
-					const compareProperties = ["picture", "about", "banner", "name", "website", "display_name"];
-					console.log("events", events);
-					const relaysToUpdate: string[] = events.map((obj) => {
-						const json = JSON.parse(obj.event.content);
-
-						const shouldUpdate = compareProperties.some((property) => {
-							return json[property] !== socialNetwork.profile?.[property];
-						});
-
-						if (!shouldUpdate) {
-							return;
-						} else {
-							return obj.relay
-						}
-					}).filter((event) => event !== undefined) as string[];
 					const event = nostrtools.finalizeEvent({
 						"kind": 0,
 						"created_at": Math.floor(Date.now() / 1000),
 						"content": JSON.stringify(socialNetwork.profile),
 						"tags": []
 					}, privateKey.data);
-					await Promise.all(pool.publish(relaysToUpdate, event));
-					console.log(`Updated ${relaysToUpdate.length} relays.`);
+					await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
 
 					break;
 			}
