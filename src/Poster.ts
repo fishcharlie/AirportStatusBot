@@ -266,9 +266,17 @@ export class Poster {
 						break;
 					}
 
+					const publicKey = nostrtools.nip19.decode(socialNetwork.credentials.publicKey);
+					if (publicKey.type !== "npub") {
+						console.error(`Invalid private key type: ${publicKey.type}`);
+						break;
+					}
+
 					const events = (await pool.querySync(socialNetwork.credentials.relays, {
 						"kinds": [0],
-						"authors": [socialNetwork.credentials.publicKey]
+						"authors": [
+							publicKey.data
+						]
 					})).map((event, index) => {
 						return {
 							"event": event,
