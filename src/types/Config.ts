@@ -62,6 +62,7 @@ interface NostrSocialNetwork {
 		publicKey: string;
 		relays: string[];
 	};
+	profile?: { [key: string]: string };
 	settings?: {
 		includeHashtags?: boolean;
 	};

@@ -244,6 +244,66 @@ export class Poster {
 		return returnObject;
 	}
 
+	async updateProfile(): Promise<void> {
+		await Promise.all(this.#config.socialNetworks.map(async (socialNetwork) => {
+			switch (socialNetwork.type) {
+				case SocialNetworkType.mastodon:
+					break;
+				case SocialNetworkType.s3:
+					break;
+				case SocialNetworkType.bluesky:
+					break;
+				case SocialNetworkType.nostr:
+					if (!socialNetwork.profile) {
+						break;
+					}
+
+					const pool = new nostrtools.SimplePool();
+
+					const privateKey = nostrtools.nip19.decode(socialNetwork.credentials.privateKey);
+					if (privateKey.type !== "nsec") {
+						console.error(`Invalid private key type: ${privateKey.type}`);
+						break;
+					}
+
+					const events = (await pool.querySync(socialNetwork.credentials.relays, {
+						"kinds": [0],
+						"authors": [socialNetwork.credentials.publicKey]
+					})).map((event, index) => {
+						return {
+							"event": event,
+							"relay": socialNetwork.credentials.relays[index]
+						};
+					});
+
+					const compareProperties = ["picture", "about", "banner", "name", "website", "display_name"];
+					const relaysToUpdate: string[] = events.map((obj) => {
+						const json = JSON.parse(obj.event.content);
+
+						const shouldUpdate = compareProperties.some((property) => {
+							return json[property] !== socialNetwork.profile?.[property];
+						});
+
+						if (!shouldUpdate) {
+							return;
+						} else {
+							return obj.relay
+						}
+					}).filter((event) => event !== undefined) as string[];
+					const event = nostrtools.finalizeEvent({
+						"kind": 0,
+						"created_at": Math.floor(Date.now() / 1000),
+						"content": JSON.stringify(socialNetwork.profile),
+						"tags": []
+					}, privateKey.data);
+					await Promise.all(pool.publish(relaysToUpdate, event));
+					console.log(`Updated ${relaysToUpdate.length} relays.`);
+
+					break;
+			}
+		}));
+	}
+
 	formatMessage(message: string, config: SocialNetwork): string {
 		let returnMessage = `${message}`;
 		const includeHashtags: boolean = config.settings?.includeHashtags ?? defaultIncludeHashtags(config.type);

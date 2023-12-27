@@ -225,12 +225,20 @@ async function run (firstRun: boolean) {
 	await fs.promises.writeFile(previousPath, xmlResult);
 }
 
+let runCounter = 0;
 (async () => {
 	let firstRun = true;
 	while (true) {
+		// If it's the first run or every 15 runs, update the profiles
+		if (firstRun || runCounter % 15 === 0) {
+			try {
+				poster.updateProfile();
+			} catch (e) {}
+		}
 		await run(firstRun);
 		await new Promise((resolve) => setTimeout(resolve, config.refreshInterval * 1000));
 		firstRun = false;
+		runCounter += 1;
 	}
 })();
 
