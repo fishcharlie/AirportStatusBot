@@ -285,6 +285,7 @@ export class Poster {
 					});
 
 					const compareProperties = ["picture", "about", "banner", "name", "website", "display_name"];
+					console.log("events", events);
 					const relaysToUpdate: string[] = events.map((obj) => {
 						const json = JSON.parse(obj.event.content);
 
