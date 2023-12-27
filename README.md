@@ -13,6 +13,9 @@ You can find it on the following social networks:
 - We get our data from a few sources:
 	- Real time delay information from the FAA's Airport Status API (https://nasstatus.faa.gov/api/airport-status-information).
 	- Airport name and location information from [OurAirports](https://ourairports.com) (https://github.com/davidmegginson/ourairports-data)
+	- Map data/imagery from [OpenStreetMap](https://www.openstreetmap.org)
+	- Radar imagery from the [Iowa Environmental Mesonet of Iowa State University](https://mesonet.agron.iastate.edu) (https://mesonet.agron.iastate.edu/GIS/ridge.phtml)
+		- Data provided under Public Domain (https://mesonet.agron.iastate.edu/disclaimer.php)
 - A lot of the terminology used in the API is referenced in the [FAA Glossary](https://www.fly.faa.gov/Products/Glossary_of_Terms/glossary_of_terms.html).
 - Data is refreshed every minute from the FAA API. This means that the bot will post a new status with 60 seconds of the FAA reporting a delay.
 

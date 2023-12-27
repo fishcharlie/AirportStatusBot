@@ -13,6 +13,11 @@ const hashtagWords = [
 	"thunderstorms",
 ];
 
+interface PostContent {
+	message: string;
+	image?: Buffer;
+}
+
 export class Poster {
 	#config: Config;
 
@@ -27,16 +32,16 @@ export class Poster {
 	 * @param contentTypes The content types to post to. This will be used in the future to filter out airport specific accounts.
 	 * @returns An object with the key as the UUID of the social network in the configuration and the value set to the result of the post response.
 	 */
-	async post(message: string, rawXML: string, contentTypes: ContentTypeEnum[]): Promise<{ [key: string]: any }> {
+	async post(content: PostContent, rawXML: string, contentTypes: ContentTypeEnum[]): Promise<{ [key: string]: any }> {
 		let returnObject: { [key: string]: any } = {};
 
 		await Promise.all(this.#config.socialNetworks.map(async (socialNetwork) => {
 			if (!contentTypes.includes(socialNetwork.contentType)) {
-				console.log(`Skipping ${socialNetwork.name} for post ('${message}') because it doesn't support ${contentTypes.join(", ")}.`);
+				console.log(`Skipping ${socialNetwork.name} for post ('${content.message}') because it doesn't support ${contentTypes.join(", ")}.`);
 				return;
 			}
 
-			const socialMessage = this.formatMessage(message, socialNetwork);
+			const socialMessage = this.formatMessage(content.message, socialNetwork);
 
 			try {
 				switch (socialNetwork.type) {
@@ -83,7 +88,8 @@ export class Poster {
 							},
 							"region": "us-west-2"
 						});
-						const key = `${Date.now()}.txt`;
+						const ts = Date.now();
+						const key = `${ts}.txt`;
 						await client.putObject({
 							"Bucket": socialNetwork.credentials.bucket,
 							"Body": `${socialMessage}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`,
@@ -92,6 +98,14 @@ export class Poster {
 						returnObject[socialNetwork.uuid] = {
 							key
 						};
+
+						if (content.image) {
+							await client.putObject({
+								"Bucket": socialNetwork.credentials.bucket,
+								"Body": content.image,
+								"Key": `${ts}.png`
+							});
+						}
 						break;
 					case "nostr":
 						const pool = new nostrtools.SimplePool();
@@ -136,7 +150,7 @@ export class Poster {
 		return returnObject;
 	}
 
-	async reply(socialNetworkUUID: string, replyTo: GeneralObject<any>, message: string, rawXML: string): Promise<{ [key: string]: any }> {
+	async reply(socialNetworkUUID: string, replyTo: GeneralObject<any>, content: PostContent, rawXML: string): Promise<{ [key: string]: any }> {
 		let returnObject: { [key: string]: any } = {};
 
 		const socialNetwork = this.#config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === socialNetworkUUID);
@@ -145,7 +159,7 @@ export class Poster {
 			throw `Unknown social network UUID: ${socialNetworkUUID}`;
 		}
 
-		const socialMessage = this.formatMessage(message, socialNetwork);
+		const socialMessage = this.formatMessage(content.message, socialNetwork);
 
 		try {
 			switch (socialNetwork.type) {

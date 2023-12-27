@@ -1,3 +1,5 @@
+import { ImageType } from "../ImageGenerator";
+
 enum ParentType {
 	WEATHER = "WX",
 	TRAFFIC_MANAGEMENT = "TM Initiatives",
@@ -54,6 +56,21 @@ export class Reason {
 		} else {
 			return undefined;
 		}
+	}
+
+	imageType(): ImageType | undefined {
+		const subParts = this.parts().slice(1);
+		const subPartsStr = subParts.join(":");
+
+		switch (this.parentType()) {
+			case ParentType.WEATHER:
+				switch(subPartsStr) {
+					case "Thunderstorms":
+						return ImageType.radar;
+				}
+		}
+
+		return undefined;
 	}
 
 	/**

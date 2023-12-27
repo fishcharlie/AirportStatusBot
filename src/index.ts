@@ -7,6 +7,7 @@ import { Config, ContentTypeEnum } from "./types/Config";
 import * as objectUtils from "js-object-utilities";
 import * as rimraf from "rimraf";
 import { OurAirportsDataManager } from "./OurAirportsDataManager";
+import { ImageGenerator } from "./ImageGenerator";
 
 const packageJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
 let config: Config;
@@ -126,9 +127,19 @@ async function run (firstRun: boolean) {
 				continue;
 			}
 			const post = await delay.toPost();
+			let image;
+			try {
+				image = await new ImageGenerator(delay).toBuffer();
+			} catch (e) {
+				console.error("Failed to generate image:");
+				console.error(e);
+			}
 			if (post) {
 				if (process.env.NODE_ENV === "production") {
-					const postResponse = await poster.post(post, xmlResult, [ContentTypeEnum.ALL_FAA]);
+					const postResponse = await poster.post({
+						"message": post,
+						image
+					}, xmlResult, [ContentTypeEnum.ALL_FAA]);
 					console.log(`Posted: '${post}'`);
 
 					const comparisonHash = delay.comparisonHash;
@@ -160,7 +171,9 @@ async function run (firstRun: boolean) {
 							const socialNetworkUUID: string = entry[0];
 							const value: any = entry[1];
 
-							const postResponse = await poster.reply(socialNetworkUUID, value, post, xmlResult);
+							const postResponse = await poster.reply(socialNetworkUUID, value, {
+								"message": post
+							}, xmlResult);
 							if (Object.keys(postResponse).length > 0) {
 								newPostResponse[socialNetworkUUID] = postResponse;
 								console.log(`[${socialNetworkUUID}] Replied: '${post}'`);
