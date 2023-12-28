@@ -124,18 +124,20 @@ export class Poster {
 							"tags": tags,
 							"content": socialMessage
 						}, privateKey.data);
-						const promises = pool.publish(socialNetwork.credentials.relays, event);
 						let results: { [key: string]: string } = {};
-						for (const index in promises) {
-							const promise = promises[index];
-							const relay = socialNetwork.credentials.relays[index];
-							try {
-								const result = await promise;
-								results[relay] = result;
-							} catch (e) {
-								console.error(`Error posting to: ${relay}\n${e}`);
+						try {
+							const promises = pool.publish(socialNetwork.credentials.relays, event);
+							for (const index in promises) {
+								const promise = promises[index];
+								const relay = socialNetwork.credentials.relays[index];
+								try {
+									const result = await promise;
+									results[relay] = result;
+								} catch (e) {
+									console.error(`Error posting to: ${relay}\n${e}`);
+								}
 							}
-						}
+						} catch (e) {}
 						returnObject[socialNetwork.uuid] = {
 							event,
 							results
