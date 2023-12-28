@@ -6,6 +6,7 @@ You can find it on the following social networks:
 
 - Mastodon - [@AirportStatusBot@mastodon.social](https://mastodon.social/@AirportStatusBot)
 - Bluesky - [@AirportStatusBot@bsky.social](https://bsky.app/profile/airportstatusbot.bsky.social)
+- nostr - [npub1nzrhjlgxxuh602nej5pj3cr4gfm7uaywlg3zygzvwyavq0c6t2qs5c36v5](https://iris.to/npub1nzrhjlgxxuh602nej5pj3cr4gfm7uaywlg3zygzvwyavq0c6t2qs5c36v5)
 
 ## Other Information
 
