@@ -224,7 +224,32 @@ export class Poster {
 					};
 					break;
 				case SocialNetworkType.nostr:
-					console.log("Not currently replying to Nostr posts.");
+					const pool = new nostrtools.SimplePool();
+					const privateKey = nostrtools.nip19.decode(socialNetwork.credentials.privateKey);
+					if (privateKey.type !== "nsec") {
+						console.error(`Invalid private key type: ${privateKey.type}`);
+						break;
+					}
+					const existingPostTags = replyTo.event.tags.filter((tag: string[]) => tag[0] === "e");
+					let tags: string[][] = [
+						...existingPostTags,
+						["e", replyTo.event.id, "wss://nostrrelay.win", existingPostTags.length === 0 ? "root" : "reply"]
+					];
+					if (socialNetwork.settings?.includeHashtags) {
+						tags = parseHashtags(socialMessage).map((tag) => ["t", tag]);
+					}
+					const event = nostrtools.finalizeEvent({
+						"kind": 1,
+						"created_at": Math.floor(Date.now() / 1000),
+						"tags": tags,
+						"content": socialMessage
+					}, privateKey.data);
+					try {
+						await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
+					} catch (e) {}
+					returnObject[socialNetwork.uuid] = {
+						event
+					};
 					break;
 			}
 		} catch (e) {
