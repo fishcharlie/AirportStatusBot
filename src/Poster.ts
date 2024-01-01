@@ -287,14 +287,21 @@ export class Poster {
 						break;
 					}
 
-					const event = nostrtools.finalizeEvent({
+					const metadataEvent = nostrtools.finalizeEvent({
 						"kind": 0,
 						"created_at": Math.floor(Date.now() / 1000),
 						"content": JSON.stringify(socialNetwork.profile),
 						"tags": []
 					}, privateKey.data);
+					const relayListMetadataEvent = nostrtools.finalizeEvent({
+						"kind": 10002,
+						"created_at": Math.floor(Date.now() / 1000),
+						"content": "",
+						"tags": socialNetwork.credentials.relays.map((relay) => ["r", relay]),
+					}, privateKey.data);
 					try {
-						await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
+						await Promise.all(pool.publish(socialNetwork.credentials.relays, metadataEvent));
+						await Promise.all(pool.publish(socialNetwork.credentials.relays, relayListMetadataEvent));
 					} catch (e) {}
 
 					break;
