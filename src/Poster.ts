@@ -302,7 +302,9 @@ export class Poster {
 					try {
 						await Promise.all(pool.publish(socialNetwork.credentials.relays, metadataEvent));
 						await Promise.all(pool.publish(socialNetwork.credentials.relays, relayListMetadataEvent));
-					} catch (e) {}
+					} catch (e) {
+						console.error("Error posting nostr profile metadata", e);
+					}
 
 					break;
 			}
