@@ -236,7 +236,7 @@ export class Poster {
 						["e", replyTo.event.id, "wss://nostrrelay.win", existingPostTags.length === 0 ? "root" : "reply"]
 					];
 					if (socialNetwork.settings?.includeHashtags) {
-						tags = parseHashtags(socialMessage).map((tag) => ["t", tag]);
+						tags = parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()]);
 					}
 					const event = nostrtools.finalizeEvent({
 						"kind": 1,
