@@ -115,7 +115,8 @@ export class Poster {
 							break;
 						}
 						let tags: string[][] = [];
-						if (socialNetwork.settings?.includeHashtags) {
+						const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
+						if (includeHashtags) {
 							tags = parseHashtags(socialMessage).map((tag) => ["t", tag]);
 						}
 						const event = nostrtools.finalizeEvent({
@@ -235,7 +236,8 @@ export class Poster {
 						...existingPostTags,
 						["e", replyTo.event.id, "wss://nostrrelay.win", existingPostTags.length === 0 ? "root" : "reply"]
 					];
-					if (socialNetwork.settings?.includeHashtags) {
+					const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
+					if (includeHashtags) {
 						tags = parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()]);
 					}
 					const event = nostrtools.finalizeEvent({
