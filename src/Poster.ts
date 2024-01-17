@@ -238,7 +238,7 @@ export class Poster {
 					];
 					const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
 					if (includeHashtags) {
-						tags = parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()]);
+						tags = [...tags, ...parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()])];
 					}
 					const event = nostrtools.finalizeEvent({
 						"kind": 1,
