@@ -2,7 +2,7 @@ import "websocket-polyfill";
 import { Config, ContentTypeEnum, SocialNetwork, SocialNetworkType, defaultIncludeHashtags } from "./types/Config";
 import { S3 } from "@aws-sdk/client-s3";
 import TuskMastodon from "tusk-mastodon";
-import { BskyAgent, RichText, AppBskyFeedPost } from "@atproto/api";
+import { BskyAgent, RichText, AppBskyFeedPost, BlobRef } from "@atproto/api";
 import { GeneralObject } from "js-object-utilities";
 import * as nostrtools from "nostr-tools";
 import { parseHashtags } from "./utils/parseHashtags";
@@ -45,7 +45,7 @@ export class Poster {
 
 			try {
 				switch (socialNetwork.type) {
-					case "mastodon":
+					case "mastodon": {
 						const mastodon = new TuskMastodon({
 							"api_url": `${socialNetwork.credentials.endpoint}/api/v1/`,
 							"access_token": socialNetwork.credentials.password,
@@ -70,7 +70,8 @@ export class Poster {
 						const mastodonResult = await mastodon.post("statuses", mastodonPost);
 						returnObject[socialNetwork.uuid] = mastodonResult;
 						break;
-					case "bluesky":
+					}
+					case "bluesky": {
 						const bluesky = new BskyAgent({
 							"service": socialNetwork.credentials.endpoint
 						});
@@ -80,20 +81,43 @@ export class Poster {
 							"password": socialNetwork.credentials.password ?? ""
 						});
 
+						let image: BlobRef | undefined;
+						try {
+							if (content.image) {
+								image = (await bluesky.uploadBlob(content.image, {
+									"encoding": "image/png"
+								})).data.blob;
+							}
+						} catch (e) {
+							console.error(e);
+						}
+
 						const rt = new RichText({
 							"text": socialMessage
 						});
 						await rt.detectFacets(bluesky);
-						const postRecord = {
+						const postRecord: Partial<AppBskyFeedPost.Record> & Omit<AppBskyFeedPost.Record, "createdAt"> = {
 							"text": rt.text,
 							"facets": rt.facets
 						};
+						if (image) {
+							postRecord.embed = {
+								"images": [
+									{
+										"image": image,
+										"alt": ""
+									}
+								],
+								"$type": "app.bsky.embed.images"
+							};
+						}
 						const blueskyResult = await bluesky.post(postRecord);
 						returnObject[socialNetwork.uuid] = {
 							"root": blueskyResult,
 							"parent": blueskyResult
 						};
 						break;
+					}
 					case "s3":
 						const client = new S3({
 							"credentials": {
