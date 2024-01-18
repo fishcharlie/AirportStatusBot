@@ -16,24 +16,32 @@ enum ParentType {
 const customReasonMaps: { [key: string]: string } = {
 	"wind": "WX:Wind",
 	"low ceilings": "WX:Low Ceilings",
-	// "runway configuration change"
+	"snow or ice": "WX:Snow/Ice",
+	"snow/ice": "WX:Snow/Ice",
+	"snow or ice mitigation or treatment": "WX:Snow/Ice",
+	"thunderstorms": "WX:Thunderstorms",
+	"runway configuration change": "RWY:Rwy Change - Operational Necessity",
+	"runway construction": "RWY:Construction",
 	"airport volume": "VOL:Volume",
 	// "low visibility": ""
+	// "runway"
 }
 
 export class Reason {
 	#raw: string;
 
 	constructor(raw: string) {
-		if (customReasonMaps[raw]) {
-			raw = customReasonMaps[raw];
+		if (customReasonMaps[raw.toLowerCase()]) {
+			raw = customReasonMaps[raw.toLowerCase()];
 		}
 
 		this.#raw = raw;
 	}
 
 	zone(): string | undefined {
-		if (this.#raw.includes("/")) {
+		const slashIndex = this.#raw.indexOf("/");
+		const colonIndex = this.#raw.indexOf(":");
+		if (slashIndex > -1 && colonIndex > -1 && slashIndex < colonIndex) {
 			return this.#raw.split("/")[0];
 		} else {
 			return undefined;
@@ -91,6 +99,8 @@ export class Reason {
 						return "thunderstorms";
 					case "Wind":
 						return "wind";
+					case "Snow/Ice":
+						return "snow/ice";
 					default:
 						return "weather";
 				}
@@ -99,6 +109,7 @@ export class Reason {
 					case "MIT:VOL":
 						return "traffic management initiatives";
 					case "MIT:WX":
+					case "STOP:WX":
 						return "weather";
 					default:
 						return "traffic management initiatives";
@@ -111,6 +122,10 @@ export class Reason {
 						return "runway maintenance";
 					case "Construction":
 						return "runway construction";
+					case "Rwy Change - Operational Necessity":
+						return "runway change";
+					case "Disabled Aircraft":
+						return "disabled aircraft";
 					default:
 						return undefined;
 				}
