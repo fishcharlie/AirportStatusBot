@@ -51,9 +51,23 @@ export class Poster {
 							"access_token": socialNetwork.credentials.password,
 							"timeout_ms": 60 * 1000,
 						});
-						const mastodonResult = await mastodon.post("statuses", {
+						let imageId: string | undefined;
+						try {
+							if (content.image) {
+								imageId = (await mastodon.post("media", {
+									"file": content.image
+								})).data.id;
+							}
+						} catch (e) {
+							console.error(e);
+						}
+						const mastodonPost: {[key: string]: any} = {
 							"status": socialMessage
-						});
+						};
+						if (imageId) {
+							mastodonPost.media_ids = [imageId];
+						}
+						const mastodonResult = await mastodon.post("statuses", mastodonPost);
 						returnObject[socialNetwork.uuid] = mastodonResult;
 						break;
 					case "bluesky":
