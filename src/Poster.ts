@@ -1,11 +1,11 @@
 import "websocket-polyfill";
 import { Config, ContentTypeEnum, SocialNetwork, SocialNetworkType, defaultIncludeHashtags } from "./types/Config";
 import { S3 } from "@aws-sdk/client-s3";
-import TuskMastodon from "tusk-mastodon";
 import { BskyAgent, RichText, AppBskyFeedPost, BlobRef } from "@atproto/api";
 import { GeneralObject } from "js-object-utilities";
 import * as nostrtools from "nostr-tools";
 import { parseHashtags } from "./utils/parseHashtags";
+import { createRestAPIClient as Masto } from "masto";
 
 const hashtagWords = [
 	"weather",
@@ -46,17 +46,16 @@ export class Poster {
 			try {
 				switch (socialNetwork.type) {
 					case "mastodon": {
-						const mastodon = new TuskMastodon({
-							"api_url": `${socialNetwork.credentials.endpoint}/api/v1/`,
-							"access_token": socialNetwork.credentials.password,
-							"timeout_ms": 60 * 1000,
+						const masto = Masto({
+							"url": `${socialNetwork.credentials.endpoint}`,
+							"accessToken": socialNetwork.credentials.password
 						});
 						let imageId: string | undefined;
 						try {
 							if (content.image) {
-								imageId = (await mastodon.post("media", {
-									"file": content.image
-								})).data.id;
+								imageId = (await masto.v1.media.create({
+									"file": new Blob([content.image])
+								})).id;
 							}
 						} catch (e) {
 							console.error(e);
@@ -67,7 +66,7 @@ export class Poster {
 						if (imageId) {
 							mastodonPost.media_ids = [imageId];
 						}
-						const mastodonResult = await mastodon.post("statuses", mastodonPost);
+						const mastodonResult = await masto.v1.statuses.create(mastodonPost as any);
 						returnObject[socialNetwork.uuid] = mastodonResult;
 						break;
 					}
@@ -193,14 +192,13 @@ export class Poster {
 		try {
 			switch (socialNetwork.type) {
 				case SocialNetworkType.mastodon:
-					const mastodon = new TuskMastodon({
-						"api_url": `${socialNetwork.credentials.endpoint}/api/v1/`,
-						"access_token": socialNetwork.credentials.password,
-						"timeout_ms": 60 * 1000,
+					const masto = Masto({
+						"url": `${socialNetwork.credentials.endpoint}`,
+						"accessToken": socialNetwork.credentials.password
 					});
-					const mastodonResult = await mastodon.post("statuses", {
+					const mastodonResult = await masto.v1.statuses.create({
 						"status": socialMessage,
-						"in_reply_to_id": replyTo.data.id,
+						"inReplyToId": replyTo.data.id
 					});
 					returnObject = mastodonResult;
 					break;
