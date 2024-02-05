@@ -198,7 +198,7 @@ export class Poster {
 					});
 					const mastodonResult = await masto.v1.statuses.create({
 						"status": socialMessage,
-						"inReplyToId": replyTo.data.id
+						"inReplyToId": replyTo.id
 					});
 					returnObject = mastodonResult;
 					break;
