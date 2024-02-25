@@ -59,6 +59,7 @@ async function run (firstRun: boolean) {
 				"User-Agent": USER_AGENT
 			}
 		})).text();
+		console.log("Got XML");
 	} catch (e) {
 		console.error("Failed to get XML");
 		console.error(e);
@@ -141,6 +142,7 @@ async function run (firstRun: boolean) {
 		}))).filter(Boolean));
 		console.timeEnd("Run Parse");
 
+		console.log(`Posting ${newDelays.length} new delays.`);
 		for (const delay of newDelays) {
 			if (delay.type.type === TypeEnum.CLOSURE) {
 				// Currently an airport closure isn't really a complete airport closure.
@@ -181,6 +183,7 @@ async function run (firstRun: boolean) {
 				}
 			}
 		}
+		console.log(`Posting ${removedDelays.length} removed delays.`);
 		for (const delay of removedDelays) {
 			const post = await delay.toEndedPost();
 			const comparisonHash = delay.comparisonHash;
@@ -224,6 +227,7 @@ async function run (firstRun: boolean) {
 
 			rimraf.rimrafSync(path.join(__dirname, "..", "cache", "posts", comparisonHash));
 		}
+		console.log("Done posting social messages.");
 	}
 
 	await fs.promises.writeFile(previousPath, xmlResult);
