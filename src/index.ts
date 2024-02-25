@@ -18,11 +18,13 @@ try {
 	config = {"socialNetworks": [], "refreshInterval": 60};
 }
 
+let lastSuccessfulRun = Date.now();
+
 if (config.webServer) {
 	const app = express();
-	app.get("/ping", (_req, res) => {
+	app.get("/status", (_req, res) => {
 		res.send({
-			"pong": true
+			lastSuccessfulRun
 		});
 	});
 	app.get("/assets/images/logo.png", (_req, res, next) => {
@@ -45,6 +47,8 @@ const ourAirportsDataManager = new OurAirportsDataManager(USER_AGENT);
 const poster = new Poster(config);
 
 async function run (firstRun: boolean) {
+	console.log(`Start run: ${Date.now()}`);
+
 	await ourAirportsDataManager.updateCache();
 
 	let xmlResult: string;
@@ -223,6 +227,9 @@ async function run (firstRun: boolean) {
 	}
 
 	await fs.promises.writeFile(previousPath, xmlResult);
+
+	lastSuccessfulRun = Date.now();
+	console.log(`Done running: ${lastSuccessfulRun}`);
 }
 
 let runCounter = 0;
