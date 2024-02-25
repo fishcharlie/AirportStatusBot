@@ -1,7 +1,7 @@
 version: "3"
 services:
   app:
-    image: node:20.10.0
+    image: node:20.11.1
     volumes:
       - .:/project
     working_dir: /project
