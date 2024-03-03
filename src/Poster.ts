@@ -58,7 +58,7 @@ export class Poster {
 								})).id;
 							}
 						} catch (e) {
-							console.error(e);
+							console.error("Error uploading Mastodon image", e);
 						}
 						const mastodonPost: {[key: string]: any} = {
 							"status": socialMessage
@@ -88,7 +88,7 @@ export class Poster {
 								})).data.blob;
 							}
 						} catch (e) {
-							console.error(e);
+							console.error("Error uploading Bluesky image", e);
 						}
 
 						const rt = new RichText({
