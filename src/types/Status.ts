@@ -7,6 +7,13 @@ import { parseDurationString } from "../utils/parseDurationString";
 import { minutesToDurationString } from "../utils/minutesToDurationString";
 import { OurAirportsDataManager } from "../OurAirportsDataManager";
 
+const ianaEquivalents: { [key: string]: string } = {
+	"EDT": "America/New_York",
+	"CDT": "America/Chicago",
+	"MDT": "America/Denver",
+	"PDT": "America/Los_Angeles"
+};
+
 export class Status {
 	airportCode: string;
 	type: Type;
@@ -76,7 +83,16 @@ export class Status {
 				"zone": "utc"
 			}).toJSDate();
 		} else if (detailsObject["End_Time"]) {
-			timing["end"] = luxon.DateTime.fromFormat(detailsObject["End_Time"], "h:mm a z").toJSDate();
+			const [time, period, zone] = detailsObject["End_Time"].split(" ");
+
+			const ianaZone = ianaEquivalents[zone];
+			if (ianaZone) {
+				timing["end"] = luxon.DateTime.fromFormat(`${time} ${period}`, "h:mm a", {
+					"zone": ianaZone
+				}).toJSDate();
+			} else {
+				timing["end"] = luxon.DateTime.fromFormat(detailsObject["End_Time"], "h:mm a z").toJSDate();
+			}
 		}
 
 		let length: { "min"?: number, "max"?: number, "average"?: number, "trend"?: "increasing" | "decreasing" } = {};

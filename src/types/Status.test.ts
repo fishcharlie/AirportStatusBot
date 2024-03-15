@@ -62,6 +62,32 @@ describe("Status.fromRAW().toPost()", () => {
 				}
 			},
 			"Inbound aircraft to Test Airport A (#AAA) are currently being held at their origin airport due to traffic management initiatives. It is currently unknown when operations will resume."
+		],
+		[
+			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "thunderstorms",
+						"End_Time": "11:15 pm EDT"
+					}
+				}
+			},
+			"Inbound aircraft to Test Airport A (#AAA) are currently being held at their origin airport due to thunderstorms. Operations are expected to resume at 9:15 PM."
+		],
+		[
+			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "thunderstorms",
+						"End_Time": "11:15 pm EST"
+					}
+				}
+			},
+			"Inbound aircraft to Test Airport A (#AAA) are currently being held at their origin airport due to thunderstorms. Operations are expected to resume at 10:15 PM."
 		]
 	];
 
