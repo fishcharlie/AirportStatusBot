@@ -59,7 +59,7 @@ async function run (firstRun: boolean) {
 				"User-Agent": USER_AGENT
 			}
 		})).text();
-		console.log("Got XML");
+		console.log("Got XML", xmlResult);
 	} catch (e) {
 		console.error("Failed to get XML");
 		console.error(e);
