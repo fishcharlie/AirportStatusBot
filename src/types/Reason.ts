@@ -23,6 +23,7 @@ const customReasonMaps: { [key: string]: string } = {
 	"runway configuration change": "RWY:Rwy Change - Operational Necessity",
 	"runway construction": "RWY:Construction",
 	"airport volume": "VOL:Volume",
+	"VOLUME": "VOL:Volume",
 	// "low visibility": ""
 	// "runway"
 }
