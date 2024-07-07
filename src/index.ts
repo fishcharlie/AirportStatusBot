@@ -254,12 +254,14 @@ let runCounter = 0;
 })();
 
 // On SIGINT, SIGTERM, etc. exit gracefully
-process.on("SIGINT", exitHandler);
-process.on("SIGTERM", exitHandler);
+process.on("SIGINT", exitHandler("SIGINT"));
+process.on("SIGTERM", exitHandler("SIGTERM"));
 
-async function exitHandler() {
-	console.log("Exiting gracefully...");
-	await ourAirportsDataManager.close();
-	console.log("Done. Exiting.");
-	process.exit(0);
+function exitHandler(type: string) {
+	return async (): Promise<void> => {
+		console.log(`[${Date.now()}] Exiting gracefully (${type})...`);
+		await ourAirportsDataManager.close();
+		console.log("Done. Exiting.");
+		process.exit(0);
+	};
 }
