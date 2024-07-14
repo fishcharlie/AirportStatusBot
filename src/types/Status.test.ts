@@ -202,3 +202,63 @@ describe("Status.fromRAW().toEndedPost()", () => {
 		});
 	});
 });
+
+describe("Status.updatedPost()", () => {
+	const tests = [
+		[
+			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "thunderstorms",
+						"End_Time": "10:15 pm EDT"
+					}
+				}
+			},
+			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "thunderstorms",
+						"End_Time": "11:15 pm EDT"
+					}
+				}
+			},
+			"The ground stop at Test Airport A (#AAA) has been extended by 1 hour to 9:15 PM."
+		],
+		[
+			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "thunderstorms",
+						"End_Time": "10:15 pm EDT"
+					}
+				}
+			},
+			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "thunderstorms",
+						"End_Time": "11:30 pm EDT"
+					}
+				}
+			},
+			"The ground stop at Test Airport A (#AAA) has been extended by 1 hour and 15 minutes to 9:30 PM."
+		]
+	];
+
+	tests.forEach(([oldJSON, newJSON, expected]) => {
+		test(`Status.updatedPost() === ${expected}`, async () => {
+			const oldObj: any = Status.fromRaw(oldJSON as any, new OurAirportsDataManager("Test"));
+			const newObj: any = Status.fromRaw(newJSON as any, new OurAirportsDataManager("Test"));
+
+			expect(await Status.updatedPost(oldObj, newObj)).toStrictEqual(expected);
+		});
+	});
+});

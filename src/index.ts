@@ -130,15 +130,25 @@ async function run (firstRun: boolean) {
 
 			const newDelayText: string | undefined = await delay.toPost();
 			const previousText: string | undefined = await previousDelay.toPost();
+			const updateText: string | undefined = await Status.updatedPost(previousDelay, delay);
 
 			if (!newDelayText || !newDelayText) {
 				return undefined;
 			}
 
-			return {
+			let returnObject: objectUtils.GeneralObject<string | undefined> = {
 				"previous": previousText,
 				"new": newDelayText
 			};
+
+			if (updateText) {
+				returnObject = {
+					...returnObject,
+					"update": updateText
+				};
+			}
+
+			return returnObject;
 		}))).filter(Boolean));
 		console.timeEnd("Run Parse");
 

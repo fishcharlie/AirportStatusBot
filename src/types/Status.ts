@@ -144,6 +144,11 @@ export class Status {
 		}
 	}
 
+	async airportString(): Promise<string> {
+		const airport = await this.airport();
+		return airport ? `${airport.name} (#${this.airportCode})` : this.airportCode;
+	}
+
 	/**
 	 * When a given status is no longer active, this method will return a string to post to social media.
 	 */
@@ -161,18 +166,16 @@ export class Status {
 			return undefined;
 		}
 
-		const airportString = airport ? `${airport.name} (#${this.airportCode})` : this.airportCode;
-
 		let sentences: string[] = [];
 
 		if (this.type.type === TypeEnum.GROUND_STOP) {
-			sentences.push(`Inbound operations to ${airportString} have resumed`);
+			sentences.push(`Inbound operations to ${await this.airportString()} have resumed`);
 		} else if (this.type.type === TypeEnum.GROUND_DELAY) {
-			sentences.push(`Inbound aircraft to ${airportString} are no longer being delayed`);
+			sentences.push(`Inbound aircraft to ${await this.airportString()} are no longer being delayed`);
 		} else if (this.type.type === TypeEnum.CLOSURE) {
-			sentences.push(`${airportString} has reopened`);
+			sentences.push(`${await this.airportString()} has reopened`);
 		} else if (this.type.type === TypeEnum.DELAY) {
-			sentences.push(`The ${typeString} for ${airportString} is no longer in effect`);
+			sentences.push(`The ${typeString} for ${await this.airportString()} is no longer in effect`);
 		}
 
 		if (sentences.length === 0) {
@@ -197,18 +200,16 @@ export class Status {
 			return undefined;
 		}
 
-		const airportString = airport ? `${airport.name} (#${this.airportCode})` : this.airportCode;
-
 		let tz = airport.tz();
 
 		let sentences: string[] = [];
 
 		if (this.type.type === TypeEnum.GROUND_STOP) {
-			sentences.push(`Inbound aircraft to ${airportString} are currently being held at their origin airport${reasonString ? ` due to ${reasonString}` : ""}`);
+			sentences.push(`Inbound aircraft to ${await this.airportString()} are currently being held at their origin airport${reasonString ? ` due to ${reasonString}` : ""}`);
 		} else if (this.type.type === TypeEnum.GROUND_DELAY) {
-			sentences.push(`Inbound aircraft to ${airportString} are currently being delayed at their origin airport${reasonString ? ` due to ${reasonString}` : ""}`);
+			sentences.push(`Inbound aircraft to ${await this.airportString()} are currently being delayed at their origin airport${reasonString ? ` due to ${reasonString}` : ""}`);
 		} else {
-			sentences.push(`A${startsWithVowel(typeString) ? "n" : ""} ${typeString} has been issued for ${airportString}${reasonString ? ` due to ${reasonString}` : ""}`);
+			sentences.push(`A${startsWithVowel(typeString) ? "n" : ""} ${typeString} has been issued for ${await this.airportString()}${reasonString ? ` due to ${reasonString}` : ""}`);
 		}
 
 		if (this.type.type === TypeEnum.DELAY) {
@@ -262,6 +263,35 @@ export class Status {
 			}
 		}
 		return sentences.join(". ") + ".";
+	}
+
+	/**
+	 * This function is used when a status has been updated to generate a message for a new post.
+	 */
+	static async updatedPost(from: Status, to: Status): Promise<string | undefined> {
+		if (from.comparisonHash !== to.comparisonHash) {
+			return undefined;
+		}
+		if (from.type.type !== to.type.type || from.type.direction !== to.type.direction) {
+			return undefined;
+		}
+
+		const airport: Airport | undefined = await to.airport();
+		if (!airport) {
+			return undefined;
+		}
+
+		let tz = airport.tz();
+
+		if (from.timing.end !== undefined && to.timing.end !== undefined) {
+			if (from.timing.end.toISOString() !== to.timing.end.toISOString()) {
+				const extendedByDuration = luxon.DateTime.fromJSDate(to.timing.end).diff(luxon.DateTime.fromJSDate(from.timing.end), "minutes").minutes;
+				const luxonDate = luxon.DateTime.fromJSDate(to.timing.end).setZone(tz ?? "UTC");
+				return `The ${from.type.toString()} at ${await to.airportString()} has been extended by ${minutesToDurationString(extendedByDuration)} to ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}.`;
+			}
+		}
+
+		return undefined;
 	}
 }
 
