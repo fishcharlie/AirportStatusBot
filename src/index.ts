@@ -250,6 +250,15 @@ let runCounter = 0;
 (async () => {
 	let firstRun = true;
 	while (true) {
+		if (firstRun) {
+			console.log("First run.");
+			const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
+			if (mastodonAccount) {
+				poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
+					"message": "The @AirportStatusBot@mastodon.social has started."
+				});
+			}
+		}
 		// If it's the first run or every 15 runs, update the profiles
 		if (firstRun || runCounter % 15 === 0) {
 			try {

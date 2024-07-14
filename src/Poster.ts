@@ -297,6 +297,77 @@ export class Poster {
 		return returnObject;
 	}
 
+	async directMessage(socialNetworkUUID: string, userToMessage: string, replyTo: GeneralObject<any> | undefined, content: PostContent): Promise<{ [key: string]: any }> {
+		let returnObject: { [key: string]: any } = {};
+
+		const socialNetwork = this.#config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === socialNetworkUUID);
+
+		if (!socialNetwork) {
+			throw `Unknown social network UUID: ${socialNetworkUUID}`;
+		}
+
+		const socialMessage = this.formatMessage(content.message, socialNetwork);
+
+		try {
+			switch (socialNetwork.type) {
+				case SocialNetworkType.mastodon:
+					const masto = Masto({
+						"url": `${socialNetwork.credentials.endpoint}`,
+						"accessToken": socialNetwork.credentials.password
+					});
+					const mastodonResult = await masto.v1.statuses.create({
+						"status": `${userToMessage} ${socialMessage}`,
+						"inReplyToId": replyTo?.id,
+						"visibility": "direct"
+					});
+					returnObject = mastodonResult;
+					break;
+				case SocialNetworkType.bluesky:
+					break;
+				case SocialNetworkType.s3:
+					break;
+				case SocialNetworkType.nostr:
+					// const pool = new nostrtools.SimplePool();
+					// const publicKey = nostrtools.nip19.decode(socialNetwork.credentials.publicKey);
+					// if (publicKey.type !== "npub") {
+					// 	console.error(`Invalid public key type: ${publicKey.type}`);
+					// 	break;
+					// }
+					// const existingPostTags = replyTo?.event.tags.filter((tag: string[]) => tag[0] === "e") ?? [];
+					// let tags: string[][] = [
+					// 	...existingPostTags,
+					// 	["p", userToMessage]
+					// ];
+					// if (replyTo) {
+					// 	tags.push(["e", replyTo.event.id, existingPostTags.length === 0 ? "root" : "reply"]);
+					// }
+					// const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
+					// if (includeHashtags) {
+					// 	tags = [...tags, ...parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()])];
+					// }
+					// let event: GeneralObject<any> = {
+					// 	"kind": 14,
+					// 	"created_at": Math.floor(Date.now() / 1000),
+					// 	"tags": tags,
+					// 	"content": socialMessage,
+					// 	"pubkey": publicKey.data
+					// };
+					// event.id = nostrtools.getEventHash(event as nostrtools.UnsignedEvent);
+					// try {
+					// 	await Promise.all(pool.publish(socialNetwork.credentials.relays, event as any));
+					// } catch (e) {}
+					// returnObject[socialNetwork.uuid] = {
+					// 	event
+					// };
+					break;
+			}
+		} catch (e) {
+			console.error(e);
+		}
+
+		return returnObject;
+	}
+
 	async updateProfile(): Promise<void> {
 		await Promise.all(this.#config.socialNetworks.map(async (socialNetwork) => {
 			switch (socialNetwork.type) {
