@@ -281,7 +281,7 @@ new Listener(config, (post) => {
 			"message": "Hello!"
 		});
 	}
-});
+}).listen();
 
 // On SIGINT, SIGTERM, etc. exit gracefully
 process.on("SIGINT", exitHandler("SIGINT"));
