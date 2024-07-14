@@ -306,7 +306,9 @@ export class Poster {
 			throw `Unknown social network UUID: ${socialNetworkUUID}`;
 		}
 
-		const socialMessage = this.formatMessage(content.message, socialNetwork);
+		const socialMessage = this.formatMessage(content.message, socialNetwork, {
+			"includeAirportStatusBotHashtagSignature": false
+		});
 
 		try {
 			switch (socialNetwork.type) {
@@ -424,12 +426,16 @@ export class Poster {
 		}));
 	}
 
-	formatMessage(message: string, config: SocialNetwork): string {
+	formatMessage(message: string, config: SocialNetwork, formatSettings: {
+		"includeAirportStatusBotHashtagSignature"?: boolean;
+	} = {}): string {
 		let returnMessage = `${message}`;
 		const includeHashtags: boolean = config.settings?.includeHashtags ?? defaultIncludeHashtags(config.type);
 
 		if (includeHashtags) {
-			returnMessage += " #AirportStatusBot";
+			if (formatSettings.includeAirportStatusBotHashtagSignature === true || formatSettings.includeAirportStatusBotHashtagSignature === undefined) {
+				returnMessage += " #AirportStatusBot";
+			}
 			returnMessage = returnMessage.split(" ").map((word) => {
 				if (hashtagWords.includes(word.replaceAll(".", "").toLowerCase())) {
 					return `#${word}`;
