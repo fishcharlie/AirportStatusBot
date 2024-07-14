@@ -35,6 +35,9 @@ export class Reason {
 		if (customReasonMaps[raw.toLowerCase()]) {
 			raw = customReasonMaps[raw.toLowerCase()];
 		}
+		if (customReasonMaps[raw]) {
+			raw = customReasonMaps[raw];
+		}
 
 		this.#raw = raw;
 	}
