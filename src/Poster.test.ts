@@ -46,7 +46,8 @@ describe("formatMessage", () => {
 			"credentials": {
 				"endpoint": "https://example.com",
 				"password": "password",
-			}
+			},
+			"listen": false
 		})).toStrictEqual(expected);
 	});
 });

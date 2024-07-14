@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { XMLParser } from "fast-xml-parser";
 import { Status, TypeEnum } from "./types/Status";
-import { Poster } from "./Poster";
+import { Listener, Poster } from "./Poster";
 import { Config, ContentTypeEnum } from "./types/Config";
 import * as objectUtils from "js-object-utilities";
 import * as rimraf from "rimraf";
@@ -252,12 +252,12 @@ let runCounter = 0;
 	while (true) {
 		if (firstRun) {
 			console.log("First run.");
-			const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
-			if (mastodonAccount) {
-				poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
-					"message": "The @AirportStatusBot@mastodon.social has started."
-				});
-			}
+			// const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
+			// if (mastodonAccount) {
+			// 	poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
+			// 		"message": "The @AirportStatusBot@mastodon.social has started."
+			// 	});
+			// }
 		}
 		// If it's the first run or every 15 runs, update the profiles
 		if (firstRun || runCounter % 15 === 0) {
@@ -271,6 +271,17 @@ let runCounter = 0;
 		runCounter += 1;
 	}
 })();
+
+new Listener(config, (post) => {
+	if (post.user === "@fishcharlie@mstdn-social.com") {
+		if (!post.metadata?.socialNetworkUUID) {
+			return;
+		}
+		poster.directMessage(post.metadata.socialNetworkUUID, post.user, post, {
+			"message": "Hello!"
+		});
+	}
+});
 
 // On SIGINT, SIGTERM, etc. exit gracefully
 process.on("SIGINT", exitHandler("SIGINT"));

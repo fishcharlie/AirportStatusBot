@@ -5,7 +5,8 @@ import { BskyAgent, RichText, AppBskyFeedPost, BlobRef } from "@atproto/api";
 import { GeneralObject } from "js-object-utilities";
 import * as nostrtools from "nostr-tools";
 import { parseHashtags } from "./utils/parseHashtags";
-import { createRestAPIClient as Masto } from "masto";
+import { createRestAPIClient as Masto, createStreamingAPIClient as MastoStream } from "masto";
+import * as htmlToText from "html-to-text";
 
 const hashtagWords = [
 	"weather",
@@ -16,6 +17,17 @@ const hashtagWords = [
 interface PostContent {
 	message: string;
 	image?: Buffer;
+}
+
+interface Post {
+	id: string;
+	content: PostContent;
+	/**
+	 * Ex. `@fishcharlie@mstdn-social.com` for mastodon
+	 */
+	user: string;
+	visibility: "public" | "direct";
+	metadata?: GeneralObject<string>;
 }
 
 export class Poster {
@@ -449,4 +461,70 @@ export class Poster {
 
 		return returnMessage;
 	}
+}
+
+export class Listener {
+	#config: Config;
+	#callback: (message: Post) => void;
+
+	constructor(config: Config, callback: (message: Post) => void) {
+		this.#config = config;
+		this.#callback = callback;
+	}
+
+	async listen(): Promise<void> {
+		await Promise.all(this.#config.socialNetworks.map(async (socialNetwork) => {
+			if (socialNetwork.listen === false) {
+				return;
+			}
+
+			switch (socialNetwork.type) {
+				case SocialNetworkType.mastodon:
+					const masto = MastoStream({
+						"accessToken": socialNetwork.credentials.password,
+						"streamingApiUrl": `${(socialNetwork.credentials.streamingEndpoint ?? socialNetwork.credentials.endpoint).replace("https://", "wss://")}/api/v1/streaming`
+					});
+					convertAsyncIterableToCallback(masto.direct.subscribe().values(), (err, item) => {
+						if (item) {
+							if (item.event === "conversation" && item.stream.join(" ") === "direct" && item.payload.lastStatus !== null && item.payload.lastStatus !== undefined && item.payload.lastStatus?.visibility === "direct") {
+								this.#callback({
+									"id": item.payload.lastStatus?.id,
+									"user": `@${item.payload.lastStatus?.account?.acct}`,
+									"visibility": "direct",
+									"content": {
+										"message": htmlToText.convert(item.payload.lastStatus?.content)
+									},
+									"metadata": {
+										"socialNetworkUUID": socialNetwork.uuid
+									}
+								})
+							}
+						}
+					});
+				case SocialNetworkType.s3:
+					break;
+				case SocialNetworkType.bluesky:
+					break;
+				case SocialNetworkType.nostr:
+					break;
+			}
+		}));
+	}
+}
+
+type Callback<T> = (err: Error | null, item: T | null) => void;
+function convertAsyncIterableToCallback<T>(
+	asyncIterable: AsyncIterable<T>,
+	callback: Callback<T>
+): void {
+	(async () => {
+		try {
+			for await (const item of asyncIterable) {
+				callback(null, item);
+			}
+			callback(null, null); // Signal end of iteration
+		} catch (err) {
+			callback(err instanceof Error ? err : new Error(String(err)), null);
+		}
+	})();
 }

@@ -16,12 +16,14 @@ interface MastodonSocialNetwork {
 	type: SocialNetworkType.mastodon;
 	credentials: {
 		endpoint: string;
+		streamingEndpoint?: string;
 		password: string;
 	};
 	settings?: {
 		includeHashtags?: boolean;
 	};
 	contentType: ContentTypeEnum;
+	listen: boolean;
 }
 interface BlueskySocialNetwork {
 	uuid: `${string}-${string}-${string}-${string}-${string}`
@@ -36,6 +38,7 @@ interface BlueskySocialNetwork {
 		includeHashtags?: boolean;
 	};
 	contentType: ContentTypeEnum;
+	listen: boolean;
 }
 interface S3SocialNetwork {
 	uuid: `${string}-${string}-${string}-${string}-${string}`
@@ -52,6 +55,7 @@ interface S3SocialNetwork {
 		includeHashtags?: boolean;
 	}
 	contentType: ContentTypeEnum;
+	listen: boolean;
 }
 interface NostrSocialNetwork {
 	uuid: `${string}-${string}-${string}-${string}-${string}`
@@ -67,6 +71,7 @@ interface NostrSocialNetwork {
 		includeHashtags?: boolean;
 	};
 	contentType: ContentTypeEnum;
+	listen: boolean;
 }
 export type SocialNetwork = MastodonSocialNetwork | S3SocialNetwork | BlueskySocialNetwork | NostrSocialNetwork;
 
