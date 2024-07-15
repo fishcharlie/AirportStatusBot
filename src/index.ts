@@ -353,6 +353,11 @@ const replyOptions: ReplyOption[] = [
 	}
 ];
 new Listener(config, async (post) => {
+	if (post.user !== "@fishcharlie@mstdn-social.com") {
+		console.log(`Ignoring post from ${post.user}: ${post.content.message}`);
+		return;
+	}
+
 	if (!post.metadata?.socialNetworkUUID) {
 		console.log("No socialNetworkUUID in post metadata.");
 		return;

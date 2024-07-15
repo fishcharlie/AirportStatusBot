@@ -1,5 +1,9 @@
 # Direct Messages (Alpha)
 
+**Sadly this feature had to be removed temporarily due to Mastodon rate limiting. It will be re-added once a solution is found.**
+
+---
+
 AirportStatusBot supports direct message conversations. This allows you to get information from the bot without having to read every post.
 
 ## Commands

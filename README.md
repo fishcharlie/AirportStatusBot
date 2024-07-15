@@ -17,13 +17,16 @@ Sadly, not all features are available on all platforms. Below is a chart of what
 | Basic posts | ✅ | ✅ | ✅ |
 | Replies | ✅ | ✅ | ✅ |
 | Map Images | ✅ | ✅[1] | ❌ |
-| [Direct Messages](docs/Direct_Messages.md) | ✅ | ❌ | ❌ |
+| [Direct Messages](docs/Direct_Messages.md) | ❌[2] | ❌ | ❌ |
 
 ✅ - Supported
+
+❓ - Partially Supported
 
 ❌ - Not Supported
 
 [1] There are some bugs due to Bluesky's image size limitations. Please see [this issue](https://github.com/fishcharlie/AirportStatusBot/issues/15) for more details.
+[2] This feature is temporarily disabled due to Mastodon rate limiting. It will be re-enabled once a solution is found.
 
 ## Other Information
 
