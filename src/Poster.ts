@@ -498,7 +498,13 @@ export class Listener {
 										"socialNetworkUUID": socialNetwork.uuid
 									}
 								})
+							} else {
+								console.log(`Invalid item. Event: ${item.event}. Stream: ${item.stream.join(" ")}. Payload: ${item.payload}.`)
 							}
+						} else if (err) {
+							console.log("Received error for Mastodon listener", err);
+						} else {
+							console.log("No item or error in Mastodon listener.")
 						}
 					});
 				case SocialNetworkType.s3:

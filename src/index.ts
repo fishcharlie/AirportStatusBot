@@ -354,6 +354,7 @@ const replyOptions: ReplyOption[] = [
 ];
 new Listener(config, async (post) => {
 	if (!post.metadata?.socialNetworkUUID) {
+		console.log("No socialNetworkUUID in post metadata.");
 		return;
 	}
 	const replyOption = replyOptions.find((replyOption) => {
@@ -366,6 +367,7 @@ new Listener(config, async (post) => {
 		}
 	});
 	if (!replyOption) {
+		console.log(`No reply option found for: "${post.content.message}"`);
 		return;
 	}
 	const reply: string = await (async (): Promise<string> => {
@@ -382,6 +384,7 @@ new Listener(config, async (post) => {
 		return "";
 	})();
 	if (reply.length === 0) {
+		console.log(`Empty reply for: "${post.content.message}"`);
 		return;
 	}
 	poster.directMessage(post.metadata.socialNetworkUUID, post.user, post, {
