@@ -46,6 +46,8 @@ const ourAirportsDataManager = new OurAirportsDataManager(USER_AGENT);
 
 const poster = new Poster(config);
 
+let currentDelays: Status[] | null = null;
+
 async function run (firstRun: boolean) {
 	console.log(`Start run: ${Date.now()}`);
 
@@ -87,6 +89,7 @@ async function run (firstRun: boolean) {
 			delaysRaw = [delaysRaw];
 		}
 		const delays: Status[] = delaysRaw.flatMap((delay) => Status.fromRaw(delay, ourAirportsDataManager)).filter((delay) => delay !== undefined) as Status[];
+		currentDelays = delays;
 
 		let previousDelaysRaw: { [key: string]: any }[] = previous?.AIRPORT_STATUS_INFORMATION.Delay_type ?? [];
 		if (typeof previousDelaysRaw === "object" && !Array.isArray(previousDelaysRaw)) {
@@ -272,15 +275,118 @@ let runCounter = 0;
 	}
 })();
 
-new Listener(config, (post) => {
-	if (post.user === "@fishcharlie@mstdn-social.com") {
-		if (!post.metadata?.socialNetworkUUID) {
-			return;
+
+interface ReplyOption {
+	inputs: string[];
+	reply: string | {
+		"type": "random"
+		"messages": string[]
+	} | (() => Promise<string>) | (() => string);
+}
+const replyOptions: ReplyOption[] = [
+	{
+		"inputs": ["list", "delays"],
+		"reply": async (): Promise<string> => {
+			let runs = 0;
+			while (currentDelays === null && runs < 30) {
+				runs += 1;
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+			}
+
+			if (currentDelays === null) {
+				console.error("Still can't get current delays...");
+				return "I'm sorry, there is a temporary glitch retrieving the current list of delays. Please try again later.";
+			}
+
+			return (await Promise.all(currentDelays.map(async (delay) => {
+				return delay.toPost();
+			}))).join("\n");
 		}
-		poster.directMessage(post.metadata.socialNetworkUUID, post.user, post, {
-			"message": "Hello!"
-		});
+	},
+	{
+		"inputs": ["is my flight delayed?", "is my flight on time?", "is my flight on schedule?", "will my flight be on time?", "will my flight be delayed?"],
+		"reply": "Sadly, I can't check on individual flights. While the information I provide can give you a general sense of delays you might expect, it's always best to check with your airline for flight specific information."
+	},
+	{
+		"inputs": ["where do you get your data?", "data source"],
+		"reply": "I get the majority of my data from the FAA's Airport Status API. Some airport name & location information comes from OurAirports. And finally, some of the map imagery comes from OpenStreetMap & Iowa Environmental Mesonet of Iowa State University."
+	},
+	{
+		"inputs": ["help", "commands", "what can i ask you?", "what can you do?"],
+		"reply": "You can ask me many things! Here are some examples:\n`List all delays` - This will list all current delays at airports in the United States.\n`Where do you get your data?` - This will tell you where the bot gets its data from.\n`Who created you?` - This will tell you who created the bot.\n\nThere are a few other things not listed here to increase the conversational nature of this bot. Along with a few hidden easter eggs.\nAdditionally, the bot is intended to be able to respond to a wide variety of the commands listed above. If you find a variation of a command that doesn't work, please let @fishcharlie@mstdn-social.com know."
+	},
+	{
+		"inputs": ["contact", "human", "representative", "talk to a person", "support"],
+		"reply": "Please reach out to @fishcharlie@mstdn-social.com. Since I'm a bot, I can't provide help directly, but he can help you with any questions, feedback, or suggestions you have."
+	},
+	{
+		"inputs": ["who made you?", "who created you?", "who built you?", "who is your creator?", "who is your developer?"],
+		"reply": "I was created by @fishcharlie@mstdn-social.com."
+	},
+	{
+		"inputs": ["tell me a joke", "tell a joke"],
+		"reply": {
+			"type": "random",
+			// Ok yes... I did use ChatGPT to come up with these... I'm not a comedian...
+			"messages": [
+				"Why did the airplane join the band?\n\nIt had the perfect pitch.",
+				"How do pilots like their coffee?\n\nPlane.",
+				"Why did the airplane break up with the airport?\n\nBecause it found another terminal.",
+				"How does the ocean say hello to the airplane?\n\nIt waves. 🌊"
+			]
+		}
+	},
+	{
+		"inputs": ["hello", "hi", "hey", "yo", "sup", "👋"],
+		"reply": {
+			"type": "random",
+			"messages": ["Hello", "Hi", "Hey", "👋"]
+		}
+	},
+	{
+		"inputs": ["shall we play a game?"],
+		"reply": `Love to. How about Global Thermonuclear War?\n\n(from the 1983 movie <a href="https://en.wikipedia.org/wiki/WarGames">WarGames</a>)`
+	},
+	{
+		"inputs": [],
+		"reply": "I'm sorry, I don't understand. If you think this is something I should know, please reach out to @fishcharlie@mstdn-social.com to submit a feature request."
 	}
+];
+new Listener(config, async (post) => {
+	if (!post.metadata?.socialNetworkUUID) {
+		return;
+	}
+	const replyOption = replyOptions.find((replyOption) => {
+		if (replyOption.inputs.length === 0) {
+			return true;
+		} else {
+			return replyOption.inputs.some((input) => {
+				return post.content.message.toLowerCase().includes(input);
+			});
+		}
+	});
+	if (!replyOption) {
+		return;
+	}
+	const reply: string = await (async (): Promise<string> => {
+		if (typeof replyOption.reply === "string") {
+			return replyOption.reply;
+		} else if (typeof replyOption.reply === "function") {
+			return replyOption.reply();
+		} else if (typeof replyOption.reply === "object") {
+			if (replyOption.reply.type === "random") {
+				return replyOption.reply.messages[Math.floor(Math.random() * replyOption.reply.messages.length)];
+			}
+		}
+
+		return "";
+	})();
+	if (reply.length === 0) {
+		return;
+	}
+	poster.directMessage(post.metadata.socialNetworkUUID, post.user, post, {
+		"message": reply
+	});
 }).listen();
 
 // On SIGINT, SIGTERM, etc. exit gracefully
