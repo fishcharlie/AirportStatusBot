@@ -298,7 +298,7 @@ const replyOptions: ReplyOption[] = [
 				return "I'm sorry, there is a temporary glitch retrieving the current list of delays. Please try again later.";
 			}
 
-			return (await Promise.all(currentDelays.map(async (delay) => {
+			return (await Promise.all(currentDelays.filter((delay) => delay.type.type !== TypeEnum.CLOSURE).map(async (delay) => {
 				return delay.toPost();
 			}))).join("\n");
 		}
