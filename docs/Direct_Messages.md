@@ -1,4 +1,4 @@
-# Direct Messages
+# Direct Messages (Alpha)
 
 AirportStatusBot supports direct message conversations. This allows you to get information from the bot without having to read every post.
 
@@ -15,3 +15,4 @@ There are a few other commands that are available, but aren't listed here. This 
 - The bot will only respond to direct messages. It will **not** reply to public mentions.
 - The bot will try to respond to many variations of the commands listed above. If you try a variation and it doesn't work, **please** submit an issue on [GitHub](https://github.com/fishcharlie/AirportStatusBot/issues/new). I'm really interested in making this experience as intuitive and easy as possible.
 - If you have suggestions for other commands that should be added, please submit an issue on [GitHub](https://github.com/fishcharlie/AirportStatusBot/issues/new).
+- This feature is in alpha. This means that it is still being developed and may not work as expected. If you encounter any issues, please submit an issue on [GitHub](https://github.com/fishcharlie/AirportStatusBot/issues/new).
