@@ -20,6 +20,7 @@ Sadly, not all features are available on all platforms. Below is a chart of what
 | [Direct Messages](docs/Direct_Messages.md) | ✅ | ❌ | ❌ |
 
 ✅ - Supported
+
 ❌ - Not Supported
 
 [1] There are some bugs due to Bluesky's image size limitations. Please see [this issue](https://github.com/fishcharlie/AirportStatusBot/issues/15) for more details.
