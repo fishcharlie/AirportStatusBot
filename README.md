@@ -8,6 +8,22 @@ You can find it on the following social networks:
 - Bluesky - [@AirportStatusBot@bsky.social](https://bsky.app/profile/airportstatusbot.bsky.social)
 - nostr - [npub1nzrhjlgxxuh602nej5pj3cr4gfm7uaywlg3zygzvwyavq0c6t2qs5c36v5](https://iris.to/npub1nzrhjlgxxuh602nej5pj3cr4gfm7uaywlg3zygzvwyavq0c6t2qs5c36v5)
 
+## Features
+
+Sadly, not all features are available on all platforms. Below is a chart of what is available where:
+
+| Feature | Mastodon | Bluesky | nostr |
+|---------|----------|---------|-------|
+| Basic posts | ✅ | ✅ | ✅ |
+| Replies | ✅ | ✅ | ✅ |
+| Map Images | ✅ | ✅[1] | ❌ |
+| [Direct Messages](docs/Direct_Messages.md) | ✅ | ❌ | ❌ |
+
+✅ - Supported
+❌ - Not Supported
+
+[1] There are some bugs due to Bluesky's image size limitations. Please see [this issue](https://github.com/fishcharlie/AirportStatusBot/issues/15) for more details.
+
 ## Other Information
 
 - All times posted by this bot are in local time for the airport (unless otherwise noted).
