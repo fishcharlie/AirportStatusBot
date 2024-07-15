@@ -387,6 +387,11 @@ new Listener(config, async (post) => {
 		console.log(`Empty reply for: "${post.content.message}"`);
 		return;
 	}
+	if (reply.length > 500) {
+		console.log(`Reply too long: ${reply}`);
+		return;
+	}
+	console.log(`Replying to: "${post.content.message}" with: "${reply}"`);
 	poster.directMessage(post.metadata.socialNetworkUUID, post.user, post, {
 		"message": reply
 	});

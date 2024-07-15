@@ -329,12 +329,17 @@ export class Poster {
 						"url": `${socialNetwork.credentials.endpoint}`,
 						"accessToken": socialNetwork.credentials.password
 					});
-					const mastodonResult = await masto.v1.statuses.create({
-						"status": `${userToMessage} ${socialMessage}`,
-						"inReplyToId": replyTo?.id,
-						"visibility": "direct"
-					});
-					returnObject = mastodonResult;
+					try {
+						const mastodonResult = await masto.v1.statuses.create({
+							"status": `${userToMessage} ${socialMessage}`,
+							"inReplyToId": replyTo?.id,
+							"visibility": "direct"
+						});
+						returnObject = mastodonResult;
+					} catch (e) {
+						console.log("Error posting DM: ", JSON.stringify(e));
+						throw e;
+					}
 					break;
 				case SocialNetworkType.bluesky:
 					break;
@@ -487,7 +492,7 @@ export class Listener {
 					convertAsyncIterableToCallback(masto.direct.subscribe().values(), (err, item) => {
 						if (item) {
 							if (item.event === "conversation" && item.stream.join(" ") === "direct" && item.payload.lastStatus !== null && item.payload.lastStatus !== undefined && item.payload.lastStatus?.visibility === "direct") {
-								this.#callback({
+								const callbackObject: Post = {
 									"id": item.payload.lastStatus?.id,
 									"user": `@${item.payload.lastStatus?.account?.acct}`,
 									"visibility": "direct",
@@ -497,7 +502,9 @@ export class Listener {
 									"metadata": {
 										"socialNetworkUUID": socialNetwork.uuid
 									}
-								})
+								};
+								console.log(`Received direct message on Mastodon from ${callbackObject.user}: ${callbackObject.content.message}`);
+								this.#callback(callbackObject);
 							} else {
 								console.log(`Invalid item. Event: ${item.event}. Stream: ${item.stream.join(" ")}. Payload: ${item.payload}.`)
 							}
