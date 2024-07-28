@@ -346,38 +346,60 @@ export class Poster {
 				case SocialNetworkType.s3:
 					break;
 				case SocialNetworkType.nostr:
-					// const pool = new nostrtools.SimplePool();
-					// const publicKey = nostrtools.nip19.decode(socialNetwork.credentials.publicKey);
-					// if (publicKey.type !== "npub") {
-					// 	console.error(`Invalid public key type: ${publicKey.type}`);
-					// 	break;
-					// }
-					// const existingPostTags = replyTo?.event.tags.filter((tag: string[]) => tag[0] === "e") ?? [];
-					// let tags: string[][] = [
-					// 	...existingPostTags,
-					// 	["p", userToMessage]
-					// ];
-					// if (replyTo) {
-					// 	tags.push(["e", replyTo.event.id, existingPostTags.length === 0 ? "root" : "reply"]);
-					// }
-					// const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
-					// if (includeHashtags) {
-					// 	tags = [...tags, ...parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()])];
-					// }
-					// let event: GeneralObject<any> = {
-					// 	"kind": 14,
-					// 	"created_at": Math.floor(Date.now() / 1000),
-					// 	"tags": tags,
-					// 	"content": socialMessage,
-					// 	"pubkey": publicKey.data
-					// };
-					// event.id = nostrtools.getEventHash(event as nostrtools.UnsignedEvent);
-					// try {
-					// 	await Promise.all(pool.publish(socialNetwork.credentials.relays, event as any));
-					// } catch (e) {}
-					// returnObject[socialNetwork.uuid] = {
-					// 	event
-					// };
+					const pool = new nostrtools.SimplePool();
+					const publicKey = nostrtools.nip19.decode(socialNetwork.credentials.publicKey);
+					if (publicKey.type !== "npub") {
+						console.error(`Invalid public key type: ${publicKey.type}`);
+						break;
+					}
+					const privateKey = nostrtools.nip19.decode(socialNetwork.credentials.privateKey);
+					if (privateKey.type !== "nsec") {
+						console.error(`Invalid private key type: ${privateKey.type}`);
+						break;
+					}
+					const existingPostTags = replyTo?.event.tags.filter((tag: string[]) => tag[0] === "e") ?? [];
+					let tags: string[][] = [
+						...existingPostTags,
+						["p", userToMessage]
+					];
+					if (replyTo) {
+						tags.push(["e", replyTo.event.id, existingPostTags.length === 0 ? "root" : "reply"]);
+					}
+					const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
+					if (includeHashtags) {
+						tags = [...tags, ...parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()])];
+					}
+					let event: GeneralObject<any> = {
+						"kind": 14,
+						"created_at": Math.floor(Date.now() / 1000),
+						"tags": tags,
+						"content": socialMessage,
+						"pubkey": publicKey.data
+					};
+					event.id = nostrtools.getEventHash(event as nostrtools.UnsignedEvent);
+
+					const seal = nostrtools.finalizeEvent({
+						"created_at": Math.floor(randomTimeUpTo2DaysInThePast() / 1000),
+						"kind": 13,
+						"tags": [],
+						"content": nostrtools.nip44.v2.encrypt(JSON.stringify(event), nostrtools.nip44.v2.utils.getConversationKey(socialNetwork.credentials.privateKey, userToMessage))
+					}, privateKey.data);
+					const randomKey = nostrtools.generateSecretKey();
+					const randomKeyString = nostrtools.nip19.nsecEncode(randomKey);
+					const giftWrap = nostrtools.finalizeEvent({
+						"created_at": Math.floor(randomTimeUpTo2DaysInThePast() / 1000),
+						"kind": 1059,
+						"tags": [
+							["p", userToMessage]
+						],
+						"content": nostrtools.nip44.v2.encrypt(JSON.stringify(seal), nostrtools.nip44.v2.utils.getConversationKey(randomKeyString, userToMessage))
+					}, randomKey);
+					try {
+						await Promise.all(pool.publish(socialNetwork.credentials.relays, giftWrap));
+					} catch (e) {}
+					returnObject[socialNetwork.uuid] = {
+						giftWrap
+					};
 					break;
 			}
 		} catch (e) {
@@ -540,4 +562,13 @@ function convertAsyncIterableToCallback<T>(
 			callback(err instanceof Error ? err : new Error(String(err)), null);
 		}
 	})();
+}
+
+/**
+ * Generate a random time up to 2 days in the past.
+ * @returns A random time up to 2 days in the past returned in milliseconds.
+ */
+function randomTimeUpTo2DaysInThePast(): number {
+	const twoDaysInMillis = 172800000; // 2 days * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
+	return Date.now() - Math.floor(Math.random() * twoDaysInMillis);
 }
