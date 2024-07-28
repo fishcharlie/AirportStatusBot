@@ -261,6 +261,13 @@ let runCounter = 0;
 			// 		"message": "The @AirportStatusBot@mastodon.social has started."
 			// 	});
 			// }
+
+			const nostrAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "nostr");
+			if (nostrAccount) {
+				poster.directMessage(nostrAccount.uuid, "d77637850017cffa7a61c7032db0f28be947d5487f9d504aabe4449a91b53cff", undefined, {
+					"message": "The AirportStatusBot has started."
+				});
+			}
 		}
 		// If it's the first run or every 15 runs, update the profiles
 		if (firstRun || runCounter % 15 === 0) {
