@@ -382,17 +382,16 @@ export class Poster {
 						"created_at": Math.floor(randomTimeUpTo2DaysInThePast() / 1000),
 						"kind": 13,
 						"tags": [],
-						"content": nostrtools.nip44.v2.encrypt(JSON.stringify(event), nostrtools.nip44.v2.utils.getConversationKey(socialNetwork.credentials.privateKey, userToMessage))
+						"content": nostrtools.nip44.v2.encrypt(JSON.stringify(event), nostrtools.nip44.v2.utils.getConversationKey(privateKey.data as any, userToMessage))
 					}, privateKey.data);
 					const randomKey = nostrtools.generateSecretKey();
-					const randomKeyString = nostrtools.nip19.nsecEncode(randomKey);
 					const giftWrap = nostrtools.finalizeEvent({
 						"created_at": Math.floor(randomTimeUpTo2DaysInThePast() / 1000),
 						"kind": 1059,
 						"tags": [
 							["p", userToMessage]
 						],
-						"content": nostrtools.nip44.v2.encrypt(JSON.stringify(seal), nostrtools.nip44.v2.utils.getConversationKey(randomKeyString, userToMessage))
+						"content": nostrtools.nip44.v2.encrypt(JSON.stringify(seal), nostrtools.nip44.v2.utils.getConversationKey(randomKey as any, userToMessage))
 					}, randomKey);
 					try {
 						await Promise.all(pool.publish(socialNetwork.credentials.relays, giftWrap));
