@@ -347,11 +347,6 @@ export class Poster {
 					break;
 				case SocialNetworkType.nostr:
 					const pool = new nostrtools.SimplePool();
-					const publicKey = nostrtools.nip19.decode(socialNetwork.credentials.publicKey);
-					if (publicKey.type !== "npub") {
-						console.error(`Invalid public key type: ${publicKey.type}`);
-						break;
-					}
 					const privateKey = nostrtools.nip19.decode(socialNetwork.credentials.privateKey);
 					if (privateKey.type !== "nsec") {
 						console.error(`Invalid private key type: ${privateKey.type}`);
@@ -369,37 +364,75 @@ export class Poster {
 					if (includeHashtags) {
 						tags = [...tags, ...parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()])];
 					}
-					let event: GeneralObject<any> = {
-						"kind": 14,
+					const event = nostrtools.finalizeEvent({
+						"kind": 4,
 						"created_at": Math.floor(Date.now() / 1000),
 						"tags": tags,
-						"content": socialMessage,
-						"pubkey": publicKey.data
-					};
-					event.id = nostrtools.getEventHash(event as nostrtools.UnsignedEvent);
-
-					const seal = nostrtools.finalizeEvent({
-						"created_at": Math.floor(randomTimeUpTo2DaysInThePast() / 1000),
-						"kind": 13,
-						"tags": [],
-						"content": nostrtools.nip44.v2.encrypt(JSON.stringify(event), nostrtools.nip44.v2.utils.getConversationKey(privateKey.data as any, userToMessage))
+						"content": await nostrtools.nip04.encrypt(privateKey.data, userToMessage, socialMessage)
 					}, privateKey.data);
-					const randomKey = nostrtools.generateSecretKey();
-					const giftWrap = nostrtools.finalizeEvent({
-						"created_at": Math.floor(randomTimeUpTo2DaysInThePast() / 1000),
-						"kind": 1059,
-						"tags": [
-							["p", userToMessage]
-						],
-						"content": nostrtools.nip44.v2.encrypt(JSON.stringify(seal), nostrtools.nip44.v2.utils.getConversationKey(randomKey as any, userToMessage))
-					}, randomKey);
 					try {
-						await Promise.all(pool.publish(socialNetwork.credentials.relays, giftWrap));
+						await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
 					} catch (e) {}
 					returnObject[socialNetwork.uuid] = {
-						giftWrap
+						event
 					};
 					break;
+
+					// NIP-17 (doesn't currently work)
+					// const pool = new nostrtools.SimplePool();
+					// const publicKey = nostrtools.nip19.decode(socialNetwork.credentials.publicKey);
+					// if (publicKey.type !== "npub") {
+					// 	console.error(`Invalid public key type: ${publicKey.type}`);
+					// 	break;
+					// }
+					// const privateKey = nostrtools.nip19.decode(socialNetwork.credentials.privateKey);
+					// if (privateKey.type !== "nsec") {
+					// 	console.error(`Invalid private key type: ${privateKey.type}`);
+					// 	break;
+					// }
+					// const existingPostTags = replyTo?.event.tags.filter((tag: string[]) => tag[0] === "e") ?? [];
+					// let tags: string[][] = [
+					// 	...existingPostTags,
+					// 	["p", userToMessage]
+					// ];
+					// if (replyTo) {
+					// 	tags.push(["e", replyTo.event.id, existingPostTags.length === 0 ? "root" : "reply"]);
+					// }
+					// const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
+					// if (includeHashtags) {
+					// 	tags = [...tags, ...parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()])];
+					// }
+					// let event: GeneralObject<any> = {
+					// 	"kind": 14,
+					// 	"created_at": Math.floor(Date.now() / 1000),
+					// 	"tags": tags,
+					// 	"content": socialMessage,
+					// 	"pubkey": publicKey.data
+					// };
+					// event.id = nostrtools.getEventHash(event as nostrtools.UnsignedEvent);
+
+					// const seal = nostrtools.finalizeEvent({
+					// 	"created_at": Math.floor(randomTimeUpTo2DaysInThePast() / 1000),
+					// 	"kind": 13,
+					// 	"tags": [],
+					// 	"content": nostrtools.nip44.v2.encrypt(JSON.stringify(event), nostrtools.nip44.v2.utils.getConversationKey(privateKey.data as any, userToMessage))
+					// }, privateKey.data);
+					// const randomKey = nostrtools.generateSecretKey();
+					// const giftWrap = nostrtools.finalizeEvent({
+					// 	"created_at": Math.floor(randomTimeUpTo2DaysInThePast() / 1000),
+					// 	"kind": 1059,
+					// 	"tags": [
+					// 		["p", userToMessage]
+					// 	],
+					// 	"content": nostrtools.nip44.v2.encrypt(JSON.stringify(seal), nostrtools.nip44.v2.utils.getConversationKey(randomKey as any, userToMessage))
+					// }, randomKey);
+					// try {
+					// 	await Promise.all(pool.publish(socialNetwork.credentials.relays, giftWrap));
+					// } catch (e) {}
+					// returnObject[socialNetwork.uuid] = {
+					// 	giftWrap
+					// };
+					// break;
 			}
 		} catch (e) {
 			console.error(e);
