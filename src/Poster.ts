@@ -573,6 +573,30 @@ export class Listener {
 				case SocialNetworkType.bluesky:
 					break;
 				case SocialNetworkType.nostr:
+					const pool = new nostrtools.SimplePool();
+					pool.subscribeMany(socialNetwork.credentials.relays, [
+						{
+							"kinds": [4],
+							"since": Math.floor(Date.now() / 1000), // Only get events that have been created since now
+							"#p": [socialNetwork.credentials.publicKey]
+						}
+					], {
+						"onevent": async (evt) => {
+							const callbackObject: Post = {
+								"id": evt.id,
+								"user": evt.pubkey,
+								"visibility": "direct",
+								"content": {
+									"message": await nostrtools.nip04.decrypt(socialNetwork.credentials.privateKey, evt.pubkey, evt.content)
+								},
+								"metadata": {
+									"socialNetworkUUID": socialNetwork.uuid
+								}
+							};
+							console.log(`Received direct message on Nostr from ${callbackObject.user}: ${callbackObject.content.message}`);
+							// this.#callback(callbackObject);
+						}
+					});
 					break;
 			}
 		}));
