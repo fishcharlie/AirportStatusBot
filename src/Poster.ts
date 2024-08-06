@@ -573,12 +573,22 @@ export class Listener {
 				case SocialNetworkType.bluesky:
 					break;
 				case SocialNetworkType.nostr:
+					const publicKey = nostrtools.nip19.decode(socialNetwork.credentials.publicKey);
+					if (publicKey.type !== "npub") {
+						console.error(`Invalid private key type: ${publicKey.type}`);
+						break;
+					}
+					const privateKey = nostrtools.nip19.decode(socialNetwork.credentials.privateKey);
+					if (privateKey.type !== "nsec") {
+						console.error(`Invalid private key type: ${privateKey.type}`);
+						break;
+					}
 					const pool = new nostrtools.SimplePool();
 					pool.subscribeMany(socialNetwork.credentials.relays, [
 						{
 							"kinds": [4],
 							"since": Math.floor(Date.now() / 1000), // Only get events that have been created since now
-							"#p": [socialNetwork.credentials.publicKey]
+							"#p": [publicKey.data]
 						}
 					], {
 						"onevent": async (evt) => {
@@ -587,7 +597,7 @@ export class Listener {
 								"user": evt.pubkey,
 								"visibility": "direct",
 								"content": {
-									"message": await nostrtools.nip04.decrypt(socialNetwork.credentials.privateKey, evt.pubkey, evt.content)
+									"message": await nostrtools.nip04.decrypt(privateKey.data, evt.pubkey, evt.content)
 								},
 								"metadata": {
 									"socialNetworkUUID": socialNetwork.uuid
@@ -595,6 +605,9 @@ export class Listener {
 							};
 							console.log(`Received direct message on Nostr from ${callbackObject.user}: ${callbackObject.content.message}`);
 							// this.#callback(callbackObject);
+						},
+						"onclose": (err) => {
+							console.log("Nostr listener closed", err);
 						}
 					});
 					break;
