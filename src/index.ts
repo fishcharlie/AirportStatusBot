@@ -321,7 +321,7 @@ const replyOptions: ReplyOption[] = [
 	},
 	{
 		"inputs": ["is my flight delayed?", "is my flight on time?", "is my flight on schedule?", "will my flight be on time?", "will my flight be delayed?"],
-		"reply": "Sadly, I can't check on individual flights. While the information I provide can give you a general sense of delays you might expect, it's always best to check with your airline for flight specific information."
+		"reply": "Sadly I can't check on individual flights. While the information I provide can give you a general sense of delays you might expect, it's always best to check with your airline for flight specific information."
 	},
 	{
 		"inputs": ["where do you get your data?", "data source"],
@@ -361,7 +361,7 @@ const replyOptions: ReplyOption[] = [
 	},
 	{
 		"inputs": ["shall we play a game?"],
-		"reply": `Love to. How about Global Thermonuclear War?\n\n(from the 1983 movie <a href="https://en.wikipedia.org/wiki/WarGames">WarGames</a>)`
+		"reply": `Love to. How about Global Thermonuclear War?\n\n(from the 1983 movie [WarGames](https://en.wikipedia.org/wiki/WarGames))`
 	},
 	{
 		"inputs": ["test"],
@@ -416,10 +416,10 @@ new Listener(config, async (post) => {
 		console.log(`Empty reply for: "${post.content.message}"`);
 		return;
 	}
-	if (reply.length > 500) {
-		console.log(`Reply too long: ${reply}`);
-		return;
-	}
+	// if (reply.length > 500) {
+	// 	console.log(`Reply too long: ${reply}`);
+	// 	return;
+	// }
 	console.log(`Replying to: "${post.content.message}" with: "${reply}"`);
 	poster.directMessage(post.metadata.socialNetworkUUID, post.user, post, {
 		"message": reply
