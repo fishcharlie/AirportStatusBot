@@ -352,7 +352,7 @@ export class Poster {
 						console.error(`Invalid private key type: ${privateKey.type}`);
 						break;
 					}
-					const existingPostTags = replyTo?.event.tags.filter((tag: string[]) => tag[0] === "e") ?? [];
+					const existingPostTags = (replyTo?.event?.tags ?? []).filter((tag: string[]) => tag[0] === "e");
 					let tags: string[][] = [
 						...existingPostTags,
 						["p", userToMessage]
