@@ -357,7 +357,7 @@ export class Poster {
 						...existingPostTags,
 						["p", userToMessage]
 					];
-					if (replyTo) {
+					if (replyTo?.event?.id !== undefined) {
 						tags.push(["e", replyTo.event.id, existingPostTags.length === 0 ? "root" : "reply"]);
 					}
 					const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
