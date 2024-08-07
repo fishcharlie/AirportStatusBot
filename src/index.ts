@@ -361,7 +361,7 @@ const replyOptions: ReplyOption[] = [
 	},
 	{
 		"inputs": ["shall we play a game?"],
-		"reply": `Love to. How about Global Thermonuclear War?\n\n(from the 1983 movie [WarGames](https://en.wikipedia.org/wiki/WarGames))`
+		"reply": `Love to. How about Global Thermonuclear War?\n\n- from the 1983 movie WarGames: https://en.wikipedia.org/wiki/WarGames`
 	},
 	{
 		"inputs": ["test"],
