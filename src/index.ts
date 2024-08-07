@@ -262,12 +262,12 @@ let runCounter = 0;
 			// 	});
 			// }
 
-			const nostrAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "nostr");
-			if (nostrAccount) {
-				poster.directMessage(nostrAccount.uuid, "d77637850017cffa7a61c7032db0f28be947d5487f9d504aabe4449a91b53cff", undefined, {
-					"message": "The AirportStatusBot has started."
-				});
-			}
+			// const nostrAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "nostr");
+			// if (nostrAccount) {
+			// 	poster.directMessage(nostrAccount.uuid, "d77637850017cffa7a61c7032db0f28be947d5487f9d504aabe4449a91b53cff", undefined, {
+			// 		"message": "The AirportStatusBot has started."
+			// 	});
+			// }
 		}
 		// If it's the first run or every 15 runs, update the profiles
 		if (firstRun || runCounter % 15 === 0) {
@@ -288,7 +288,16 @@ interface ReplyOption {
 	reply: string | {
 		"type": "random"
 		"messages": string[]
-	} | (() => Promise<string>) | (() => string);
+	} | ((platform: string) => Promise<string>) | ((platform: string) => string);
+}
+const getAuthorUsername = (platform: string): string => {
+	if (platform === "mastodon") {
+		return "@fishcharlie@mstdn-social.com";
+	} else if (platform === "nostr") {
+		return "npub16amr0pgqzl8l57npcupjmv8j3055042g07w4qj4tu3zf4yd48nlsh96569";
+	} else {
+		return "https://charlie.fish/contact";
+	}
 }
 const replyOptions: ReplyOption[] = [
 	{
@@ -320,15 +329,15 @@ const replyOptions: ReplyOption[] = [
 	},
 	{
 		"inputs": ["help", "commands", "what can i ask you?", "what can you do?"],
-		"reply": "You can ask me many things! Here are some examples:\n`List all delays` - This will list all current delays at airports in the United States.\n`Where do you get your data?` - This will tell you where the bot gets its data from.\n`Who created you?` - This will tell you who created the bot.\n\nThere are a few other things not listed here to increase the conversational nature of this bot. Along with a few hidden easter eggs.\nAdditionally, the bot is intended to be able to respond to a wide variety of the commands listed above. If you find a variation of a command that doesn't work, please let @fishcharlie@mstdn-social.com know."
+		"reply": (platform) => `You can ask me many things! Here are some examples:\n\`List all delays\` - This will list all current delays at airports in the United States.\n\`Where do you get your data?\` - This will tell you where the bot gets its data from.\n\`Who created you?\` - This will tell you who created the bot.\n\nThere are a few other things not listed here to increase the conversational nature of this bot. Along with a few hidden easter eggs.\nAdditionally, the bot is intended to be able to respond to a wide variety of the commands listed above. If you find a variation of a command that doesn't work, please let ${getAuthorUsername(platform)} know.`
 	},
 	{
 		"inputs": ["contact", "human", "representative", "talk to a person", "support"],
-		"reply": "Please reach out to @fishcharlie@mstdn-social.com. Since I'm a bot, I can't provide help directly, but he can help you with any questions, feedback, or suggestions you have."
+		"reply": (platform) => `Please reach out to ${getAuthorUsername(platform)}. Since I'm a bot, I can't provide help directly, but he can help you with any questions, feedback, or suggestions you have.`
 	},
 	{
 		"inputs": ["who made you?", "who created you?", "who built you?", "who is your creator?", "who is your developer?"],
-		"reply": "I was created by @fishcharlie@mstdn-social.com."
+		"reply": (platform) => `I was created by ${getAuthorUsername(platform)}.`
 	},
 	{
 		"inputs": ["tell me a joke", "tell a joke"],
@@ -355,20 +364,28 @@ const replyOptions: ReplyOption[] = [
 		"reply": `Love to. How about Global Thermonuclear War?\n\n(from the 1983 movie <a href="https://en.wikipedia.org/wiki/WarGames">WarGames</a>)`
 	},
 	{
+		"inputs": ["test"],
+		"reply": {
+			"type": "random",
+			"messages": ["Loud and clear.", "Read you five by five."]
+		}
+	},
+	{
 		"inputs": [],
-		"reply": "I'm sorry, I don't understand. If you think this is something I should know, please reach out to @fishcharlie@mstdn-social.com to submit a feature request."
+		"reply": (platform) => `I'm sorry, I don't understand. If you think this is something I should know, please reach out to ${getAuthorUsername(platform)} to submit a feature request.`
 	}
 ];
 new Listener(config, async (post) => {
-	if (post.user !== "@fishcharlie@mstdn-social.com") {
-		console.log(`Ignoring post from ${post.user}: ${post.content.message}`);
-		return;
-	}
-
 	if (!post.metadata?.socialNetworkUUID) {
 		console.log("No socialNetworkUUID in post metadata.");
 		return;
 	}
+	const socialNetwork = config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === post.metadata?.socialNetworkUUID);
+	if (!socialNetwork) {
+		console.log(`No social network found for: "${post.metadata.socialNetworkUUID}"`);
+		return;
+	}
+
 	const replyOption = replyOptions.find((replyOption) => {
 		if (replyOption.inputs.length === 0) {
 			return true;
@@ -386,7 +403,7 @@ new Listener(config, async (post) => {
 		if (typeof replyOption.reply === "string") {
 			return replyOption.reply;
 		} else if (typeof replyOption.reply === "function") {
-			return replyOption.reply();
+			return replyOption.reply(socialNetwork.type);
 		} else if (typeof replyOption.reply === "object") {
 			if (replyOption.reply.type === "random") {
 				return replyOption.reply.messages[Math.floor(Math.random() * replyOption.reply.messages.length)];
