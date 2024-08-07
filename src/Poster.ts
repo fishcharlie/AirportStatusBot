@@ -604,7 +604,7 @@ export class Listener {
 								}
 							};
 							console.log(`Received direct message on Nostr from ${callbackObject.user}: ${callbackObject.content.message}`);
-							// this.#callback(callbackObject);
+							this.#callback(callbackObject);
 						},
 						"onclose": (err) => {
 							console.log("Nostr listener closed", err);
