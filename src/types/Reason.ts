@@ -8,6 +8,7 @@ enum ParentType {
 	STAFF = "STAFF",
 	// NOT 100% on this one. See the comment in src/types/Reason.test.ts above the `EQ:RWY08R LGTG OTS` test for more info.
 	EQUIPMENT = "EQ",
+	OTHER = "OTHER",
 }
 
 // Sometimes for ground delays & ground stops the FAA API returns reasons that don't match the style of other reasons in the API...
@@ -24,8 +25,15 @@ const customReasonMaps: { [key: string]: string } = {
 	"runway construction": "RWY:Construction",
 	"airport volume": "VOL:Volume",
 	"VOLUME": "VOL:Volume",
+	"equipment outage": "EQ",
+	"EQUIPMENT": "EQ",
+	"air show": "OTHER:Air Show",
+	"airspace volume": "VOL:Volume",
+	"disabled aircraft on the runway": "RWY:Disabled Aircraft"
 	// "low visibility": ""
-	// "runway"
+	// "runway": ""
+	// "RAIN": ""
+	// "OTHER:IND RELEASES": "" // Not sure what "IND RELEASES" is...
 }
 
 export class Reason {
@@ -149,6 +157,13 @@ export class Reason {
 				}
 			case ParentType.EQUIPMENT:
 				return "equipment failure";
+			case ParentType.OTHER:
+				switch(subPartsStr) {
+					case "Air Show":
+						return "air show";
+					default:
+						return undefined;
+				}
 			default:
 				return undefined;
 		}
