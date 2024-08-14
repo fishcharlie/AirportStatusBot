@@ -30,6 +30,8 @@ interface Post {
 	metadata?: GeneralObject<string>;
 }
 
+const BLUESKY_MAX_IMAGE_SIZE_BYTES = 976560; // 976.56KB
+
 export class Poster {
 	#config: Config;
 
@@ -91,6 +93,10 @@ export class Poster {
 							"identifier": socialNetwork.credentials.username ?? "",
 							"password": socialNetwork.credentials.password ?? ""
 						});
+
+						if (content.image && content.image.byteLength > BLUESKY_MAX_IMAGE_SIZE_BYTES) {
+							console.log("Image seems to be too large for Bluesky. Image bytes: ", content.image.byteLength);
+						}
 
 						let image: BlobRef | undefined;
 						try {
