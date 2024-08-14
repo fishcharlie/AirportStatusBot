@@ -26,6 +26,7 @@ Sadly, not all features are available on all platforms. Below is a chart of what
 ❌ - Not Supported
 
 [1] There are some bugs due to Bluesky's image size limitations. Please see [this issue](https://github.com/fishcharlie/AirportStatusBot/issues/15) for more details.
+
 [2] Only supports [NIP-04](https://github.com/nostr-protocol/nips/blob/master/04.md) messages. [NIP-17](https://github.com/nostr-protocol/nips/blob/master/17.md) messages are not supported.
 
 ## Other Information
