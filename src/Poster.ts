@@ -7,6 +7,7 @@ import * as nostrtools from "nostr-tools";
 import { parseHashtags } from "./utils/parseHashtags";
 import { createRestAPIClient as Masto, createStreamingAPIClient as MastoStream } from "masto";
 import * as htmlToText from "html-to-text";
+import { resizeImage } from "./utils/resizeImage";
 
 const hashtagWords = [
 	"weather",
@@ -30,7 +31,7 @@ interface Post {
 	metadata?: GeneralObject<string>;
 }
 
-const BLUESKY_MAX_IMAGE_SIZE_BYTES = 976560; // 976.56KB
+const BLUESKY_MAX_IMAGE_SIZE_BYTES = 999997; // 976.56KiB is limit. Bluesky states: `but the maximum size is 976.56KB`, but they also convert our bytes to MiB instead of MB while they state it's MB.
 
 export class Poster {
 	#config: Config;
@@ -94,8 +95,16 @@ export class Poster {
 							"password": socialNetwork.credentials.password ?? ""
 						});
 
-						if (content.image && content.image.byteLength > BLUESKY_MAX_IMAGE_SIZE_BYTES) {
-							console.log("Image seems to be too large for Bluesky. Image bytes: ", content.image.byteLength);
+						let resizeTimes = 0;
+						while (content.image && content.image.byteLength > BLUESKY_MAX_IMAGE_SIZE_BYTES) {
+							console.log("Image is too large. Resizing. Current size:", content.image.byteLength);
+							if (resizeTimes > 4) {
+								console.error("Image is too large and has been resized too many times. Skipping.");
+								break;
+							}
+
+							content.image = await resizeImage(content.image, 90);
+							resizeTimes += 1;
 						}
 
 						let image: BlobRef | undefined;
