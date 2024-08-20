@@ -8,6 +8,7 @@ enum ParentType {
 	STAFF = "STAFF",
 	// NOT 100% on this one. See the comment in src/types/Reason.test.ts above the `EQ:RWY08R LGTG OTS` test for more info.
 	EQUIPMENT = "EQ",
+	VIP_MOVEMENT = "VIPM", // I'm pretty sure the "M" stands for "Movement" but I'm not 100% sure. The entire example string was `VIPM:VIP Movement` so that would make sense.
 	OTHER = "OTHER",
 }
 
@@ -29,11 +30,13 @@ const customReasonMaps: { [key: string]: string } = {
 	"EQUIPMENT": "EQ",
 	"air show": "OTHER:Air Show",
 	"airspace volume": "VOL:Volume",
-	"disabled aircraft on the runway": "RWY:Disabled Aircraft"
+	"disabled aircraft on the runway": "RWY:Disabled Aircraft",
+	"runway maintenance": "RWY:Maintenance",
 	// "low visibility": ""
 	// "runway": ""
 	// "RAIN": ""
 	// "OTHER:IND RELEASES": "" // Not sure what "IND RELEASES" is...
+	// "RWY: CONVERGING RWY OPS": "" // Not sure what "CONVERGING RWY OPS" is...
 }
 
 export class Reason {
@@ -164,6 +167,8 @@ export class Reason {
 					default:
 						return undefined;
 				}
+			case ParentType.VIP_MOVEMENT:
+				return "VIP movement";
 			default:
 				return undefined;
 		}

@@ -39,6 +39,8 @@ describe("parts()", () => {
 		["air show", ["OTHER", "Air Show"]],
 		["airspace volume", ["VOL", "Volume"]],
 		["disabled aircraft on the runway", ["RWY", "Disabled Aircraft"]],
+		["runway maintenance", ["RWY", "Maintenance"]],
+		["VIPM:VIP Movement", ["VIPM", "VIP Movement"]],
 	];
 
 	test.each(tests)("parts(%p) === %p", (input, expected) => {
@@ -86,6 +88,8 @@ describe("parentType()", () => {
 		["air show", "OTHER"],
 		["airspace volume", "VOL"],
 		["disabled aircraft on the runway", "RWY"],
+		["runway maintenance", "RWY"],
+		["VIPM:VIP Movement", "VIPM"],
 	];
 
 	test.each(tests)("parts(%p) === %p", (input, expected) => {
@@ -137,6 +141,8 @@ describe("toString()", () => {
 		["air show", "air show"],
 		["airspace volume", "high traffic volume"],
 		["disabled aircraft on the runway", "disabled aircraft"],
+		["runway maintenance", "runway maintenance"],
+		["VIPM:VIP Movement", "VIP Movement"],
 	];
 
 	test.each(tests)("parts(%p) === %p", (input, expected) => {
