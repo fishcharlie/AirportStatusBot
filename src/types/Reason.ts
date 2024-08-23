@@ -66,9 +66,9 @@ export class Reason {
 
 	parts(): string[] {
 		if (this.zone()) {
-			return this.#raw.split("/")[1].split(":");
+			return this.#raw.split("/")[1].split(":").map((part: string) => part.trim());
 		} else {
-			return this.#raw.split(":");
+			return this.#raw.split(":").map((part: string) => part.trim());
 		}
 	}
 
@@ -101,22 +101,24 @@ export class Reason {
 	 * This returns a human friendly readable string for the given reason. If the reason is unable to be parsed into a human friendly string, this returns undefined.
 	 */
 	toString(): string | undefined {
-		const subParts = this.parts().slice(1);
-		const subPartsStr = subParts.join(":");
+		const subParts: string[] = this.parts().slice(1);
+		const subPartsStr: string = subParts.join(":");
 
 		switch (this.parentType()) {
 			case ParentType.WEATHER:
-				switch(subPartsStr) {
-					case "Fog":
+				switch(subPartsStr.toLowerCase()) {
+					case "fog":
 						return "fog";
-					case "Low Ceilings":
+					case "low ceilings":
 						return "low ceilings";
-					case "Thunderstorms":
+					case "thunderstorms":
 						return "thunderstorms";
-					case "Wind":
+					case "wind":
 						return "wind";
-					case "Snow/Ice":
+					case "snow/ice":
 						return "snow/ice";
+					case "windshear/microburst":
+						return "wind shear/microburst";
 					default:
 						return "weather";
 				}
@@ -169,7 +171,12 @@ export class Reason {
 						return undefined;
 				}
 			case ParentType.VIP_MOVEMENT:
-				return "VIP movement";
+				switch (subPartsStr) {
+					case "VIP Movement":
+						return "VIP movement";
+					default:
+						return undefined;
+				}
 			default:
 				return undefined;
 		}
