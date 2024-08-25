@@ -40,6 +40,10 @@ export class NaturalEarthDataManager {
 			try {
 				console.log("Updating cache");
 
+				await fs.promises.mkdir(dataPath(), {
+					"recursive": true
+				});
+
 				const response = await fetch("https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_1_states_provinces.zip", {
 					"method": "GET",
 					"headers": {
