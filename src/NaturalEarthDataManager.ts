@@ -88,7 +88,7 @@ export class NaturalEarthDataManager {
 
 				this.#lastUpdatedDate = Date.now();
 				await fs.promises.writeFile(path.join(dataPath(), "..", "lastUpdatedDate.txt"), this.#lastUpdatedDate.toString());
-				console.log("Cache updated");
+				console.log("NaturalEarth Cache updated");
 			} catch (e) {
 				console.error("Failed to update NaturalEarth cache");
 				console.error(e);

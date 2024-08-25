@@ -69,7 +69,7 @@ export class OurAirportsDataManager {
 				this.#lastUpdatedDate = Date.now();
 				await fs.promises.writeFile(path.join(dataPath(), "..", "lastUpdatedDate.txt"), this.#lastUpdatedDate.toString());
 				await this.dataToSQLite(csvResult);
-				console.log("Cache updated");
+				console.log("OurAirports Cache updated");
 			} catch (e) {
 				console.error("Failed to update OurAirports cache");
 				console.error(e);
