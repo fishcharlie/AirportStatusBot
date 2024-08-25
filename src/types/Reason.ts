@@ -34,6 +34,7 @@ const customReasonMaps: { [key: string]: string } = {
 	"runway maintenance": "RWY:Maintenance",
 	// "low visibility": ""
 	// "RAIN": ""
+	// "security": ""
 	// "runway": "" // Not sure if this means "runway construction" or "runway maintenance" or something else...
 	// "OTHER:IND RELEASES": "" // Not sure what "IND RELEASES" is...
 	// "RWY: CONVERGING RWY OPS": "" // Not sure what "CONVERGING RWY OPS" is...
@@ -82,7 +83,7 @@ export class Reason {
 		}
 	}
 
-	imageType(): ImageType | undefined {
+	imageType(): ImageType[] {
 		const subParts = this.parts().slice(1);
 		const subPartsStr = subParts.join(":");
 
@@ -90,11 +91,11 @@ export class Reason {
 			case ParentType.WEATHER:
 				switch(subPartsStr) {
 					case "Thunderstorms":
-						return ImageType.radar;
+						return [ImageType.radar];
 				}
 		}
 
-		return undefined;
+		return [];
 	}
 
 	/**

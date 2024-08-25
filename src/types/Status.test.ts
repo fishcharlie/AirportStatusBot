@@ -1,3 +1,4 @@
+import { NaturalEarthDataManager } from "../NaturalEarthDataManager";
 import { OurAirportsDataManager } from "../OurAirportsDataManager";
 import { Status } from "./Status";
 
@@ -88,12 +89,55 @@ describe("Status.fromRAW().toPost()", () => {
 				}
 			},
 			"Inbound aircraft to Test Airport A (#AAA) are currently being held at their origin airport due to thunderstorms. Operations are expected to resume at 10:15 PM."
+		],
+		[
+			{
+				"Name": "Airspace Flow Programs",
+				"Airspace_Flow_List": {
+					"Airspace_Flow": {
+						"CTL_Element": "FCAJX5",
+						"Reason": "thunderstorms",
+						"AFP_StartTime": 1300,
+						"AFP_EndTime": 2359,
+						"FCA_StartDateTime": 20240823091500,
+						"FCA_EndDateTime": 20240824150000,
+						"Avg": "22 minutes",
+						"Floor": 180,
+						"Ceiling": 600,
+						"Line": {
+							"Point": [
+								{
+									"@_Lat": "31.57",
+									"@_Long": "-77.45"
+								},
+								{
+									"@_Lat": "30.55",
+									"@_Long": "-79.68"
+								},
+								{
+									"@_Lat": "29.97",
+									"@_Long": "-82.02"
+								},
+								{
+									"@_Lat": "28.52",
+									"@_Long": "-83.9"
+								},
+								{
+									"@_Lat": "25.47",
+									"@_Long": "-87.27"
+								}
+							]
+						}
+					}
+				}
+			},
+			"An en route delay is currently in effect in the #Florida region due to thunderstorms. This delay applies to aircraft flying between 18,000 and 60,000 feet. Delays are currently averaging 22 minutes."
 		]
 	];
 
 	tests.forEach(([obj, expected]) => {
 		test(`Status.fromRAW(${obj}).toPost() === ${expected}`, async () => {
-			const status: Status | Status[] | undefined = Status.fromRaw(obj as any, new OurAirportsDataManager("Test"));
+			const status: Status | Status[] | undefined = Status.fromRaw(obj as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
 
 			if (status instanceof Array) {
 				expect((await Promise.all(status.map((s) => s.toPost())))).toStrictEqual(expected);
@@ -190,7 +234,7 @@ describe("Status.fromRAW().toEndedPost()", () => {
 
 	tests.forEach(([obj, expected]) => {
 		test(`Status.fromRAW(${obj}).toEndedPost() === ${expected}`, async () => {
-			const status: Status | Status[] | undefined = Status.fromRaw(obj as any, new OurAirportsDataManager("Test"));
+			const status: Status | Status[] | undefined = Status.fromRaw(obj as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
 
 			if (status instanceof Array) {
 				expect((await Promise.all(status.map((s) => s.toEndedPost())))).toStrictEqual(expected);
@@ -255,8 +299,8 @@ describe("Status.updatedPost()", () => {
 
 	tests.forEach(([oldJSON, newJSON, expected]) => {
 		test(`Status.updatedPost() === ${expected}`, async () => {
-			const oldObj: any = Status.fromRaw(oldJSON as any, new OurAirportsDataManager("Test"));
-			const newObj: any = Status.fromRaw(newJSON as any, new OurAirportsDataManager("Test"));
+			const oldObj: any = Status.fromRaw(oldJSON as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
+			const newObj: any = Status.fromRaw(newJSON as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
 
 			expect(await Status.updatedPost(oldObj, newObj)).toStrictEqual(expected);
 		});

@@ -7,6 +7,7 @@ import { Config, ContentTypeEnum } from "./types/Config";
 import * as objectUtils from "js-object-utilities";
 import * as rimraf from "rimraf";
 import { OurAirportsDataManager } from "./OurAirportsDataManager";
+import { NaturalEarthDataManager } from "./NaturalEarthDataManager";
 import { ImageGenerator } from "./ImageGenerator";
 import express from "express";
 
@@ -43,6 +44,7 @@ const ENDPOINT = "https://nasstatus.faa.gov/api/airport-status-information";
 const USER_AGENT = `AirportStatusBot/${packageJSON.version} (+${packageJSON.homepage})`;
 
 const ourAirportsDataManager = new OurAirportsDataManager(USER_AGENT);
+const naturalEarthDataManager = new NaturalEarthDataManager(USER_AGENT);
 
 const poster = new Poster(config);
 
@@ -51,7 +53,18 @@ let currentDelays: Status[] | null = null;
 async function run (firstRun: boolean) {
 	console.log(`Start run: ${Date.now()}`);
 
-	await ourAirportsDataManager.updateCache();
+	try {
+		await ourAirportsDataManager.updateCache();
+	} catch (e) {
+		console.error("Failed to update OurAirports cache.");
+		console.error(e);
+	}
+	try {
+		await naturalEarthDataManager.updateCache();
+	} catch (e) {
+		console.error("Failed to update Natural Earth cache.");
+		console.error(e);
+	}
 
 	let xmlResult: string;
 	try {
@@ -88,14 +101,14 @@ async function run (firstRun: boolean) {
 		if (typeof delaysRaw === "object" && !Array.isArray(delaysRaw)) {
 			delaysRaw = [delaysRaw];
 		}
-		const delays: Status[] = delaysRaw.flatMap((delay) => Status.fromRaw(delay, ourAirportsDataManager)).filter((delay) => delay !== undefined) as Status[];
+		const delays: Status[] = delaysRaw.flatMap((delay) => Status.fromRaw(delay, ourAirportsDataManager, naturalEarthDataManager)).filter((delay) => delay !== undefined) as Status[];
 		currentDelays = delays;
 
 		let previousDelaysRaw: { [key: string]: any }[] = previous?.AIRPORT_STATUS_INFORMATION.Delay_type ?? [];
 		if (typeof previousDelaysRaw === "object" && !Array.isArray(previousDelaysRaw)) {
 			previousDelaysRaw = [previousDelaysRaw];
 		}
-		const previousDelays: Status[] = previousDelaysRaw.flatMap((delay) => Status.fromRaw(delay, ourAirportsDataManager)).filter((delay) => delay !== undefined) as Status[];
+		const previousDelays: Status[] = previousDelaysRaw.flatMap((delay) => Status.fromRaw(delay, ourAirportsDataManager, naturalEarthDataManager)).filter((delay) => delay !== undefined) as Status[];
 
 		const newDelays = delays.filter((delay) => !previousDelays.find((previousDelay) => previousDelay.comparisonHash === delay.comparisonHash));
 
@@ -176,21 +189,36 @@ async function run (firstRun: boolean) {
 			}
 			if (post) {
 				if (process.env.NODE_ENV === "production") {
-					const postResponse = await poster.post({
-						"message": post,
-						image
-					}, xmlResult, [ContentTypeEnum.ALL_FAA]);
-					console.log(`Posted: '${post}'`);
+					if (delay.isBeta === true) {
+						// Delay is in beta
+						// Only direct message it to me so I can see it and make any fixes if needed.
+						const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
+						if (mastodonAccount) {
+							poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
+								"message": post,
+								image
+							});
+						}
+						continue;
+					} else {
+						// Delay not in beta
+						// Continue posting as normal
+						const postResponse = await poster.post({
+							"message": post,
+							image
+						}, xmlResult, [ContentTypeEnum.ALL_FAA]);
+						console.log(`Posted: '${post}'`);
 
-					const comparisonHash = delay.comparisonHash;
-					await fs.promises.mkdir(path.join(__dirname, "..", "cache", "posts", comparisonHash), { "recursive": true });
-					console.log("Post response: \n", postResponse);
+						const comparisonHash = delay.comparisonHash;
+						await fs.promises.mkdir(path.join(__dirname, "..", "cache", "posts", comparisonHash), { "recursive": true });
+						console.log("Post response: \n", postResponse);
 
-					const newPostResponse = {...postResponse};
-					objectUtils.circularKeys(newPostResponse).forEach((key) => {
-						objectUtils.set(newPostResponse, key, "[Circular]");
-					});
-					await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponse));
+						const newPostResponse = {...postResponse};
+						objectUtils.circularKeys(newPostResponse).forEach((key) => {
+							objectUtils.set(newPostResponse, key, "[Circular]");
+						});
+						await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponse));
+					}
 				} else {
 					console.warn(`Not posting: '${post}' due to NODE_ENV not being production.`);
 				}

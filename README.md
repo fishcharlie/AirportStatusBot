@@ -36,6 +36,8 @@ Sadly, not all features are available on all platforms. Below is a chart of what
 	- Map data/imagery from [OpenStreetMap](https://www.openstreetmap.org)
 	- Radar imagery from the [Iowa Environmental Mesonet of Iowa State University](https://mesonet.agron.iastate.edu) (https://mesonet.agron.iastate.edu/GIS/ridge.phtml)
 		- Data provided under Public Domain (https://mesonet.agron.iastate.edu/disclaimer.php)
+	- State boundaries from [Natural Earth](https://www.naturalearthdata.com)
+		- Data provided under Public Domain (https://www.naturalearthdata.com/about/terms-of-use/)
 - A lot of the terminology used in the API is referenced in the [FAA Glossary](https://www.fly.faa.gov/Products/Glossary_of_Terms/glossary_of_terms.html).
 - Data is refreshed every minute from the FAA API. This means that the bot will post a new status with 60 seconds of the FAA reporting a delay.
 

@@ -46,7 +46,8 @@ export class OurAirportsDataManager {
 	}
 
 	async updateCache(force: boolean = false) {
-		const shouldRun = force || !this.#cacheExists || !this.#lastUpdatedDate || this.#lastUpdatedDate < Date.now() - 24 * 60 * 60 * 1000;
+		const oneDayInMS = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+		const shouldRun = force || !this.#cacheExists || !this.#lastUpdatedDate || this.#lastUpdatedDate < Date.now() - oneDayInMS;
 		if (!shouldRun) {
 			return;
 		} else {

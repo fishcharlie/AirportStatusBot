@@ -6,6 +6,10 @@ import { Reason } from "./Reason";
 import { parseDurationString } from "../utils/parseDurationString";
 import { minutesToDurationString } from "../utils/minutesToDurationString";
 import { OurAirportsDataManager } from "../OurAirportsDataManager";
+import { NaturalEarthDataManager } from "../NaturalEarthDataManager";
+import { ImageType } from "../ImageGenerator";
+import formatNumber from "../utils/formatNumber";
+import * as turf from "@turf/turf";
 
 const ianaEquivalents: { [key: string]: string } = {
 	"EDT": "America/New_York",
@@ -15,13 +19,13 @@ const ianaEquivalents: { [key: string]: string } = {
 };
 
 export class Status {
-	airportCode: string;
+	airportCode?: string;
 	type: Type;
 	reason: Reason;
 	timing: {
 		"start"?: Date;
 		"end"?: Date;
-	}
+	};
 	length: {
 		// In minutes
 		"min"?: number;
@@ -30,23 +34,46 @@ export class Status {
 		// In minutes
 		"average"?: number;
 		"trend"?: "increasing" | "decreasing";
-	}
+	};
+	/**
+	 * Object defining the altitude range for the status. This is mostly for airspace flow programs where it only applies to planes at a certain altitude.
+	 */
+	altitudes?: {
+		/**
+		 * The bottom of the altitude range in feet. Example: 20000 for 20,000 feet or FL200.
+		 */
+		"floor"?: number;
+		/**
+		 * The top of the altitude range in feet. Example: 20000 for 20,000 feet or FL200.
+		 */
+		"ceiling"?: number;
+	};
+	/**
+	 * The GeoJSON object for the line that represents the status. This is mostly for airspace flow programs.
+	 */
+	geoJSON?: GeoJSON.LineString;
+	#otherData: {[key: string]: any};
 	#ourAirportsDataManager?: OurAirportsDataManager;
+	#naturalEarthDataManager?: NaturalEarthDataManager;
 
 	get comparisonHash(): string {
-		return `${this.airportCode}-${this.type.type}-${this.type.direction ?? "no_direction"}`;
+		return `${this.airportCode ?? this.#otherData["CTL_Element"]}-${this.type.type}-${this.type.direction ?? "no_direction"}`;
 	}
 
-	constructor(airportCode: string, type: Type, reason: Reason, timing: { "start"?: Date, "end"?: Date } = {}, length: { "min"?: number, "max"?: number, "trend"?: "increasing" | "decreasing" } = {}, ourAirportsDataManager?: OurAirportsDataManager) {
+	constructor(airportCode: string, type: Type, reason: Reason, timing: { "start"?: Date, "end"?: Date } = {}, length: { "min"?: number, "max"?: number, "trend"?: "increasing" | "decreasing" } = {}, altitudes: {"floor"?: number; "ceiling"?: number;} = {}, geoJSON: GeoJSON.LineString | undefined = undefined, otherData: {[key: string]: any} = {}, ourAirportsDataManager?: OurAirportsDataManager, naturalEarthDataManager?: NaturalEarthDataManager) {
 		this.airportCode = airportCode;
 		this.type = type;
 		this.reason = reason;
 		this.timing = timing;
 		this.length = length;
+		this.altitudes = altitudes;
+		this.geoJSON = geoJSON;
+		this.#otherData = otherData;
 		this.#ourAirportsDataManager = ourAirportsDataManager;
+		this.#naturalEarthDataManager = naturalEarthDataManager;
 	}
 
-	static fromRaw(raw: { [key: string]: any }, ourAirportsDataManager: OurAirportsDataManager): Status | Status[] | undefined {
+	static fromRaw(raw: { [key: string]: any }, ourAirportsDataManager: OurAirportsDataManager, naturalEarthDataManager: NaturalEarthDataManager): Status | Status[] | undefined {
 		const tmpType = new Type(raw.Name);
 
 		const detailsObjectPath = tmpType.detailsObjectPath();
@@ -62,7 +89,7 @@ export class Status {
 					...raw
 				};
 				objectUtilities.set(newRaw, detailsObjectPath, detailsObject);
-				return Status.fromRaw(newRaw, ourAirportsDataManager);
+				return Status.fromRaw(newRaw, ourAirportsDataManager, naturalEarthDataManager);
 			}) as Status[];
 			return returnArray;
 		}
@@ -120,7 +147,34 @@ export class Status {
 			}
 		}
 
-		return new Status(airportCode, type, reason, timing, length, ourAirportsDataManager);
+		let altitudes: { "floor"?: number, "ceiling"?: number } = {};
+		if (detailsObject.Floor) {
+			altitudes.floor = parseInt(detailsObject.Floor) * 100;
+		}
+		if (detailsObject.Ceiling) {
+			altitudes.ceiling = parseInt(detailsObject.Ceiling) * 100;
+		}
+
+		const geoJSON: GeoJSON.LineString | undefined = (() => {
+			if (detailsObject.Line && detailsObject.Line.Point && Array.isArray(detailsObject.Line.Point)) {
+				return {
+					"type": "LineString",
+					"coordinates": detailsObject.Line.Point.map((point: { "@_Lat": string, "@_Long": string }) => {
+						return [parseFloat(point["@_Long"]), parseFloat(point["@_Lat"])];
+					})
+				}
+			} else {
+				return undefined;
+			}
+		})();
+
+		let otherData: {[key: string]: any} = {};
+
+		if (detailsObject.CTL_Element) {
+			otherData["CTL_Element"] = detailsObject.CTL_Element;
+		}
+
+		return new Status(airportCode, type, reason, timing, length, altitudes, geoJSON, otherData, ourAirportsDataManager, naturalEarthDataManager);
 	}
 
 	#cachedAirport?: Airport;
@@ -134,6 +188,10 @@ export class Status {
 			return undefined;
 		}
 
+		if (this.airportCode === undefined) {
+			return undefined;
+		}
+
 		let airport: Airport | undefined = await Airport.fromFAACode(this.airportCode, this.#ourAirportsDataManager);
 		if (airport) {
 			this.#cachedAirport = airport;
@@ -144,9 +202,30 @@ export class Status {
 		}
 	}
 
-	async airportString(): Promise<string> {
+	async airportString(): Promise<string | undefined> {
 		const airport = await this.airport();
+		if (!airport) {
+			return undefined;
+		}
 		return airport ? `${airport.name} (#${this.airportCode})` : this.airportCode;
+	}
+
+	imageType(): ImageType[] {
+		if (this.type.type === TypeEnum.AIRSPACE_FLOW && this.geoJSON !== undefined) {
+			return [ImageType.geojson];
+		}
+
+		return [];
+	}
+
+	get isBeta(): boolean {
+		if (this.type.type === TypeEnum.AIRSPACE_FLOW) {
+			return true;
+		} else if (this.airportCode === undefined) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -196,11 +275,14 @@ export class Status {
 
 		const airport: Airport | undefined = await this.airport();
 
-		if (!airport) {
+		if (this.type.type === TypeEnum.AIRSPACE_FLOW && this.geoJSON === undefined) {
+			return undefined;
+		}
+		if (!airport && this.type.type !== TypeEnum.AIRSPACE_FLOW) {
 			return undefined;
 		}
 
-		let tz = airport.tz();
+		let tz = airport?.tz();
 
 		let sentences: string[] = [];
 
@@ -208,6 +290,28 @@ export class Status {
 			sentences.push(`Inbound aircraft to ${await this.airportString()} are currently being held at their origin airport${reasonString ? ` due to ${reasonString}` : ""}`);
 		} else if (this.type.type === TypeEnum.GROUND_DELAY) {
 			sentences.push(`Inbound aircraft to ${await this.airportString()} are currently being delayed at their origin airport${reasonString ? ` due to ${reasonString}` : ""}`);
+		} else if (this.type.type === TypeEnum.AIRSPACE_FLOW) {
+			const state = await (async () => {
+				if (!this.geoJSON) {
+					return undefined;
+				}
+
+				const statesGeoJSON = await this.#naturalEarthDataManager?.geoJSON();
+				if (!statesGeoJSON) {
+					return undefined;
+				}
+
+				// Find center point of the GeoJSON
+				const centerPoint = turf.center(this.geoJSON);
+				// Find the state that the center point is in
+				const state = statesGeoJSON.features.find((feature) => {
+					if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+						return turf.booleanPointInPolygon(centerPoint, feature.geometry);
+					}
+				});
+				return state;
+			})();
+			sentences.push(`An en route delay is currently in effect${state && state.properties ? ` in the #${state.properties?.name} region` : ""}${reasonString ? ` due to ${reasonString}` : ""}`);
 		} else {
 			sentences.push(`A${startsWithVowel(typeString) ? "n" : ""} ${typeString} has been issued for ${await this.airportString()}${reasonString ? ` due to ${reasonString}` : ""}`);
 		}
@@ -262,6 +366,14 @@ export class Status {
 				sentences.push(`It is currently unknown how long the delays are`);
 			}
 		}
+		if (this.type.type === TypeEnum.AIRSPACE_FLOW) {
+			if (this.altitudes?.floor && this.altitudes?.ceiling) {
+				sentences.push(`This delay applies to aircraft flying between ${formatNumber(this.altitudes.floor)} and ${formatNumber(this.altitudes.ceiling)} feet`);
+			}
+			if (this.length.average) {
+				sentences.push(`Delays are currently averaging ${minutesToDurationString(this.length.average)}`);
+			}
+		}
 		return sentences.join(". ") + ".";
 	}
 
@@ -299,7 +411,8 @@ export enum TypeEnum {
 	GROUND_STOP = "Ground Stop Programs",
 	GROUND_DELAY = "Ground Delay Programs",
 	CLOSURE = "Airport Closures",
-	DELAY = "General Arrival/Departure Delay Info"
+	DELAY = "General Arrival/Departure Delay Info",
+	AIRSPACE_FLOW = "Airspace Flow Programs"
 }
 class Type {
 	type: TypeEnum;
@@ -327,6 +440,8 @@ class Type {
 				return "ground delay";
 			case TypeEnum.CLOSURE:
 				return "airport closure";
+			case TypeEnum.AIRSPACE_FLOW:
+				return "en route delay";
 			case TypeEnum.DELAY:
 				return `${this.direction ? `${this.direction} ` : ""}delay`;
 			default:
@@ -342,6 +457,8 @@ class Type {
 				return "Ground_Delay_List.Ground_Delay";
 			case TypeEnum.CLOSURE:
 				return "Airport_Closure_List.Airport";
+			case TypeEnum.AIRSPACE_FLOW:
+				return "Airspace_Flow_List.Airspace_Flow";
 			case TypeEnum.DELAY:
 				return "Arrival_Departure_Delay_List.Delay";
 			default:
