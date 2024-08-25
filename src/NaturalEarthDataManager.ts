@@ -38,7 +38,7 @@ export class NaturalEarthDataManager {
 			return;
 		} else {
 			try {
-				console.log("Updating cache");
+				console.log("Updating NaturalEarth cache");
 
 				await fs.promises.mkdir(dataPath(), {
 					"recursive": true
@@ -90,7 +90,7 @@ export class NaturalEarthDataManager {
 				await fs.promises.writeFile(path.join(dataPath(), "..", "lastUpdatedDate.txt"), this.#lastUpdatedDate.toString());
 				console.log("Cache updated");
 			} catch (e) {
-				console.error("Failed to update cache");
+				console.error("Failed to update NaturalEarth cache");
 				console.error(e);
 			}
 		}

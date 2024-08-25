@@ -52,7 +52,7 @@ export class OurAirportsDataManager {
 			return;
 		} else {
 			try {
-				console.log("Updating cache");
+				console.log("Updating OurAirports cache");
 				const csvResult = await (await fetch("https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv", {
 					"method": "GET",
 					"headers": {
@@ -71,7 +71,7 @@ export class OurAirportsDataManager {
 				await this.dataToSQLite(csvResult);
 				console.log("Cache updated");
 			} catch (e) {
-				console.error("Failed to update cache");
+				console.error("Failed to update OurAirports cache");
 				console.error(e);
 			}
 		}
