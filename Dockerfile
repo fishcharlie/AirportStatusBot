@@ -12,6 +12,9 @@ RUN apt-get update && \
 # Set the working directory
 WORKDIR /project
 
+# Copy the project files
+COPY . /project
+
 # Install project dependencies
 RUN npm install
 
