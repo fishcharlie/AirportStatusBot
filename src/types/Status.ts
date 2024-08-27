@@ -311,7 +311,80 @@ export class Status {
 				});
 				return state;
 			})();
-			sentences.push(`An en route delay is currently in effect${state && state.properties ? ` in the #${state.properties?.name} region` : ""}${reasonString ? ` due to ${reasonString}` : ""}`);
+			const region: string = await (async () => {
+				if (state && state.properties) {
+					return ` in the #${state.properties?.name} region`;
+				} else if (this.geoJSON) {
+					const statesGeoJSON = await this.#naturalEarthDataManager?.geoJSON();
+					if (!statesGeoJSON) {
+						return "";
+					}
+
+					const centerPoint = turf.center(this.geoJSON);
+					const landmarks: {[key: string]: GeoJSON.Feature<GeoJSON.Point>} = {
+						"the contiguous United States": turf.point([-97, 38]),
+						"Alaska": turf.center(statesGeoJSON.features.find((feature) => feature.properties?.name === "Alaska")!.geometry),
+						"Hawaii": turf.center(statesGeoJSON.features.find((feature) => feature.properties?.name === "Hawaii")!.geometry)
+					};
+
+					const closestLandmark: [string, GeoJSON.Feature<GeoJSON.Point>] | undefined = Object.entries(landmarks).reduce((closest: [string, GeoJSON.Feature<GeoJSON.Point>] | undefined, currentEntry: [string, GeoJSON.Feature<GeoJSON.Point>]) => {
+						if (!closest) {
+							return currentEntry;
+						}
+
+						const [landmarkName, landmark] = currentEntry;
+						const currentEntryDistance: number = turf.distance(centerPoint, landmark);
+						const closestDistance: number = turf.distance(centerPoint, closest[1]);
+						if (currentEntryDistance < closestDistance) {
+							return [landmarkName, landmark];
+						} else {
+							return closest;
+						}
+					}, undefined);
+					if (!closestLandmark) {
+						return "";
+					}
+
+					const directionFromLandmark = turf.bearing(closestLandmark[1], centerPoint);
+					const directionFromLandmarkString: "north" | "northeast" | "northwest" | "east" | "west" | "south" | "southeast" | "southwest" | undefined = (() => {
+						const totalDegrees = 360;
+						const degreesPerDirection = totalDegrees / 8; // 45
+						const halfDegreesPerDirection = degreesPerDirection / 2; // 22.5
+
+						if (directionFromLandmark < 0 || directionFromLandmark >= totalDegrees) {
+							return undefined;
+						}
+
+						if (directionFromLandmark >= totalDegrees - halfDegreesPerDirection || directionFromLandmark < halfDegreesPerDirection) {
+							return "north";
+						} else if (directionFromLandmark >= halfDegreesPerDirection && directionFromLandmark < (90 - halfDegreesPerDirection)) {
+							return "northeast";
+						} else if (directionFromLandmark >= (90 - halfDegreesPerDirection) && directionFromLandmark < (90 + halfDegreesPerDirection)) {
+							return "east";
+						} else if (directionFromLandmark >= (90 + halfDegreesPerDirection) && directionFromLandmark < (180 - halfDegreesPerDirection)) {
+							return "southeast";
+						} else if (directionFromLandmark >= (180 - halfDegreesPerDirection) && directionFromLandmark < (180 + halfDegreesPerDirection)) {
+							return "south";
+						} else if (directionFromLandmark >= (180 + halfDegreesPerDirection) && directionFromLandmark < (270 - halfDegreesPerDirection)) {
+							return "southwest";
+						} else if (directionFromLandmark >= (270 - halfDegreesPerDirection) && directionFromLandmark < (270 + halfDegreesPerDirection)) {
+							return "west";
+						} else if (directionFromLandmark >= (270 + halfDegreesPerDirection) && directionFromLandmark < (360 - halfDegreesPerDirection)) {
+							return "northwest";
+						}
+
+						return undefined;
+					})();
+					if (!directionFromLandmarkString) {
+						return "";
+					}
+
+					return ` to the ${directionFromLandmarkString} of ${closestLandmark[0]}`;
+				} else {
+					return "";
+				}
+			})();
+			sentences.push(`An en route delay is currently in effect${region}${reasonString ? ` due to ${reasonString}` : ""}`);
 		} else {
 			sentences.push(`A${startsWithVowel(typeString) ? "n" : ""} ${typeString} has been issued for ${await this.airportString()}${reasonString ? ` due to ${reasonString}` : ""}`);
 		}
