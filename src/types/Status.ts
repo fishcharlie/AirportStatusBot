@@ -369,6 +369,10 @@ export class Status {
 		if (this.type.type === TypeEnum.AIRSPACE_FLOW) {
 			if (this.altitudes?.floor && this.altitudes?.ceiling) {
 				sentences.push(`This delay applies to aircraft flying between ${formatNumber(this.altitudes.floor)} and ${formatNumber(this.altitudes.ceiling)} feet`);
+			} else if (this.altitudes?.ceiling && !this.altitudes?.floor) {
+				sentences.push(`This delay applies to aircraft flying below ${formatNumber(this.altitudes.ceiling)} feet`);
+			} else if (this.altitudes?.floor && !this.altitudes?.ceiling) {
+				sentences.push(`This delay applies to aircraft flying above ${formatNumber(this.altitudes.floor)} feet`);
 			}
 			if (this.length.average) {
 				sentences.push(`Delays are currently averaging ${minutesToDurationString(this.length.average)}`);
