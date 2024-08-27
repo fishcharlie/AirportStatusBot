@@ -41,7 +41,7 @@
     "jimp": "^0.22.10",
     "js-object-utilities": "^2.2.0",
     "luxon": "^3.4.4",
-    "maptoimage": "^1.2.0",
+    "maptoimage": "^1.2.1",
     "masto": "^6.5.2",
     "nostr-tools": "^2.7.1",
     "rimraf": "^5.0.5",
