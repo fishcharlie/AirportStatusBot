@@ -344,12 +344,26 @@ export class Poster {
 						"url": `${socialNetwork.credentials.endpoint}`,
 						"accessToken": socialNetwork.credentials.password
 					});
+					let imageId: string | undefined;
 					try {
-						const mastodonResult = await masto.v1.statuses.create({
+						if (content.image) {
+							imageId = (await masto.v1.media.create({
+								"file": new Blob([content.image])
+							})).id;
+						}
+					} catch (e) {
+						console.error("Error uploading Mastodon image", e);
+					}
+					try {
+						const mastodonPost: {[key: string]: any} = {
 							"status": `${userToMessage} ${socialMessage}`,
 							"inReplyToId": replyTo?.id,
 							"visibility": "direct"
-						});
+						};
+						if (imageId) {
+							mastodonPost.media_ids = [imageId];
+						}
+						const mastodonResult = await masto.v1.statuses.create(mastodonPost as any);
 						returnObject = mastodonResult;
 					} catch (e) {
 						console.log("Error posting DM: ", JSON.stringify(e));
