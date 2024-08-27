@@ -363,7 +363,7 @@ const replyOptions: ReplyOption[] = [
 	},
 	{
 		"inputs": ["where do you get your data?", "data source"],
-		"reply": "I get the majority of my data from the FAA's Airport Status API. Some airport name & location information comes from OurAirports. And finally, some of the map imagery comes from OpenStreetMap & Iowa Environmental Mesonet of Iowa State University."
+		"reply": "I get the majority of my data from the FAA's Airport Status API. Some airport name & location information comes from OurAirports. US State boundary data comes from Natural Earth. And finally, some of the map imagery comes from OpenStreetMap & Iowa Environmental Mesonet of Iowa State University."
 	},
 	{
 		"inputs": ["help", "commands", "what can i ask you?", "what can you do?"],
