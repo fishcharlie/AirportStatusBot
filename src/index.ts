@@ -10,6 +10,7 @@ import { OurAirportsDataManager } from "./OurAirportsDataManager";
 import { NaturalEarthDataManager } from "./NaturalEarthDataManager";
 import { ImageGenerator } from "./ImageGenerator";
 import express from "express";
+import { minutesToDurationString } from "./utils/minutesToDurationString";
 
 const packageJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
 let config: Config;
@@ -364,6 +365,10 @@ const replyOptions: ReplyOption[] = [
 	{
 		"inputs": ["where do you get your data?", "data source"],
 		"reply": "I get the majority of my data from the FAA's Airport Status API. Some airport name & location information comes from OurAirports. US State boundary data comes from Natural Earth. And finally, some of the map imagery comes from OpenStreetMap & Iowa Environmental Mesonet of Iowa State University."
+	},
+	{
+		"inputs": ["how often do you check for delays?", "refresh rate", "update rate", "refresh frequency", "update frequency", "how often do you update?"],
+		"reply": `I check for delays every ${minutesToDurationString(config.refreshInterval / 60)}.`
 	},
 	{
 		"inputs": ["help", "commands", "what can i ask you?", "what can you do?"],
