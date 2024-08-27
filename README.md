@@ -39,7 +39,7 @@ Sadly, not all features are available on all platforms. Below is a chart of what
 	- State boundaries from [Natural Earth](https://www.naturalearthdata.com)
 		- Data provided under Public Domain (https://www.naturalearthdata.com/about/terms-of-use/)
 - A lot of the terminology used in the API is referenced in the [FAA Glossary](https://www.fly.faa.gov/Products/Glossary_of_Terms/glossary_of_terms.html).
-- Data is refreshed every minute from the FAA API. This means that the bot will post a new status with 60 seconds of the FAA reporting a delay.
+- Data is refreshed every minute from the FAA API. This means that the bot will post a new status within 60 seconds of the FAA reporting a delay.
 
 ## License
 
