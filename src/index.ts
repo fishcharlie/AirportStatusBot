@@ -230,7 +230,17 @@ async function run (firstRun: boolean) {
 			const comparisonHash = delay.comparisonHash;
 			if (post) {
 				if (process.env.NODE_ENV === "production") {
-					if (fs.existsSync(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"))) {
+					if (delay.isBeta === true) {
+						// Delay is in beta
+						// Only direct message it to me so I can see it and make any fixes if needed.
+						const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
+						if (mastodonAccount) {
+							poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
+								"message": post
+							});
+						}
+						continue;
+					} else if (fs.existsSync(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"))) {
 						const postResponseText = await fs.promises.readFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), "utf8");
 						const oldPostResponse = JSON.parse(postResponseText);
 
