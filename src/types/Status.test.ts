@@ -132,6 +132,41 @@ describe("Status.fromRAW().toPost()", () => {
 				}
 			},
 			"An en route delay is currently in effect in the #Florida region due to thunderstorms. This delay applies to aircraft flying between 18,000 and 60,000 feet. Delays are currently averaging 22 minutes."
+		],
+		[
+			{
+				"Name": "Airspace Flow Programs",
+				"Airspace_Flow_List": {
+					"Airspace_Flow": {
+						"CTL_Element": "FCAMON",
+						"Reason": "other",
+						"AFP_StartTime": 2300,
+						"AFP_EndTime": 459,
+						"FCA_StartDateTime": 20240826160000,
+						"FCA_EndDateTime": 20240827140000,
+						"Avg": "11 minutes",
+						"Floor": 0,
+						"Ceiling": 600,
+						"Line": {
+							"Point": [
+								{
+									"@_Lat": "52.12",
+									"@_Long": "-64.77"
+								},
+								{
+									"@_Lat": "42.18",
+									"@_Long": "-61.57"
+								},
+								{
+									"@_Lat": "43.57",
+									"@_Long": "-55.77"
+								}
+							]
+						}
+					}
+				}
+			},
+			"An en route delay is currently in effect to the northeast of the contiguous United States. This delay applies to aircraft flying below 60,000 feet. Delays are currently averaging 11 minutes."
 		]
 	];
 
