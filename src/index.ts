@@ -24,7 +24,7 @@ let lastSuccessfulRun = Date.now();
 
 if (config.webServer) {
 	const app = express();
-	app.get("/status", (_req, res) => {
+	app.get("/api/service/status", (_req, res) => {
 		res.send({
 			lastSuccessfulRun
 		});
