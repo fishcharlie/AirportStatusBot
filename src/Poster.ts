@@ -8,6 +8,8 @@ import { parseHashtags } from "./utils/parseHashtags";
 import { createRestAPIClient as Masto, createStreamingAPIClient as MastoStream } from "masto";
 import * as htmlToText from "html-to-text";
 import { resizeImage } from "./utils/resizeImage";
+import * as fs from "fs";
+import * as path from "path";
 
 const hashtagWords = [
 	"weather",
@@ -587,6 +589,18 @@ export class Listener {
 									}
 								};
 								console.log(`Received direct message on Mastodon from ${callbackObject.user}: ${callbackObject.content.message}`);
+								try {
+									fs.appendFileSync(path.join(__dirname, "..", "cache", "receivedDirectMessages.txt"), `${JSON.stringify({
+										"message": callbackObject.content.message,
+										"timestamp": new Date().toISOString(),
+										"user": callbackObject.user,
+										"id": callbackObject.id,
+										"socialNetworkType": socialNetwork.type,
+										"socialNetworkUUID": socialNetwork.uuid
+									})}\n`);
+								} catch (e) {
+									console.error("Error appending received direct message to file", e);
+								}
 								this.#callback(callbackObject);
 							} else {
 								console.log(`Invalid item. Event: ${item.event}. Stream: ${item.stream.join(" ")}. Payload: ${item.payload}.`)
@@ -633,6 +647,18 @@ export class Listener {
 								}
 							};
 							console.log(`Received direct message on Nostr from ${callbackObject.user}: ${callbackObject.content.message}`);
+							try {
+								fs.appendFileSync(path.join(__dirname, "..", "cache", "receivedDirectMessages.txt"), `${JSON.stringify({
+									"message": callbackObject.content.message,
+									"timestamp": new Date().toISOString(),
+									"user": callbackObject.user,
+									"id": callbackObject.id,
+									"socialNetworkType": socialNetwork.type,
+									"socialNetworkUUID": socialNetwork.uuid
+								})}\n`);
+							} catch (e) {
+								console.error("Error appending received direct message to file", e);
+							}
 							this.#callback(callbackObject);
 						},
 						"onclose": (err) => {
