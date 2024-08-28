@@ -24,6 +24,9 @@ let lastSuccessfulRun = Date.now();
 
 if (config.webServer) {
 	const app = express();
+	app.get("/", (_req, res) => {
+		res.status(302).redirect(packageJSON.homepage);
+	});
 	app.get("/api/service/status", (_req, res) => {
 		res.send({
 			lastSuccessfulRun
