@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "This is a social media bot that will post delay information for airports in the United States.",
   "main": "dist/index.js",
-  "homepage": "https://mastodon.social/@AirportStatusBot",
+  "homepage": "https://github.com/fishcharlie/AirportStatusBot",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fishcharlie/AirportStatusBot.git"
