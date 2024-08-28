@@ -11,6 +11,7 @@ import { NaturalEarthDataManager } from "./NaturalEarthDataManager";
 import { ImageGenerator } from "./ImageGenerator";
 import express from "express";
 import { minutesToDurationString } from "./utils/minutesToDurationString";
+import { S3 } from "@aws-sdk/client-s3";
 
 const packageJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
 let config: Config;
@@ -32,6 +33,44 @@ if (config.webServer) {
 			lastSuccessfulRun
 		});
 	});
+
+	if (config.webServer.s3ImageCredentials) {
+		const client = new S3({
+			"credentials": {
+				"accessKeyId": config.webServer.s3ImageCredentials.accessKeyId,
+				"secretAccessKey": config.webServer.s3ImageCredentials.secretAccessKey
+			},
+			"region": config.webServer.s3ImageCredentials.region
+		});
+		app.get("/assets/images/:key", async (req, res, next) => {
+			if (!config.webServer?.s3ImageCredentials) {
+				return next();
+			}
+
+			const key = req.params.key;
+			const bucket = config.webServer.s3ImageCredentials.bucket;
+			const params = {
+				"Bucket": bucket,
+				"Key": key
+			};
+			try {
+				const data = await client.getObject(params);
+				if (data.Body) {
+					if (data.ContentType) {
+						res.setHeader("Content-Type", data.ContentType);
+					}
+					res.send(data.Body);
+				} else {
+					next();
+				}
+			} catch (e) {
+				console.error("Failed to get image from S3: ", e);
+				next();
+			}
+		});
+	}
+
+
 	app.get("/assets/images/logo.png", (_req, res, next) => {
 		if (fs.existsSync(path.join(__dirname, "..", "Logo.png"))) {
 			res.sendFile(path.join(__dirname, "..", "Logo.png"));

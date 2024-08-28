@@ -7,6 +7,13 @@ export interface Config {
 
 	webServer?: {
 		port: number;
+
+		s3ImageCredentials?: {
+			region: string;
+			accessKeyId: string;
+			secretAccessKey: string;
+			bucket: string;
+		};
 	}
 }
 
