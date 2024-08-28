@@ -24,7 +24,7 @@ describe("Status.fromRAW().toPost()", () => {
 					}
 				}
 			},
-			"A departure delay has been issued for Test Airport A (#AAA) due to traffic management initiatives. Current delays are 46-60 minutes and increasing."
+			"A departure delay has been issued for Test Airport A (#AAA) due to heavy traffic volume. Current delays are 46-60 minutes and increasing."
 		],
 		[
 			{
@@ -50,7 +50,7 @@ describe("Status.fromRAW().toPost()", () => {
 					}
 				}
 			},
-			"Inbound aircraft to Test Airport A (#AAA) are currently being delayed at their origin airport due to traffic management initiatives. It is currently unknown how long the delays are."
+			"Inbound aircraft to Test Airport A (#AAA) are currently being delayed at their origin airport due to heavy traffic volume. It is currently unknown how long the delays are."
 		],
 		[
 			{
@@ -62,7 +62,7 @@ describe("Status.fromRAW().toPost()", () => {
 					}
 				}
 			},
-			"Inbound aircraft to Test Airport A (#AAA) are currently being held at their origin airport due to traffic management initiatives. It is currently unknown when operations will resume."
+			"Inbound aircraft to Test Airport A (#AAA) are currently being held at their origin airport due to heavy traffic volume. It is currently unknown when operations will resume."
 		],
 		[
 			{
