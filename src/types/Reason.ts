@@ -121,8 +121,10 @@ export class Reason {
 
 		switch (this.parentType()) {
 			case ParentType.WEATHER:
-				switch(subPartsStr) {
-					case "Thunderstorms":
+				switch(subPartsStr.toLowerCase()) {
+					case "thunderstorms":
+					case "tornado/hurricane":
+					case "rain":
 						return [ImageType.radar];
 				}
 		}
