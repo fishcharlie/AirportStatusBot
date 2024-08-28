@@ -70,6 +70,23 @@ interface NostrSocialNetwork {
 	settings?: {
 		includeHashtags?: boolean;
 	};
+	imageHandler?: {
+		"type": SocialNetworkType.s3,
+		credentials: {
+			region: string;
+			accessKeyId: string;
+			secretAccessKey: string;
+			bucket: string;
+		};
+		/**
+		 * A string representing the URL to change the post to.
+		 *
+		 * For example if you upload to S3 but want the image URL in the post to be `https://example.com/image.jpg` you would set this to `https://example.com/{{key}}`.
+		 *
+		 * `{{key}}` will be replaced with the key of the image in the S3 bucket.
+		 */
+		postURLRemap?: string;
+	};
 	contentType: ContentTypeEnum;
 	listen: boolean;
 }
