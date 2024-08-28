@@ -479,6 +479,28 @@ export class Status {
 				return `The ${from.type.toString()} at ${await to.airportString()} has been ${extendedByDuration > 0 ? "extended" : "reduced"} by ${minutesToDurationString(Math.abs(extendedByDuration))} to ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}.`;
 			}
 		}
+		if (from.length.trend !== undefined && to.length.trend !== undefined && from.length.min !== undefined && to.length.min !== undefined && from.length.max !== undefined && to.length.max !== undefined) {
+			const minChanged = from.length.min !== to.length.min;
+			const maxChanged = from.length.max !== to.length.max;
+			const change: "increased" | "decreased" | undefined = (() => {
+				if (to.length.min > from.length.min && to.length.max > from.length.max) {
+					return "increased";
+				} else if (to.length.min < from.length.min && to.length.max < from.length.max) {
+					return "decreased";
+				} else {
+					return undefined;
+				}
+			})();
+			const trendChanged = from.length.trend !== to.length.trend;
+
+			if (minChanged) {
+				return `The ${to.type.toString()} at ${await to.airportString()} now has a minimum delay of ${to.length.min} minutes. The maximum delay remains at ${to.length.max} minutes. The predicted trend is ${trendChanged ? "now" : "still"} ${to.length.trend}.`;
+			} else if ((minChanged && maxChanged) || maxChanged) {
+				return `The ${to.type.toString()} at ${await to.airportString()} has ${change ? change : "changed"} to ${to.length.min}-${to.length.max} minutes and is ${trendChanged ? "now" : "still"} ${to.length.trend}.`;
+			} else if (trendChanged) {
+				return `The ${to.type.toString()} at ${await to.airportString()} is now ${to.length.trend} with delays remaining at ${to.length.min}-${to.length.max} minutes.`;
+			}
+		}
 
 		return undefined;
 	}

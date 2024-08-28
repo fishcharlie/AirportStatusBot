@@ -352,6 +352,237 @@ describe("Status.updatedPost()", () => {
 				}
 			},
 			"The ground stop at Test Airport A (#AAA) has been reduced by 1 hour to 8:15 PM."
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Decreasing",
+							"Min": "31 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "46 minutes",
+							"Max": "1 hour",
+						},
+					}
+				}
+			},
+			"The departure delay at Test Airport A (#AAA) has increased to 46-60 minutes and is now increasing."
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "31 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "46 minutes",
+							"Max": "1 hour",
+						},
+					}
+				}
+			},
+			"The departure delay at Test Airport A (#AAA) has increased to 46-60 minutes and is still increasing."
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "16 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "36 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			"The departure delay at Test Airport A (#AAA) now has a minimum delay of 36 minutes. The maximum delay remains at 46 minutes. The predicted trend is still increasing."
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Decreasing",
+							"Min": "36 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Decreasing",
+							"Min": "16 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			"The departure delay at Test Airport A (#AAA) now has a minimum delay of 16 minutes. The maximum delay remains at 46 minutes. The predicted trend is still decreasing."
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "16 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "16 minutes",
+							"Max": "1 hour",
+						},
+					}
+				}
+			},
+			"The departure delay at Test Airport A (#AAA) has changed to 16-60 minutes and is still increasing."
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Decreasing",
+							"Min": "16 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Decreasing",
+							"Min": "16 minutes",
+							"Max": "36 minutes",
+						},
+					}
+				}
+			},
+			"The departure delay at Test Airport A (#AAA) has changed to 16-36 minutes and is still decreasing."
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Decreasing",
+							"Min": "16 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "16 minutes",
+							"Max": "46 minutes",
+						},
+					}
+				}
+			},
+			"The departure delay at Test Airport A (#AAA) is now increasing with delays remaining at 16-46 minutes."
 		]
 	];
 
