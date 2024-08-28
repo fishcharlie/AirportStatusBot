@@ -255,7 +255,7 @@ export class Reason {
 						return "a facility environmental issue";
 					case "dog on runways":
 						return "a dog on the runway";
-					case "S&R OPS":
+					case "s&r ops":
 						return "search and rescue operations";
 					default:
 						return undefined;
