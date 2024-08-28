@@ -329,6 +329,29 @@ describe("Status.updatedPost()", () => {
 				}
 			},
 			"The ground stop at Test Airport A (#AAA) has been extended by 1 hour and 15 minutes to 9:30 PM."
+		],
+		[
+			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "thunderstorms",
+						"End_Time": "11:15 pm EDT"
+					}
+				}
+			},
+			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "thunderstorms",
+						"End_Time": "10:15 pm EDT"
+					}
+				}
+			},
+			"The ground stop at Test Airport A (#AAA) has been reduced by 1 hour to 8:15 PM."
 		]
 	];
 

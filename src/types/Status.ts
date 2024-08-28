@@ -476,7 +476,7 @@ export class Status {
 			if (from.timing.end.toISOString() !== to.timing.end.toISOString()) {
 				const extendedByDuration = luxon.DateTime.fromJSDate(to.timing.end).diff(luxon.DateTime.fromJSDate(from.timing.end), "minutes").minutes;
 				const luxonDate = luxon.DateTime.fromJSDate(to.timing.end).setZone(tz ?? "UTC");
-				return `The ${from.type.toString()} at ${await to.airportString()} has been extended by ${minutesToDurationString(extendedByDuration)} to ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}.`;
+				return `The ${from.type.toString()} at ${await to.airportString()} has been ${extendedByDuration > 0 ? "extended" : "reduced"} by ${minutesToDurationString(Math.abs(extendedByDuration))} to ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}.`;
 			}
 		}
 
