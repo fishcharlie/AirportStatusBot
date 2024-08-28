@@ -371,6 +371,10 @@ const replyOptions: ReplyOption[] = [
 		"reply": `I check for delays every ${minutesToDurationString(config.refreshInterval / 60)}.`
 	},
 	{
+		"inputs": ["when do you include images in your posts?"],
+		"reply": (platform) => `I include images in my posts when there is a delay that I think would benefit from a visual representation. For example, seeing a weather radar map for thunderstorms, rain, tornadoes, hurricanes, and more. If you believe a delay would benefit from an image, please let ${getAuthorUsername(platform)} know.`
+	},
+	{
 		"inputs": ["help", "commands", "what can i ask you?", "what can you do?"],
 		"reply": (platform) => `You can ask me many things! Here are some examples:\n\`List all delays\` - This will list all current delays at airports in the United States.\n\`Where do you get your data?\` - This will tell you where the bot gets its data from.\n\`Who created you?\` - This will tell you who created the bot.\n\nThere are a few other things not listed here to increase the conversational nature of this bot. Along with a few hidden easter eggs.\nAdditionally, the bot is intended to be able to respond to a wide variety of the commands listed above. If you find a variation of a command that doesn't work, please let ${getAuthorUsername(platform)} know.`
 	},
