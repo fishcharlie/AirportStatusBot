@@ -118,18 +118,22 @@ async function run (firstRun: boolean) {
 
 		const removedDelays = previousDelays.filter((previousDelay) => !delays.find((delay) => delay.comparisonHash === previousDelay.comparisonHash));
 
-		const updatedDelays: Status[] = (await Promise.all(delays.map(async (delay) => {
+		const updatedDelaysObjects: {"previous": Status; "new": Status;}[] = (await Promise.all(delays.map(async (delay) => {
 			const previousDelay = previousDelays.find((previousDelay) => previousDelay.comparisonHash === delay.comparisonHash);
 			if (previousDelay) {
 				const previousText: string | undefined = await previousDelay.toPost();
 				const newText: string | undefined = await delay.toPost();
 
 				if (previousText !== newText) {
-					return delay
+					return {
+						"previous": previousDelay,
+						"new": delay
+					};
 				}
 			}
 			return undefined;
-		}))).filter((delay) => delay !== undefined) as Status[];
+		}))).filter((v) => v !== undefined) as {"previous": Status; "new": Status;}[];
+		const updatedDelays: Status[] = updatedDelaysObjects.map((v) => v.new);
 
 		console.log("\n\nAll delays:");
 		console.log((await Promise.all(delays.map((delay) => delay.toPost()))).filter(Boolean));
@@ -281,6 +285,60 @@ async function run (firstRun: boolean) {
 			}
 
 			rimraf.rimrafSync(path.join(__dirname, "..", "cache", "posts", comparisonHash));
+		}
+		console.log(`Posting ${updatedDelays.length} updated delays.`);
+		for (const delay of updatedDelaysObjects) {
+			const post = await Status.updatedPost(delay.previous, delay.new);
+			const comparisonHash = delay.previous.comparisonHash;
+			if (post) {
+				if (process.env.NODE_ENV === "production") {
+					// All updated delays are in beta.
+					if (true) {
+						// Delay is in beta
+						// Only direct message it to me so I can see it and make any fixes if needed.
+						const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
+						if (mastodonAccount) {
+							poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
+								"message": post
+							});
+						}
+						continue;
+					// TODO: uncomment this when we are ready to post updated delays to production. NOTE: I have just copied this code from removed delays. So I might need to make a few modifications to ensure it works right for updates. For example, I'm not sure if we want to save the updated post response to the file system.
+					}/* else if (fs.existsSync(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"))) {
+						const postResponseText = await fs.promises.readFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), "utf8");
+						const oldPostResponse = JSON.parse(postResponseText);
+
+						let newPostResponse: objectUtils.GeneralObject<any> = {};
+						const entries = Object.entries(oldPostResponse);
+						for (const entry of entries) {
+							const socialNetworkUUID: string = entry[0];
+							const value: any = entry[1];
+
+							const postResponse = await poster.reply(socialNetworkUUID, value, {
+								"message": post
+							}, xmlResult);
+							if (Object.keys(postResponse).length > 0) {
+								newPostResponse[socialNetworkUUID] = postResponse;
+								console.log(`[${socialNetworkUUID}] Replied: '${post}'`);
+							} else {
+								newPostResponse[socialNetworkUUID] = oldPostResponse[socialNetworkUUID];
+								console.warn(`[${socialNetworkUUID}] Failed to reply: '${post}'.`);
+							}
+						}
+						console.log(`Post response: \n`, newPostResponse);
+
+						const newPostResponseClean = {...newPostResponse};
+						objectUtils.circularKeys(newPostResponseClean).forEach((key) => {
+							objectUtils.set(newPostResponseClean, key, "[Circular]");
+						});
+						await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponseClean));
+					} else {
+						console.warn(`Not replying: '${post}' due to no previous postResponse.json file.`);
+					}*/
+				} else {
+					console.warn(`Not posting: '${post}' due to NODE_ENV not being production.`);
+				}
+			}
 		}
 		console.log("Done posting social messages.");
 	}
