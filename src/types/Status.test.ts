@@ -583,6 +583,39 @@ describe("Status.updatedPost()", () => {
 				}
 			},
 			"The departure delay at Test Airport A (#AAA) is now increasing with delays remaining at 16-46 minutes."
+		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "46 minutes",
+							"Max": "1 hour",
+						},
+					}
+				}
+			},
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "1 hour and 1 minute",
+							"Max": "1 hour and 15 minutes",
+						},
+					}
+				}
+			},
+			"The departure delay at Test Airport A (#AAA) has increased to 61-75 minutes and is still increasing."
 		]
 	];
 
