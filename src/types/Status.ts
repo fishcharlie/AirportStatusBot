@@ -493,7 +493,7 @@ export class Status {
 			})();
 			const trendChanged = from.length.trend !== to.length.trend;
 
-			if (minChanged) {
+			if (minChanged && !maxChanged) {
 				return `The ${to.type.toString()} at ${await to.airportString()} now has a minimum delay of ${to.length.min} minutes. The maximum delay remains at ${to.length.max} minutes. The predicted trend is ${trendChanged ? "now" : "still"} ${to.length.trend}.`;
 			} else if ((minChanged && maxChanged) || maxChanged) {
 				return `The ${to.type.toString()} at ${await to.airportString()} has ${change ? change : "changed"} to ${to.length.min}-${to.length.max} minutes and is ${trendChanged ? "now" : "still"} ${to.length.trend}.`;
