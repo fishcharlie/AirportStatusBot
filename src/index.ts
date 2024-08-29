@@ -18,6 +18,7 @@ let config: Config;
 try {
 	config = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "config.json"), "utf8"));
 } catch (e) {
+	console.error("There was an error parsing the config file. Using default config. ", e);
 	config = {"socialNetworks": [], "refreshInterval": 60};
 }
 
