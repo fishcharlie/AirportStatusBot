@@ -19,6 +19,10 @@ const items = [
 	{
 		"name": "ne_110m_admin_1_states_provinces",
 		"url": "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_1_states_provinces.zip"
+	},
+	{
+		"name": "ne_110m_populated_places",
+		"url": "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_places.zip"
 	}
 ];
 
