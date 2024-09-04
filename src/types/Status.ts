@@ -297,7 +297,7 @@ export class Status {
 					return undefined;
 				}
 
-				const statesGeoJSON = await this.#naturalEarthDataManager?.geoJSON();
+				const statesGeoJSON = await this.#naturalEarthDataManager?.geoJSON("ne_110m_admin_1_states_provinces");
 				if (!statesGeoJSON) {
 					return undefined;
 				}
@@ -316,7 +316,7 @@ export class Status {
 				if (state && state.properties) {
 					return ` in the #${state.properties?.name} region`;
 				} else if (this.geoJSON) {
-					const statesGeoJSON = await this.#naturalEarthDataManager?.geoJSON();
+					const statesGeoJSON = await this.#naturalEarthDataManager?.geoJSON("ne_110m_admin_1_states_provinces");
 					if (!statesGeoJSON) {
 						return "";
 					}
