@@ -172,7 +172,9 @@ export class Poster {
 							await client.putObject({
 								"Bucket": socialNetwork.credentials.bucket,
 								"Body": content.image,
-								"Key": `${ts}.png`
+								"Key": `${ts}.png`,
+								"ContentType": "image/png",
+								"ContentLength": content.image.byteLength
 							});
 						}
 						break;
@@ -207,7 +209,9 @@ export class Poster {
 										await client.putObject({
 											"Bucket": socialNetwork.imageHandler.credentials.bucket,
 											"Body": content.image,
-											"Key": `${imageKey}.png`
+											"Key": `${imageKey}.png`,
+											"ContentType": "image/png",
+											"ContentLength": content.image.byteLength
 										});
 
 										if (socialNetwork.imageHandler.postURLRemap) {
