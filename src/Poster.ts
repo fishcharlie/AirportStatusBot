@@ -243,12 +243,13 @@ export class Poster {
 										const blurhashPixels: any[] = (() => {
 											const pixels: any[] = [];
 											// Extract RGB pixel data to Uint8ClampedArray
-											jimpBlurhashImg.scan(0, 0, blurhashWidth, blurhashHeight, (_x, _y, idx) => {
+											const scanIterator = jimpBlurhashImg.scanIterator(0, 0, blurhashWidth, blurhashHeight)
+											for (const { idx } of scanIterator) {
 												pixels.push(jimpBlurhashImg.bitmap.data[idx + 0]);
 												pixels.push(jimpBlurhashImg.bitmap.data[idx + 1]);
 												pixels.push(jimpBlurhashImg.bitmap.data[idx + 2]);
 												pixels.push(jimpBlurhashImg.bitmap.data[idx + 3]);
-											});
+											}
 											return pixels;
 										})();
 
