@@ -10,7 +10,9 @@ import * as htmlToText from "html-to-text";
 import { resizeImage } from "./utils/resizeImage";
 import * as fs from "fs";
 import * as path from "path";
-import { randomUUID, UUID } from "crypto";
+import { randomUUID, UUID, createHash } from "crypto";
+import Jimp from "jimp";
+import * as blurhash from "blurhash";
 
 const hashtagWords = [
 	"weather",
@@ -213,6 +215,25 @@ export class Poster {
 										} else {
 											imageURL = `https://${socialNetwork.imageHandler.credentials.bucket}.s3.${socialNetwork.imageHandler.credentials.region}.amazonaws.com/${imageKey}.png`;
 										}
+
+										const jimpImg = await Jimp.read(content.image);
+										const width = jimpImg.getWidth();
+										const height = jimpImg.getHeight();
+
+										// https://github.com/nostr-protocol/nips/blob/master/92.md
+										tags.push([
+											"imeta",
+											`url ${imageURL}`,
+											"m image/png",
+											`x ${((): string => {
+												const hash = createHash("sha256");
+												hash.update(content.image);
+												return hash.digest("hex");
+											})()}`,
+											`size ${content.image.byteLength}`,
+											`dim ${width}x${height}`,
+											`blurhash ${blurhash.encode(new Uint8ClampedArray(content.image), width, height, 4, 3)}`,
+										]);
 									} catch (e) {
 										console.error("Error uploading image to S3", e);
 										imageURL = undefined;
@@ -227,8 +248,7 @@ export class Poster {
 							"kind": 1,
 							"created_at": Math.floor(Date.now() / 1000),
 							"tags": tags,
-							"content": socialMessage
-							// "content": imageURL ? `${socialMessage}\n${imageURL}` : socialMessage
+							"content": imageURL ? `${socialMessage} ${imageURL} ` : socialMessage
 						}, privateKey.data);
 						try {
 							await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
