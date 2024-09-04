@@ -74,10 +74,14 @@ export class ImageGenerator {
 		];
 		let attribution = "Map data from OpenStreetMap contributors.\nhttps://openstreetmap.org/copyright";
 
+		let radarBuffers: { [key: string]: Buffer } = {};
 		if (this.types.includes(ImageType.radar)) {
-			layers.push({
-				"url": "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-0/{z}/{x}/{y}.png",
-				"opacity": 0.6
+			layers.push(async (z: number, x: number, y: number): Promise<Buffer> => {
+				const img = await fetch(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-0/${z}/${x}/${y}.png`);
+				const arrayBuffer = await img.arrayBuffer();
+				const buffer = Buffer.from(arrayBuffer);
+				radarBuffers[`${z}/${x}/${y}`] = buffer;
+				return (await Jimp.read(buffer)).opacity(0.6).getBufferAsync(Jimp.MIME_PNG);
 			});
 			attribution += "\nRadar data from Iowa Environmental Mesonet.";
 		}
