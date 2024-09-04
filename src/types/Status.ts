@@ -10,6 +10,7 @@ import { NaturalEarthDataManager } from "../NaturalEarthDataManager";
 import { ImageType } from "../ImageGenerator";
 import formatNumber from "../utils/formatNumber";
 import * as turf from "@turf/turf";
+import bearingToString from "../utils/bearingToString";
 
 const ianaEquivalents: { [key: string]: string } = {
 	"EDT": "America/New_York",
@@ -346,35 +347,7 @@ export class Status {
 					}
 
 					const directionFromLandmark = turf.bearing(closestLandmark[1], centerPoint);
-					const directionFromLandmarkString: "north" | "northeast" | "northwest" | "east" | "west" | "south" | "southeast" | "southwest" | undefined = (() => {
-						const totalDegrees = 360;
-						const degreesPerDirection = totalDegrees / 8; // 45
-						const halfDegreesPerDirection = degreesPerDirection / 2; // 22.5
-
-						if (directionFromLandmark < 0 || directionFromLandmark >= totalDegrees) {
-							return undefined;
-						}
-
-						if (directionFromLandmark >= totalDegrees - halfDegreesPerDirection || directionFromLandmark < halfDegreesPerDirection) {
-							return "north";
-						} else if (directionFromLandmark >= halfDegreesPerDirection && directionFromLandmark < (90 - halfDegreesPerDirection)) {
-							return "northeast";
-						} else if (directionFromLandmark >= (90 - halfDegreesPerDirection) && directionFromLandmark < (90 + halfDegreesPerDirection)) {
-							return "east";
-						} else if (directionFromLandmark >= (90 + halfDegreesPerDirection) && directionFromLandmark < (180 - halfDegreesPerDirection)) {
-							return "southeast";
-						} else if (directionFromLandmark >= (180 - halfDegreesPerDirection) && directionFromLandmark < (180 + halfDegreesPerDirection)) {
-							return "south";
-						} else if (directionFromLandmark >= (180 + halfDegreesPerDirection) && directionFromLandmark < (270 - halfDegreesPerDirection)) {
-							return "southwest";
-						} else if (directionFromLandmark >= (270 - halfDegreesPerDirection) && directionFromLandmark < (270 + halfDegreesPerDirection)) {
-							return "west";
-						} else if (directionFromLandmark >= (270 + halfDegreesPerDirection) && directionFromLandmark < (360 - halfDegreesPerDirection)) {
-							return "northwest";
-						}
-
-						return undefined;
-					})();
+					const directionFromLandmarkString: "north" | "northeast" | "northwest" | "east" | "west" | "south" | "southeast" | "southwest" | undefined = bearingToString(directionFromLandmark);
 					if (!directionFromLandmarkString) {
 						return "";
 					}
