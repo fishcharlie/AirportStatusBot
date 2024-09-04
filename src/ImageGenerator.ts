@@ -147,7 +147,7 @@ export class ImageGenerator {
 			existingHeight += height + linePadding;
 			maxWidth = Math.max(maxWidth, width);
 		}
-		let returnValue = {
+		let returnValue: ImageOutput = {
 			"content": await jimp.getBufferAsync(Jimp.MIME_PNG)
 		};
 		return returnValue;
