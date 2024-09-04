@@ -105,8 +105,10 @@ export class ImageGenerator {
 			});
 		}
 
+		let centerText: string | undefined = undefined;
 		const mapCenter = (() => {
 			if (airport) {
+				centerText = `at ${airport.name}`;
 				return {
 					"lat": airport.latitude_deg,
 					"lng": airport.longitude_deg
