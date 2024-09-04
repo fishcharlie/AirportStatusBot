@@ -12,6 +12,7 @@ import formatNumber from "../utils/formatNumber";
 import * as turf from "@turf/turf";
 import bearingToString from "../utils/bearingToString";
 import getUSStateThatPointIsIn from "../utils/getUSStateThatPointIsIn";
+import getClosestLandmarkToPoint from "../utils/getClosestLandmarkToPoint";
 
 const ianaEquivalents: { [key: string]: string } = {
 	"EDT": "America/New_York",
@@ -318,37 +319,22 @@ export class Status {
 					}
 
 					const centerPoint = turf.center(this.geoJSON);
-					const landmarks: {[key: string]: GeoJSON.Feature<GeoJSON.Point>} = {
-						"the contiguous United States": turf.point([-97, 38]),
-						"Alaska": turf.center(statesGeoJSON.features.find((feature) => feature.properties?.name === "Alaska")!.geometry),
-						"Hawaii": turf.center(statesGeoJSON.features.find((feature) => feature.properties?.name === "Hawaii")!.geometry)
-					};
+					const landmarks: GeoJSON.FeatureCollection<GeoJSON.Point, GeoJSON.GeoJsonProperties> = turf.featureCollection([
+						turf.feature(turf.geometry("Point", [-97, 38]), {"name": "the contiguous United States"}),
+						turf.feature(turf.center(statesGeoJSON.features.find((feature) => feature.properties?.name === "Alaska")!.geometry).geometry, {"name": "Alaska"}),
+						turf.feature(turf.center(statesGeoJSON.features.find((feature) => feature.properties?.name === "Hawaii")!.geometry).geometry, {"name": "Hawaii"}),
+					]) as any;
 
-					const closestLandmark: [string, GeoJSON.Feature<GeoJSON.Point>] | undefined = Object.entries(landmarks).reduce((closest: [string, GeoJSON.Feature<GeoJSON.Point>] | undefined, currentEntry: [string, GeoJSON.Feature<GeoJSON.Point>]) => {
-						if (!closest) {
-							return currentEntry;
-						}
-
-						const [landmarkName, landmark] = currentEntry;
-						const currentEntryDistance: number = turf.distance(centerPoint, landmark);
-						const closestDistance: number = turf.distance(centerPoint, closest[1]);
-						if (currentEntryDistance < closestDistance) {
-							return [landmarkName, landmark];
-						} else {
-							return closest;
-						}
-					}, undefined);
+					const closestLandmark = getClosestLandmarkToPoint(centerPoint, landmarks);
 					if (!closestLandmark) {
 						return "";
 					}
 
-					const directionFromLandmark = turf.bearing(closestLandmark[1], centerPoint);
-					const directionFromLandmarkString: "north" | "northeast" | "northwest" | "east" | "west" | "south" | "southeast" | "southwest" | undefined = bearingToString(directionFromLandmark);
-					if (!directionFromLandmarkString) {
+					if (!closestLandmark.item.properties?.name) {
 						return "";
 					}
 
-					return ` to the ${directionFromLandmarkString} of ${closestLandmark[0]}`;
+					return ` to the ${closestLandmark.direction} of ${closestLandmark.item.properties.name}`;
 				} else {
 					return "";
 				}
