@@ -221,7 +221,7 @@ export class Poster {
 										const height = jimpImg.getHeight();
 
 										// https://github.com/nostr-protocol/nips/blob/master/92.md
-										tags.push([
+										console.log([
 											"imeta",
 											`url ${imageURL}`,
 											"m image/png",
@@ -248,7 +248,8 @@ export class Poster {
 							"kind": 1,
 							"created_at": Math.floor(Date.now() / 1000),
 							"tags": tags,
-							"content": imageURL ? `${socialMessage} ${imageURL} ` : socialMessage
+							"content": socialMessage
+							// "content": imageURL ? `${socialMessage} ${imageURL} ` : socialMessage
 						}, privateKey.data);
 						try {
 							await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
