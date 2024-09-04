@@ -22,7 +22,16 @@ const hashtagWords = [
 
 interface PostContent {
 	message: string;
-	image?: Buffer;
+	image?: {
+		/**
+		 * The alt text for the image. Used for accessibility.
+		 */
+		"alt"?: string;
+		/**
+		 * A buffer of the image to post. Should be in PNG format.
+		 */
+		"content": Buffer;
+	};
 }
 
 interface Post {
@@ -74,7 +83,8 @@ export class Poster {
 						try {
 							if (content.image) {
 								imageId = (await masto.v1.media.create({
-									"file": new Blob([content.image])
+									"file": new Blob([content.image.content]),
+									"description": content.image.alt
 								})).id;
 							}
 						} catch (e) {
@@ -101,7 +111,7 @@ export class Poster {
 						});
 
 						let resizeTimes = 0;
-						let blueskyImage = content.image;
+						let blueskyImage = content.image?.content;
 						while (blueskyImage && blueskyImage.byteLength > BLUESKY_MAX_IMAGE_SIZE_BYTES) {
 							console.log("Image is too large. Resizing. Current size:", blueskyImage.byteLength);
 							if (resizeTimes > 4) {
@@ -137,7 +147,7 @@ export class Poster {
 								"images": [
 									{
 										"image": image,
-										"alt": ""
+										"alt": content.image?.alt ?? ""
 									}
 								],
 								"$type": "app.bsky.embed.images"
@@ -172,10 +182,10 @@ export class Poster {
 						if (content.image) {
 							await client.putObject({
 								"Bucket": socialNetwork.credentials.bucket,
-								"Body": content.image,
+								"Body": content.image.content,
 								"Key": `${ts}.png`,
 								"ContentType": "image/png",
-								"ContentLength": content.image.byteLength
+								"ContentLength": content.image.content.byteLength
 							});
 						}
 						break;
@@ -209,10 +219,10 @@ export class Poster {
 									try {
 										await client.putObject({
 											"Bucket": socialNetwork.imageHandler.credentials.bucket,
-											"Body": content.image,
+											"Body": content.image.content,
 											"Key": `${imageKey}.png`,
 											"ContentType": "image/png",
-											"ContentLength": content.image.byteLength
+											"ContentLength": content.image.content.byteLength
 										});
 
 										if (socialNetwork.imageHandler.postURLRemap) {
@@ -221,7 +231,7 @@ export class Poster {
 											imageURL = `https://${socialNetwork.imageHandler.credentials.bucket}.s3.${socialNetwork.imageHandler.credentials.region}.amazonaws.com/${imageKey}.png`;
 										}
 
-										const jimpImg = await Jimp.read(content.image);
+										const jimpImg = await Jimp.read(content.image.content);
 										const width = jimpImg.getWidth();
 										const height = jimpImg.getHeight();
 
@@ -249,10 +259,11 @@ export class Poster {
 											"m image/png",
 											`x ${((): string => {
 												const hash = createHash("sha256");
-												hash.update(content.image);
+												hash.update(content.image.content);
 												return hash.digest("hex");
 											})()}`,
-											`size ${content.image.byteLength}`,
+											`alt ${content.image.alt ?? ""}`,
+											`size ${content.image.content.byteLength}`,
 											`dim ${width}x${height}`,
 											`blurhash ${blurhash.encode(new Uint8ClampedArray(blurhashPixels), blurhashWidth, blurhashHeight, 4, 3)}`,
 										]);
@@ -432,7 +443,8 @@ export class Poster {
 					try {
 						if (content.image) {
 							imageId = (await masto.v1.media.create({
-								"file": new Blob([content.image])
+								"file": new Blob([content.image.content]),
+								"description": content.image.alt
 							})).id;
 						}
 					} catch (e) {

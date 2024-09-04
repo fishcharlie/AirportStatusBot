@@ -40,6 +40,11 @@ export enum ImageType {
 	"geojson"
 }
 
+interface ImageOutput {
+	"content": Buffer;
+	"alt"?: string;
+}
+
 export class ImageGenerator {
 	#status: Status;
 
@@ -54,7 +59,7 @@ export class ImageGenerator {
 		];
 	}
 
-	async toBuffer(): Promise<Buffer | undefined> {
+	async generate(): Promise<ImageOutput | undefined> {
 		if (this.types.length === 0) {
 			return undefined;
 		}
@@ -138,6 +143,9 @@ export class ImageGenerator {
 			existingHeight += height + linePadding;
 			maxWidth = Math.max(maxWidth, width);
 		}
-		return await jimp.getBufferAsync(Jimp.MIME_PNG);
+		let returnValue = {
+			"content": await jimp.getBufferAsync(Jimp.MIME_PNG)
+		};
+		return returnValue;
 	}
 }

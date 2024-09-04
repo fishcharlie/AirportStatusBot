@@ -237,7 +237,7 @@ async function run (firstRun: boolean) {
 			const post = await delay.toPost();
 			let image;
 			try {
-				image = await new ImageGenerator(delay).toBuffer();
+				image = await new ImageGenerator(delay).generate();
 			} catch (e) {
 				console.error("Failed to generate image:");
 				console.error(e);
@@ -251,7 +251,7 @@ async function run (firstRun: boolean) {
 						if (mastodonAccount) {
 							poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
 								"message": post,
-								image
+								"image": image
 							});
 						}
 						continue;
@@ -260,7 +260,7 @@ async function run (firstRun: boolean) {
 						// Continue posting as normal
 						const postResponse = await poster.post({
 							"message": post,
-							image
+							"image": image
 						}, xmlResult, [ContentTypeEnum.ALL_FAA]);
 						console.log(`Posted: '${post}'`);
 
