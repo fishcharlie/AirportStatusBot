@@ -220,6 +220,21 @@ export class Poster {
 										const width = jimpImg.getWidth();
 										const height = jimpImg.getHeight();
 
+										const jimpBlurhashImg = jimpImg.resize(width / 4, height / 4);
+										const blurhashWidth = jimpBlurhashImg.getWidth();
+										const blurhashHeight = jimpBlurhashImg.getHeight();
+										const blurhashPixels: any[] = (() => {
+											const pixels: any[] = [];
+											// Extract RGB pixel data to Uint8ClampedArray
+											jimpBlurhashImg.scan(0, 0, blurhashWidth, blurhashHeight, (_x, _y, idx) => {
+												pixels.push(jimpBlurhashImg.bitmap.data[idx + 0]);
+												pixels.push(jimpBlurhashImg.bitmap.data[idx + 1]);
+												pixels.push(jimpBlurhashImg.bitmap.data[idx + 2]);
+												pixels.push(jimpBlurhashImg.bitmap.data[idx + 3]);
+											});
+											return pixels;
+										})();
+
 										// https://github.com/nostr-protocol/nips/blob/master/92.md
 										console.log([
 											"imeta",
@@ -232,7 +247,7 @@ export class Poster {
 											})()}`,
 											`size ${content.image.byteLength}`,
 											`dim ${width}x${height}`,
-											`blurhash ${blurhash.encode(new Uint8ClampedArray(content.image), width, height, 4, 3)}`,
+											`blurhash ${blurhash.encode(new Uint8ClampedArray(blurhashPixels), blurhashWidth, blurhashHeight, 4, 3)}`,
 										]);
 									} catch (e) {
 										console.error("Error uploading image to S3", e);
