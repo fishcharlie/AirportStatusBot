@@ -101,21 +101,22 @@ export class Poster {
 						});
 
 						let resizeTimes = 0;
-						while (content.image && content.image.byteLength > BLUESKY_MAX_IMAGE_SIZE_BYTES) {
-							console.log("Image is too large. Resizing. Current size:", content.image.byteLength);
+						let blueskyImage = content.image;
+						while (blueskyImage && blueskyImage.byteLength > BLUESKY_MAX_IMAGE_SIZE_BYTES) {
+							console.log("Image is too large. Resizing. Current size:", blueskyImage.byteLength);
 							if (resizeTimes > 4) {
 								console.error("Image is too large and has been resized too many times. Skipping.");
 								break;
 							}
 
-							content.image = await resizeImage(content.image, 90);
+							blueskyImage = await resizeImage(blueskyImage, 90);
 							resizeTimes += 1;
 						}
 
 						let image: BlobRef | undefined;
 						try {
-							if (content.image) {
-								image = (await bluesky.uploadBlob(content.image, {
+							if (blueskyImage) {
+								image = (await bluesky.uploadBlob(blueskyImage, {
 									"encoding": "image/png"
 								})).data.blob;
 							}
@@ -223,6 +224,8 @@ export class Poster {
 										const jimpImg = await Jimp.read(content.image);
 										const width = jimpImg.getWidth();
 										const height = jimpImg.getHeight();
+
+										console.log("Image dimensions:", width, height);
 
 										const jimpBlurhashImg = jimpImg.resize(width / 4, height / 4);
 										const blurhashWidth = jimpBlurhashImg.getWidth();
