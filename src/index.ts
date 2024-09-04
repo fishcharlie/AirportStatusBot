@@ -35,21 +35,26 @@ if (config.webServer) {
 		});
 	});
 
+	app.get("/assets/images/logo.png", (_req, res, next) => {
+		if (fs.existsSync(path.join(__dirname, "..", "Logo.png"))) {
+			res.sendFile(path.join(__dirname, "..", "Logo.png"));
+		} else {
+			next();
+		}
+	});
+
 	if (config.webServer.s3ImageCredentials) {
+		const s3ImageCredentials = config.webServer.s3ImageCredentials;
 		const client = new S3({
 			"credentials": {
-				"accessKeyId": config.webServer.s3ImageCredentials.accessKeyId,
-				"secretAccessKey": config.webServer.s3ImageCredentials.secretAccessKey
+				"accessKeyId": s3ImageCredentials.accessKeyId,
+				"secretAccessKey": s3ImageCredentials.secretAccessKey
 			},
-			"region": config.webServer.s3ImageCredentials.region
+			"region": s3ImageCredentials.region
 		});
 		app.get("/assets/images/:key", async (req, res, next) => {
-			if (!config.webServer?.s3ImageCredentials) {
-				return next();
-			}
-
 			const key = req.params.key;
-			const bucket = config.webServer.s3ImageCredentials.bucket;
+			const bucket = s3ImageCredentials.bucket;
 			const params = {
 				"Bucket": bucket,
 				"Key": key
@@ -60,8 +65,13 @@ if (config.webServer) {
 					if (data.ContentType) {
 						res.setHeader("Content-Type", data.ContentType);
 					}
-					res.send(data.Body);
+					if (data.ContentLength) {
+						res.setHeader("Content-Length", data.ContentLength);
+					}
+
+					res.send(Buffer.from(await data.Body.transformToByteArray()));
 				} else {
+					console.warn(`No body for S3 object: ${key}`, data);
 					next();
 				}
 			} catch (e) {
@@ -71,14 +81,11 @@ if (config.webServer) {
 		});
 	}
 
-
-	app.get("/assets/images/logo.png", (_req, res, next) => {
-		if (fs.existsSync(path.join(__dirname, "..", "Logo.png"))) {
-			res.sendFile(path.join(__dirname, "..", "Logo.png"));
-		} else {
-			next();
-		}
+	app.use((req, _res, next) => {
+		console.log(`404: ${req.url}`);
+		next();
 	});
+
 	app.listen(config.webServer.port, () => {
 		console.log(`Web server listening on port ${config.webServer?.port}`);
 	});
