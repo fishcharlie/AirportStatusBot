@@ -11,6 +11,7 @@ import { ImageType } from "../ImageGenerator";
 import formatNumber from "../utils/formatNumber";
 import * as turf from "@turf/turf";
 import bearingToString from "../utils/bearingToString";
+import getUSStateThatPointIsIn from "../utils/getUSStateThatPointIsIn";
 
 const ianaEquivalents: { [key: string]: string } = {
 	"EDT": "America/New_York",
@@ -292,25 +293,20 @@ export class Status {
 		} else if (this.type.type === TypeEnum.GROUND_DELAY) {
 			sentences.push(`Inbound aircraft to ${await this.airportString()} are currently being delayed at their origin airport${reasonString ? ` due to ${reasonString}` : ""}`);
 		} else if (this.type.type === TypeEnum.AIRSPACE_FLOW) {
-			const state = await (async () => {
+			const state: GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties> | undefined = await (async () => {
 				if (!this.geoJSON) {
 					return undefined;
 				}
 
-				const statesGeoJSON = await this.#naturalEarthDataManager?.geoJSON("ne_110m_admin_1_states_provinces");
-				if (!statesGeoJSON) {
+				if (!this.#naturalEarthDataManager) {
 					return undefined;
 				}
 
 				// Find center point of the GeoJSON
 				const centerPoint = turf.center(this.geoJSON);
+
 				// Find the state that the center point is in
-				const state = statesGeoJSON.features.find((feature) => {
-					if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
-						return turf.booleanPointInPolygon(centerPoint, feature.geometry);
-					}
-				});
-				return state;
+				return getUSStateThatPointIsIn(centerPoint, this.#naturalEarthDataManager);
 			})();
 			const region: string = await (async () => {
 				if (state && state.properties) {
