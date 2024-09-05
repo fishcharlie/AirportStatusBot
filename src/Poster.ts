@@ -442,7 +442,7 @@ export class Poster {
 						if (content.image) {
 							imageId = (await masto.v1.media.create({
 								"file": new Blob([content.image.content]),
-								"description": content.image.alt
+								"description": content.image.alt ?? ""
 							})).id;
 						}
 					} catch (e) {
