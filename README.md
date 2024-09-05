@@ -16,7 +16,7 @@ Sadly, not all features are available on all platforms. Below is a chart of what
 |---------|----------|---------|-------|
 | Basic posts | ✅ | ✅ | ✅ |
 | Replies | ✅ | ✅ | ✅ |
-| Map Images | ✅ | ✅ | ❌ |
+| Map Images | ✅ | ✅ | ✅ |
 | [Direct Messages](docs/Direct_Messages.md) | ❌ | ❌ | ✅[1] |
 
 ✅ - Supported
