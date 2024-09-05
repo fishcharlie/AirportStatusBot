@@ -155,6 +155,42 @@ export class ImageGenerator {
 				throw new Error("No center point available.");
 			}
 		})();
+		const zoom: number = await (async () => {
+			if (this.types.includes(ImageType.geojson) && this.#status.geoJSON) {
+				const us = (await this.#naturalEarthDataManager.geoJSON("ne_110m_admin_0_countries"))?.features.find((feature) => feature.properties?.NAME === "United States of America");
+				if (us === undefined) {
+					throw new Error("United States not found in Natural Earth data.");
+				}
+				const geoJSONIntersectsUS = turf.booleanIntersects(this.#status.geoJSON, us);
+				if (geoJSONIntersectsUS) {
+					return getZoomLevel(turf.bbox(this.#status.geoJSON), SIZE.width, SIZE.height);
+				} else {
+					// If it doesn't intersect the US, find the closest city in the US and ensure it's in the bounding box
+					let usPopulatedCities = (await this.#naturalEarthDataManager.geoJSON("ne_110m_populated_places"))?.features.filter((feature) => feature.properties?.SOV0NAME === "United States");
+					if (!usPopulatedCities) {
+						throw new Error("Failed to load populated places data.");
+					}
+					const closestLandmark = getClosestLandmarkToPoint(turf.centroid(this.#status.geoJSON), turf.featureCollection(usPopulatedCities.filter((feature) => feature.geometry.type === "Point") as any));
+					if (!closestLandmark) {
+						throw new Error("Failed to find closest landmark.");
+					}
+
+					// Create bounding box around the closestLandmark and the GeoJSON
+					const closestLandmarkBbox = turf.bbox(closestLandmark.item);
+					const geoJSONBbox = turf.bbox(this.#status.geoJSON);
+					const bbox = [
+						Math.min(closestLandmarkBbox[0], geoJSONBbox[0]),
+						Math.min(closestLandmarkBbox[1], geoJSONBbox[1]),
+						Math.max(closestLandmarkBbox[2], geoJSONBbox[2]),
+						Math.max(closestLandmarkBbox[3], geoJSONBbox[3])
+					];
+
+					return getZoomLevel(bbox, SIZE.width, SIZE.height);
+				}
+			} else {
+				return ZOOM;
+			}
+		})();
 		const img = await mapToImage({
 			"image": {
 				"dimensions": {
@@ -164,7 +200,7 @@ export class ImageGenerator {
 			},
 			"map": {
 				"center": mapCenter,
-				"zoom": this.types.includes(ImageType.geojson) ? getZoomLevel(turf.bbox(this.#status.geoJSON!), SIZE.width, SIZE.height) : ZOOM,
+				zoom,
 				layers
 			}
 		});
