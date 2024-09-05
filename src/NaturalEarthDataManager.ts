@@ -23,6 +23,10 @@ const items = [
 	{
 		"name": "ne_110m_populated_places",
 		"url": "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_places.zip"
+	},
+	{
+		"name": "ne_110m_admin_0_countries",
+		"url": "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
 	}
 ];
 
