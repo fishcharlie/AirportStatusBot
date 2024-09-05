@@ -270,9 +270,30 @@ export class Status {
 	}
 
 	/**
+	 * If a status is valid and should be posted.
+	 */
+	get isValid(): boolean {
+		if (this.type.type === TypeEnum.CLOSURE) {
+			if (!this.reason.raw.match(/^!\w{3,4} \d{2}\/\d{3} \w{3} AD AP CLSD \d{10}-\d{10}$/gu)) {
+				// The raw reason string includes a closure that might be limited in nature. We don't want to post something that's not a full closure.
+				// ex. `!RDM 01/300 RDM AD AP CLSD EXC COMMERCIAL AIRLINES AND LIFE FLT 2401211633-2401220100`
+				return false;
+			} else {
+				return true;
+			}
+		} else {
+			return true;
+		}
+	}
+
+	/**
 	 * When a given status is no longer active, this method will return a string to post to social media.
 	 */
 	async toEndedPost(): Promise<string | undefined> {
+		if (!this.isValid) {
+			return undefined;
+		}
+
 		const typeString = this.type.toString();
 		const reasonString = this.reason.toString();
 
@@ -307,6 +328,10 @@ export class Status {
 	 * This method will return a string to post to social media when this status is newly active.
 	 */
 	async toPost(): Promise<string | undefined> {
+		if (!this.isValid) {
+			return undefined;
+		}
+
 		const typeString = this.type.toString();
 		const reasonString = this.reason.toString();
 
@@ -455,6 +480,10 @@ export class Status {
 	 * This function is used when a status has been updated to generate a message for a new post.
 	 */
 	static async updatedPost(from: Status, to: Status): Promise<string | undefined> {
+		if (!from.isValid || !to.isValid) {
+			return undefined;
+		}
+
 		if (from.comparisonHash !== to.comparisonHash) {
 			return undefined;
 		}

@@ -154,7 +154,7 @@ async function run (firstRun: boolean) {
 		}
 		const delays: Status[] = delaysRaw.flatMap((delay) => Status.fromRaw(delay, ourAirportsDataManager, naturalEarthDataManager)).filter((delay) => delay !== undefined).filter((delay, index, array) => {
 			return array.findIndex((d) => d?.comparisonHash === delay?.comparisonHash) === index;
-		}) as Status[];
+		}).filter((v) => v?.isValid) as Status[];
 		currentDelays = delays;
 
 		let previousDelaysRaw: { [key: string]: any }[] = previous?.AIRPORT_STATUS_INFORMATION.Delay_type ?? [];
@@ -163,7 +163,7 @@ async function run (firstRun: boolean) {
 		}
 		const previousDelays: Status[] = previousDelaysRaw.flatMap((delay) => Status.fromRaw(delay, ourAirportsDataManager, naturalEarthDataManager)).filter((delay) => delay !== undefined).filter((delay, index, array) => {
 			return array.findIndex((d) => d?.comparisonHash === delay?.comparisonHash) === index;
-		}) as Status[];
+		}).filter((v) => v?.isValid) as Status[];
 
 		const newDelays = delays.filter((delay) => !previousDelays.find((previousDelay) => previousDelay.comparisonHash === delay.comparisonHash));
 
