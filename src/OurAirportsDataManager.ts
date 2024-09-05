@@ -136,6 +136,23 @@ export class OurAirportsDataManager {
 		return airport ? new Airport(airport) : undefined;
 	}
 
+	async getAllAirports(): Promise<Airport[]> {
+		let airports: { [key: string]: any }[] = [];
+
+		if (typeof jest !== "undefined") {
+			const rawData = fs.readFileSync(dataPath(), "utf8");
+			const parsedData = csvparse(rawData, {
+				"columns": true
+			});
+			airports = parsedData.filter((airport: any) => airport.iso_country === "US");
+		} else {
+			const db = await this.#getDB();
+			airports = await db.all("SELECT * FROM airports WHERE iso_country = 'US'");
+		}
+
+		return airports.map((airport) => new Airport(airport));
+	}
+
 	/**
 	 * Closes the database connection
 	 */

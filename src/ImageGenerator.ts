@@ -104,10 +104,13 @@ export class ImageGenerator {
 					"features": [
 						{
 							"type": "Feature",
-							"properties": {
+							"properties": geojson.type === "LineString" ? {
 								"stroke": "black",
 								"stroke-width": 5,
 								"stroke-opacity": 0.75
+							} : {
+								"fill": "black",
+								"fill-opacity": 0.6
 							},
 							"geometry": geojson
 						}

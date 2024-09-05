@@ -52,4 +52,8 @@ export class Airport {
 	tz(): string | undefined {
 		return findTZ(this.latitude_deg, this.longitude_deg)[0];
 	}
+
+	get airportString(): string {
+		return `${this.name} (#${this.local_code})`;
+	}
 }

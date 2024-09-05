@@ -167,7 +167,38 @@ describe("Status.fromRAW().toPost()", () => {
 				}
 			},
 			"An en route delay is currently in effect to the northeast of the contiguous United States. This delay applies to aircraft flying below 60,000 feet. Delays are currently averaging 11 minutes."
-		]
+		],
+		// [
+		// 	{
+		// 		"Name": "Airspace Flow Programs",
+		// 		"Airspace_Flow_List": {
+		// 			"Airspace_Flow": {
+		// 				"CTL_Element": "FCAMON",
+		// 				"Reason": "other",
+		// 				"AFP_StartTime": 2300, // 2300 UTC time
+		// 				"AFP_EndTime": 459, // 0459 UTC time
+		// 				"FCA_StartDateTime": 20240826160000, // 2024-08-26 16:00 PDT
+		// 				"FCA_EndDateTime": 20240827140000, // This one doesn't make sense. 14:00 PDT = 2pm PDT = 9pm UTC = 2100 UTC. Which doesn't match `AFP_EndTime`.
+		// 				"Avg": "11 minutes",
+		// 				"Floor": 0,
+		// 				"Ceiling": 600,
+		// 				"Line": {
+		// 					"Point": [
+		// 						{
+		// 							"@_Lat": "25.47",
+		// 							"@_Long": "-87.28"
+		// 						},
+		// 						{
+		// 							"@_Lat": "29.92",
+		// 							"@_Long": "-85.52"
+		// 						}
+		// 					]
+		// 				}
+		// 			}
+		// 		}
+		// 	},
+		// 	"An en route delay is currently in effect to the west of Florida. This delay applies to aircraft flying below 60,000 feet. Delays are currently averaging 11 minutes."
+		// ]
 	];
 
 	tests.forEach(([obj, expected]) => {

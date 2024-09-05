@@ -54,7 +54,7 @@ export class Status {
 	/**
 	 * The GeoJSON object for the line that represents the status. This is mostly for airspace flow programs.
 	 */
-	geoJSON?: GeoJSON.LineString;
+	geoJSON?: GeoJSON.LineString | GeoJSON.Polygon;
 	#otherData: {[key: string]: any};
 	#ourAirportsDataManager?: OurAirportsDataManager;
 	#naturalEarthDataManager?: NaturalEarthDataManager;
@@ -63,7 +63,7 @@ export class Status {
 		return `${this.airportCode ?? this.#otherData["CTL_Element"]}-${this.type.type}-${this.type.direction ?? "no_direction"}`;
 	}
 
-	constructor(airportCode: string, type: Type, reason: Reason, timing: { "start"?: Date, "end"?: Date } = {}, length: { "min"?: number, "max"?: number, "trend"?: "increasing" | "decreasing" } = {}, altitudes: {"floor"?: number; "ceiling"?: number;} = {}, geoJSON: GeoJSON.LineString | undefined = undefined, otherData: {[key: string]: any} = {}, ourAirportsDataManager?: OurAirportsDataManager, naturalEarthDataManager?: NaturalEarthDataManager) {
+	constructor(airportCode: string, type: Type, reason: Reason, timing: { "start"?: Date, "end"?: Date } = {}, length: { "min"?: number, "max"?: number, "trend"?: "increasing" | "decreasing" } = {}, altitudes: {"floor"?: number; "ceiling"?: number;} = {}, geoJSON: GeoJSON.LineString | GeoJSON.Polygon | undefined = undefined, otherData: {[key: string]: any} = {}, ourAirportsDataManager?: OurAirportsDataManager, naturalEarthDataManager?: NaturalEarthDataManager) {
 		this.airportCode = airportCode;
 		this.type = type;
 		this.reason = reason;
@@ -158,7 +158,7 @@ export class Status {
 			altitudes.ceiling = parseInt(detailsObject.Ceiling) * 100;
 		}
 
-		const geoJSON: GeoJSON.LineString | undefined = (() => {
+		const geoJSON: GeoJSON.LineString | GeoJSON.Polygon | undefined = (() => {
 			if (detailsObject.Line && detailsObject.Line.Point && Array.isArray(detailsObject.Line.Point)) {
 				return {
 					"type": "LineString",
@@ -166,6 +166,11 @@ export class Status {
 						return [parseFloat(point["@_Long"]), parseFloat(point["@_Lat"])];
 					})
 				}
+			} else if (detailsObject.Circle) {
+				return turf.circle([parseFloat(detailsObject.Circle.Center["@_Long"]), parseFloat(detailsObject.Circle.Center["@_Lat"])], parseFloat(detailsObject.Circle["@_Radius"]), {
+					"steps": 64,
+					"units": "miles"
+				}).geometry;
 			} else {
 				return undefined;
 			}
@@ -178,6 +183,39 @@ export class Status {
 		}
 
 		return new Status(airportCode, type, reason, timing, length, altitudes, geoJSON, otherData, ourAirportsDataManager, naturalEarthDataManager);
+	}
+
+	#cachedNearestAirport?: {airport: Airport; distance: number;};
+	async nearestAirport(): Promise<{airport: Airport; distance: number;} | undefined> {
+		if (this.#cachedNearestAirport) {
+			return this.#cachedNearestAirport;
+		}
+
+		if (!this.airportCode && this.type.type === TypeEnum.AIRSPACE_FLOW && this.geoJSON?.type === "Polygon") {
+			const centerPoint = turf.center(this.geoJSON);
+			const airports = await this.#ourAirportsDataManager?.getAllAirports();
+			const closestAirport = (airports ?? []).reduce((closest: {airport: Airport; distance: number;} | undefined, airport: Airport) => {
+				const distance = turf.distance(centerPoint, turf.point([airport.longitude_deg, airport.latitude_deg]), {
+					"units": "miles"
+				});
+				if (!closest || distance < closest.distance) {
+					return {
+						"airport": airport,
+						"distance": distance
+					};
+				} else {
+					return closest;
+				}
+			}, undefined);
+
+			if (closestAirport) {
+				this.#cachedNearestAirport = closestAirport;
+			}
+
+			return closestAirport;
+		} else {
+			return undefined;
+		}
 	}
 
 	#cachedAirport?: Airport;
@@ -310,7 +348,11 @@ export class Status {
 				return getUSStateThatPointIsIn(centerPoint, this.#naturalEarthDataManager);
 			})();
 			const region: string = await (async () => {
-				if (state && state.properties) {
+				const closestAirport = await this.nearestAirport();
+
+				if (closestAirport && closestAirport.distance < 3) {
+					return ` ${this.geoJSON?.type === "LineString" ? "near" : "around"} ${closestAirport.airport.airportString}`;
+				} else if (state && state.properties) {
 					return ` in the #${state.properties?.name} region`;
 				} else if (this.geoJSON) {
 					const statesGeoJSON = await this.#naturalEarthDataManager?.geoJSON("ne_110m_admin_1_states_provinces");
