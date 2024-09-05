@@ -18,10 +18,6 @@ export default async function (buffer: Buffer): Promise<string> {
 		const b = jimpImg.bitmap.data[idx + 2];
 		const a = jimpImg.bitmap.data[idx + 3];
 
-		if (x === 812 && y === 100) {
-			console.log(r, g, b, idx, x, y);
-		}
-
 		if (a === 0) {
 			radarDbzPerPixel.push(null);
 		} else {
