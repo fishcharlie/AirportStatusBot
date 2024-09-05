@@ -3,6 +3,9 @@ import { Status } from "./types/Status";
 import Jimp from "jimp";
 import GeoJSONToTileImages from "geojson-to-tile-images";
 import * as turf from "@turf/turf";
+import getClosestLandmarkToPoint from "./utils/getClosestLandmarkToPoint";
+import { NaturalEarthDataManager } from "./NaturalEarthDataManager";
+import generateAltTextForWeatherRadarImage from "./utils/generateAltTextForWeatherRadarImage";
 
 const SIZE = {
 	"width": 1280,
@@ -47,9 +50,11 @@ interface ImageOutput {
 
 export class ImageGenerator {
 	#status: Status;
+	#naturalEarthDataManager: NaturalEarthDataManager;
 
-	constructor(status: Status) {
+	constructor(status: Status, naturalEarthDataManager: NaturalEarthDataManager) {
 		this.#status = status;
+		this.#naturalEarthDataManager = naturalEarthDataManager;
 	}
 
 	get types(): ImageType[] {
@@ -75,11 +80,17 @@ export class ImageGenerator {
 		let attribution = "Map data from OpenStreetMap contributors.\nhttps://openstreetmap.org/copyright";
 
 		let radarBuffers: { [key: string]: Buffer } = {};
+		async function fetchRadarTile(z: number, x: number, y: number): Promise<Buffer> {
+			const url = `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-0/${z}/${x}/${y}.png`;
+			console.log(`Fetching tile: ${url}`);
+			const img = await fetch(url);
+			const arrayBuffer = await img.arrayBuffer();
+			const buffer = Buffer.from(arrayBuffer);
+			return buffer;
+		}
 		if (this.types.includes(ImageType.radar)) {
 			layers.push(async (z: number, x: number, y: number): Promise<Buffer> => {
-				const img = await fetch(`https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-0/${z}/${x}/${y}.png`);
-				const arrayBuffer = await img.arrayBuffer();
-				const buffer = Buffer.from(arrayBuffer);
+				const buffer = await fetchRadarTile(z, x, y);
 				radarBuffers[`${z}/${x}/${y}`] = buffer;
 				return (await Jimp.read(buffer)).opacity(0.6).getBufferAsync(Jimp.MIME_PNG);
 			});
@@ -106,7 +117,7 @@ export class ImageGenerator {
 		}
 
 		let centerText: string | undefined = undefined;
-		const mapCenter = (() => {
+		const mapCenter = await (async () => {
 			if (airport) {
 				centerText = `at ${airport.name}`;
 				return {
@@ -115,6 +126,18 @@ export class ImageGenerator {
 				};
 			} else if (this.#status.geoJSON) {
 				const centerPoint = turf.center(this.#status.geoJSON);
+				const states = await this.#naturalEarthDataManager.geoJSON("ne_110m_admin_1_states_provinces");
+				const statesCenterPoints = states ? turf.featureCollection(states.features.map((feature) => {
+					return turf.centroid(feature, {
+						"properties": feature.properties ?? {}
+					});
+				})) : undefined;
+				if (statesCenterPoints) {
+					const nearestPopulatedArea = getClosestLandmarkToPoint(centerPoint, statesCenterPoints as any);
+					if (nearestPopulatedArea && nearestPopulatedArea.item.properties?.name) {
+						centerText = `to the ${nearestPopulatedArea.direction} of ${nearestPopulatedArea.item.properties.name}`;
+					}
+				}
 				return {
 					"lat": centerPoint.geometry.coordinates[1],
 					"lng": centerPoint.geometry.coordinates[0]
@@ -137,6 +160,34 @@ export class ImageGenerator {
 			}
 		});
 		const buffer = await img.png().toBuffer();
+
+		let radarAltText: string | undefined = undefined;
+		if (this.types.includes(ImageType.radar)) {
+			try {
+				const radarOnlyImg = await mapToImage({
+					"image": {
+						"dimensions": {
+							"height": Math.max(SIZE.height, SIZE.height),
+							"width": Math.max(SIZE.height, SIZE.height)
+						}
+					},
+					"map": {
+						"center": mapCenter,
+						"zoom": ZOOM,
+						"layers": [
+							async (z: number, x: number, y: number): Promise<Buffer> => {
+								return radarBuffers[`${z}/${x}/${y}`] ?? await fetchRadarTile(z, x, y);
+							}
+						]
+					}
+				});
+				const radarOnlyBuffer = await radarOnlyImg.png().toBuffer();
+				radarAltText = await generateAltTextForWeatherRadarImage(radarOnlyBuffer);
+			} catch (error) {
+				console.error("Error creating radar only img", error);
+			}
+		}
+
 		const font = await Jimp.loadFont(Jimp.FONT_SANS_10_BLACK);
 		let jimp = (await Jimp.read(buffer));
 		let existingHeight = 0;
@@ -152,6 +203,11 @@ export class ImageGenerator {
 		let returnValue: ImageOutput = {
 			"content": await jimp.getBufferAsync(Jimp.MIME_PNG)
 		};
+
+		if (centerText) {
+			console.log(`A map centered ${centerText}.${radarAltText ? ` ${radarAltText}` : ""}\n\nPlease note that this alt text is in beta for AirportStatusBot and may not be fully accurate. If you notice any problems with the alt text, or have any suggestions, please contact the author.`);
+		}
+
 		return returnValue;
 	}
 }

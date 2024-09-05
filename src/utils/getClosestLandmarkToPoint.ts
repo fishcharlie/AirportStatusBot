@@ -25,7 +25,7 @@ export default function (point: GeoJSON.Feature<GeoJSON.Point, GeoJSON.GeoJsonPr
 	}
 
 	const directionFromLandmark = turf.bearing(closestLandmark[1], point);
-	const directionFromLandmarkString: "north" | "northeast" | "northwest" | "east" | "west" | "south" | "southeast" | "southwest" | undefined = bearingToString(directionFromLandmark);
+	const directionFromLandmarkString: "north" | "northeast" | "northwest" | "east" | "west" | "south" | "southeast" | "southwest" | undefined = bearingToString(directionFromLandmark, false);
 
 	return {
 		"item": closestLandmark[1],

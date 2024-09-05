@@ -237,7 +237,7 @@ async function run (firstRun: boolean) {
 			const post = await delay.toPost();
 			let image;
 			try {
-				image = await new ImageGenerator(delay).generate();
+				image = await new ImageGenerator(delay, naturalEarthDataManager).generate();
 			} catch (e) {
 				console.error("Failed to generate image:");
 				console.error(e);
