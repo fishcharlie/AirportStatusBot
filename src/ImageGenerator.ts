@@ -34,7 +34,13 @@ function getZoomLevel(bbox: any, mapWidth: number, mapHeight: number): number {
 	const latZoom = zoom(mapHeight, WORLD_DIM.height, latFraction);
 	const lngZoom = zoom(mapWidth, WORLD_DIM.width, lngFraction);
 
-	return Math.min(latZoom, lngZoom, ZOOM_MAX);
+	// Ensure the bbox is contained within the zoom level
+	const zoomLevel = Math.min(latZoom, lngZoom, ZOOM_MAX);
+
+	// Adjust zoom level to ensure bbox is fully contained
+	const adjustedZoomLevel = Math.max(zoomLevel - 1, 0);
+
+	return adjustedZoomLevel;
 }
 
 
