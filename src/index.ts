@@ -349,9 +349,9 @@ async function run (firstRun: boolean) {
 						// Only direct message it to me so I can see it and make any fixes if needed.
 						const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
 						if (mastodonAccount) {
-							// poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
-							// 	"message": post
-							// });
+							poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
+								"message": post
+							});
 						}
 						continue;
 					// TODO: uncomment this when we are ready to post updated delays to production. NOTE: I have just copied this code from removed delays. So I might need to make a few modifications to ensure it works right for updates. For example, I'm not sure if we want to save the updated post response to the file system.
