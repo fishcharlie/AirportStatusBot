@@ -8,7 +8,7 @@ export default async function (buffer: Buffer): Promise<string> {
 	const width = jimpImg.getWidth();
 	const height = jimpImg.getHeight();
 
-	const radarColorIndex = convertCSVToJSONWithHeaders(fs.readFileSync(path.join(__dirname, "..", "radarColorIndex.csv"), "utf-8"));
+	const radarColorIndex = convertCSVToJSONWithHeaders(fs.readFileSync(path.join(__dirname, "..", "..", "radarColorIndex.csv"), "utf-8"));
 
 	const scanIterator = jimpImg.scanIterator(0, 0, jimpImg.getWidth(), jimpImg.getHeight());
 	let radarDbzPerPixel = [];
