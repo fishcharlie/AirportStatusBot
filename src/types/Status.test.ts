@@ -32,7 +32,7 @@ describe("Status.fromRAW().toPost()", () => {
 				"Airport_Closure_List": {
 					"Airport": {
 						"ARPT": "AAA",
-						"Reason": "!AAA 09/001 AAA AIRPORT CLSD 2109010000-2109012359",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
 						"Start": "Dec 13 at 18:00 UTC.",
 						"Reopen": "Dec 13 at 23:59 UTC."
 					}
@@ -290,7 +290,7 @@ describe("Status.fromRAW().toEndedPost()", () => {
 				"Airport_Closure_List": {
 					"Airport": {
 						"ARPT": "AAA",
-						"Reason": "!AAA 09/001 AAA AIRPORT CLSD 2109010000-2109012359",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
 						"Start": "Dec 13 at 18:00 UTC.",
 						"Reopen": "Dec 13 at 23:59 UTC."
 					}
