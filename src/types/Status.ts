@@ -527,6 +527,29 @@ export class Status {
 				return `The ${to.type.toString()} at ${await to.airportString()} is now ${to.length.trend} with delays remaining at ${to.length.min}-${to.length.max} minutes.`;
 			}
 		}
+		if (from.length.average !== undefined && to.length.average !== undefined && from.length.max !== undefined && to.length.max !== undefined) {
+			const averageChanged = from.length.average !== to.length.average;
+			const maxChanged = from.length.max !== to.length.max;
+			const change: "increased" | "decreased" | undefined = (() => {
+				if (to.length.average > from.length.average && to.length.max > from.length.max) {
+					return "increased";
+				} else if (to.length.average < from.length.average && to.length.max < from.length.max) {
+					return "decreased";
+				} else {
+					return undefined;
+				}
+			})();
+
+			if (averageChanged && maxChanged) {
+				return `The ${to.type.toString()} at ${await to.airportString()}${change ? ` has ${change} and` : ""} now has an average delay of ${minutesToDurationString(to.length.average)} and a maximum delay of ${minutesToDurationString(to.length.max)}.`;
+			}
+			if (averageChanged) {
+				return `The average ${to.type.toString()} at ${await to.airportString()} has ${from.length.average > to.length.average ? "decreased" : "increased"} to ${minutesToDurationString(to.length.average)}.`;
+			}
+			if (maxChanged) {
+				return `The maximum ${to.type.toString()} at ${await to.airportString()} has ${from.length.max > to.length.max ? "decreased" : "increased"} to ${minutesToDurationString(to.length.max)}.`;
+			}
+		}
 
 		return undefined;
 	}

@@ -54,6 +54,20 @@ describe("Status.fromRAW().toPost()", () => {
 		],
 		[
 			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "55 minutes",
+						"Max": "3 hours"
+					}
+				}
+			},
+			"Inbound aircraft to Test Airport A (#AAA) are currently being delayed at their origin airport due to low ceilings. Delays are currently averaging 55 minutes and are up to 3 hours."
+		],
+		[
+			{
 				"Name": "Ground Stop Programs",
 				"Ground_Stop_List": {
 					"Program": {
@@ -673,6 +687,206 @@ describe("Status.updatedPost()", () => {
 				}
 			},
 			"The departure delay at Test Airport A (#AAA) has increased to 61-75 minutes and is still increasing."
+		],
+		[
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "55 minutes",
+						"Max": "3 hours"
+					}
+				}
+			},
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "2 hours",
+						"Max": "4 hours"
+					}
+				}
+			},
+			"The ground delay at Test Airport A (#AAA) has increased and now has an average delay of 2 hours and a maximum delay of 4 hours."
+		],
+		[
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "55 minutes",
+						"Max": "3 hours"
+					}
+				}
+			},
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "30 minutes",
+						"Max": "2 hours"
+					}
+				}
+			},
+			"The ground delay at Test Airport A (#AAA) has decreased and now has an average delay of 30 minutes and a maximum delay of 2 hours."
+		],
+		[
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "50 minutes",
+						"Max": "2 hours"
+					}
+				}
+			},
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "55 minutes",
+						"Max": "4 hours"
+					}
+				}
+			},
+			"The ground delay at Test Airport A (#AAA) has increased and now has an average delay of 55 minutes and a maximum delay of 4 hours."
+		],
+		[
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "50 minutes",
+						"Max": "2 hours"
+					}
+				}
+			},
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "50 minutes",
+						"Max": "3 hours"
+					}
+				}
+			},
+			"The maximum ground delay at Test Airport A (#AAA) has increased to 3 hours."
+		],
+		[
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "50 minutes",
+						"Max": "2 hours"
+					}
+				}
+			},
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "45 minutes",
+						"Max": "2 hours"
+					}
+				}
+			},
+			"The average ground delay at Test Airport A (#AAA) has decreased to 45 minutes."
+		],
+		[
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "50 minutes",
+						"Max": "3 hours"
+					}
+				}
+			},
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "50 minutes",
+						"Max": "2 hours"
+					}
+				}
+			},
+			"The maximum ground delay at Test Airport A (#AAA) has decreased to 2 hours."
+		],
+		[
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "50 minutes",
+						"Max": "3 hours"
+					}
+				}
+			},
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "55 minutes",
+						"Max": "2 hours"
+					}
+				}
+			},
+			"The ground delay at Test Airport A (#AAA) now has an average delay of 55 minutes and a maximum delay of 2 hours."
+		],
+		[
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "50 minutes",
+						"Max": "3 hours"
+					}
+				}
+			},
+			{
+				"Name": "Ground Delay Programs",
+				"Ground_Delay_List": {
+					"Ground_Delay": {
+						"ARPT": "AAA",
+						"Reason": "low ceilings",
+						"Avg": "45 minutes",
+						"Max": "4 hours"
+					}
+				}
+			},
+			"The ground delay at Test Airport A (#AAA) now has an average delay of 45 minutes and a maximum delay of 4 hours."
 		]
 	];
 
