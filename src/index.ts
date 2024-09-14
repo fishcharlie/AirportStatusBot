@@ -227,53 +227,6 @@ async function run (firstRun: boolean) {
 		}))).filter(Boolean));
 		console.timeEnd("Run Parse");
 
-		console.log(`Posting ${newDelays.length} new delays.`);
-		for (const delay of newDelays) {
-			const post = await delay.toPost();
-			let image;
-			try {
-				image = await new ImageGenerator(delay, naturalEarthDataManager).generate();
-			} catch (e) {
-				console.error("Failed to generate image:");
-				console.error(e);
-			}
-			if (post) {
-				if (process.env.NODE_ENV === "production") {
-					if (delay.isBeta === true) {
-						// Delay is in beta
-						// Only direct message it to me so I can see it and make any fixes if needed.
-						const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
-						if (mastodonAccount) {
-							poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
-								"message": post,
-								"image": image
-							});
-						}
-						continue;
-					} else {
-						// Delay not in beta
-						// Continue posting as normal
-						const postResponse = await poster.post({
-							"message": post,
-							"image": image
-						}, xmlResult, [ContentTypeEnum.ALL_FAA]);
-						console.log(`Posted: '${post}'`);
-
-						const comparisonHash = delay.comparisonHash;
-						await fs.promises.mkdir(path.join(__dirname, "..", "cache", "posts", comparisonHash), { "recursive": true });
-						console.log("Post response: \n", postResponse);
-
-						const newPostResponse = {...postResponse};
-						objectUtils.circularKeys(newPostResponse).forEach((key) => {
-							objectUtils.set(newPostResponse, key, "[Circular]");
-						});
-						await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponse));
-					}
-				} else {
-					console.warn(`Not posting: '${post}' due to NODE_ENV not being production.`);
-				}
-			}
-		}
 		console.log(`Posting ${removedDelays.length} removed delays.`);
 		for (const delay of removedDelays) {
 			const post = await delay.toEndedPost();
@@ -327,6 +280,53 @@ async function run (firstRun: boolean) {
 			}
 
 			rimraf.rimrafSync(path.join(__dirname, "..", "cache", "posts", comparisonHash));
+		}
+		console.log(`Posting ${newDelays.length} new delays.`);
+		for (const delay of newDelays) {
+			const post = await delay.toPost();
+			let image;
+			try {
+				image = await new ImageGenerator(delay, naturalEarthDataManager).generate();
+			} catch (e) {
+				console.error("Failed to generate image:");
+				console.error(e);
+			}
+			if (post) {
+				if (process.env.NODE_ENV === "production") {
+					if (delay.isBeta === true) {
+						// Delay is in beta
+						// Only direct message it to me so I can see it and make any fixes if needed.
+						const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
+						if (mastodonAccount) {
+							poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
+								"message": post,
+								"image": image
+							});
+						}
+						continue;
+					} else {
+						// Delay not in beta
+						// Continue posting as normal
+						const postResponse = await poster.post({
+							"message": post,
+							"image": image
+						}, xmlResult, [ContentTypeEnum.ALL_FAA]);
+						console.log(`Posted: '${post}'`);
+
+						const comparisonHash = delay.comparisonHash;
+						await fs.promises.mkdir(path.join(__dirname, "..", "cache", "posts", comparisonHash), { "recursive": true });
+						console.log("Post response: \n", postResponse);
+
+						const newPostResponse = {...postResponse};
+						objectUtils.circularKeys(newPostResponse).forEach((key) => {
+							objectUtils.set(newPostResponse, key, "[Circular]");
+						});
+						await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponse));
+					}
+				} else {
+					console.warn(`Not posting: '${post}' due to NODE_ENV not being production.`);
+				}
+			}
 		}
 		console.log(`Posting ${updatedDelays.length} updated delays.`);
 		for (const delay of updatedDelaysObjects) {
