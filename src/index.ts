@@ -229,15 +229,6 @@ async function run (firstRun: boolean) {
 
 		console.log(`Posting ${newDelays.length} new delays.`);
 		for (const delay of newDelays) {
-			if (delay.type.type === TypeEnum.CLOSURE) {
-				// Currently an airport closure isn't really a complete airport closure.
-				// For example:
-				// <Delay_type><Name>Airport Closures</Name><Airport_Closure_List><Airport><ARPT>LAS</ARPT><Reason>!LAS 12/067 LAS AD AP CLSD TO NON SKED TRANSIENT GA ACFT EXC PPR 702-261-7775 2312132300-2403132300</Reason><Start>Dec 13 at 18:00 UTC.</Start><Reopen>Mar 13 at 19:00 UTC.</Reopen></Airport></Airport_Closure_List></Delay_type>
-				// ^ is a closure that is only for non-scheduled transient GA aircraft.
-				// If we were to post this, many people would be confused.
-				// @TODO: fix this so that the `toPost` method returns a closure post that is more accurate to the actual closure, and doesn't mislead or confuse people.
-				continue;
-			}
 			const post = await delay.toPost();
 			let image;
 			try {
