@@ -48,7 +48,7 @@ export class Poster {
 	 * @param contentTypes The content types to post to. This will be used in the future to filter out airport specific accounts.
 	 * @returns An object with the key as the UUID of the social network in the configuration and the value set to the result of the post response.
 	 */
-	async post(content: PostContent, rawXML: string, contentTypes: ContentTypeEnum[]): Promise<{ [key: string]: any }> {
+	async post(content: PostContent, rawXML: string, contentTypes: string[]): Promise<{ [key: string]: any }> {
 		let returnObject: { [key: string]: any } = {};
 
 		await Promise.all(this.#config.socialNetworks.map(async (socialNetwork) => {

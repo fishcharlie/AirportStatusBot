@@ -29,7 +29,7 @@ interface MastodonSocialNetwork {
 	settings?: {
 		includeHashtags?: boolean;
 	};
-	contentType: ContentTypeEnum;
+	contentType: ContentType;
 	listen: boolean;
 }
 interface BlueskySocialNetwork {
@@ -44,7 +44,7 @@ interface BlueskySocialNetwork {
 	settings?: {
 		includeHashtags?: boolean;
 	};
-	contentType: ContentTypeEnum;
+	contentType: ContentType;
 	listen: boolean;
 }
 interface S3SocialNetwork {
@@ -61,7 +61,7 @@ interface S3SocialNetwork {
 		includeRAWXML?: boolean;
 		includeHashtags?: boolean;
 	}
-	contentType: ContentTypeEnum;
+	contentType: ContentType;
 	listen: boolean;
 }
 interface NostrSocialNetwork {
@@ -94,7 +94,7 @@ interface NostrSocialNetwork {
 		 */
 		postURLRemap?: string;
 	};
-	contentType: ContentTypeEnum;
+	contentType: ContentType;
 	listen: boolean;
 }
 export type SocialNetwork = MastodonSocialNetwork | S3SocialNetwork | BlueskySocialNetwork | NostrSocialNetwork;
@@ -120,3 +120,5 @@ export function defaultIncludeHashtags(type: SocialNetworkType): boolean {
 export enum ContentTypeEnum {
 	ALL_FAA = "ALL_FAA",
 }
+
+export type ContentType = ContentTypeEnum | `FAA_${string}`;
