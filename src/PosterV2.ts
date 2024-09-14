@@ -12,6 +12,7 @@ import { defaultIncludeHashtags, SocialNetwork, SocialNetworkType } from "./type
 import { createHash, randomUUID, UUID } from "crypto";
 import Jimp from "jimp";
 import * as blurhash from "blurhash";
+import { GeneralObject } from "js-object-utilities";
 
 export interface PostContent {
 	message: string;
@@ -244,6 +245,61 @@ export default class PosterV2 {
 				return {
 					event
 				};
+		}
+	}
+
+	async repost(socialNetwork: SocialNetwork, repost: GeneralObject<any>): Promise<{[key: string]: any} | undefined> {
+		switch (socialNetwork.type) {
+			case "mastodon": {
+				const masto = Masto({
+					"url": `${socialNetwork.credentials.endpoint}`,
+					"accessToken": socialNetwork.credentials.password
+				});
+				const mastodonResult = await masto.v1.statuses.$select(repost.id).reblog();
+				return mastodonResult;
+			}
+			case "bluesky": {
+				const bluesky = new BskyAgent({
+					"service": socialNetwork.credentials.endpoint
+				});
+
+				await bluesky.login({
+					"identifier": socialNetwork.credentials.username ?? "",
+					"password": socialNetwork.credentials.password ?? ""
+				});
+
+				const blueskyResult = await bluesky.repost(repost.root.uri, repost.root.cid);
+				return {
+					"root": blueskyResult,
+					"parent": blueskyResult
+				};
+			}
+			case "nostr": {
+				const pool = new nostrtools.SimplePool();
+				const privateKey = nostrtools.nip19.decode(socialNetwork.credentials.privateKey);
+				if (privateKey.type !== "nsec") {
+					console.error(`Invalid private key type: ${privateKey.type}`);
+					break;
+				}
+				let tags: string[][] = [
+					// @TODO: put relay URL as the 3rd element of the "e" tag array
+					["e", repost.event.id],
+					["p", repost.event.pubkey]
+				];
+
+				const event = nostrtools.finalizeEvent({
+					"kind": 6,
+					"created_at": Math.floor(Date.now() / 1000),
+					"tags": tags,
+					"content": JSON.stringify(repost.event)
+				}, privateKey.data);
+				try {
+					await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
+				} catch (e) {}
+				return {
+					event
+				};
+			}
 		}
 	}
 }
