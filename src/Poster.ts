@@ -76,6 +76,16 @@ export class Poster {
 		return returnObject;
 	}
 
+	async repost(post: GeneralObject<any>, socialNetworkUUID: string): Promise<{ [key: string]: any } | undefined> {
+		const socialNetwork = this.#config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === socialNetworkUUID);
+
+		if (!socialNetwork) {
+			throw `Unknown social network UUID: ${socialNetworkUUID}`;
+		}
+
+		return this.#posterV2.repost(socialNetwork, post);
+	}
+
 	async reply(socialNetworkUUID: string, replyTo: GeneralObject<any>, content: PostContent, rawXML: string): Promise<{ [key: string]: any }> {
 		let returnObject: { [key: string]: any } = {};
 
