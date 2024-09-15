@@ -50,4 +50,18 @@ const naturalEarthDataManager = new NaturalEarthDataManager(USER_AGENT);
 	// console.log(allDelays.map((delay) => JSON.stringify(delay)).join("\n"));
 
 	// [...new Set(delays.filter((delay) => delay.type.type === TypeEnum.CLOSURE).map((delay) => delay.reason.raw))].forEach((v) => console.log(v));
+
+	const delayPosts = filesContents.map((content) => content.split("\n")[0].trim()).map((content) => /\(#?(\w{3})\)/gmu.exec(content)?.[1]).reduce((acc, cur) => {
+		if (cur === undefined) {
+			return acc;
+		}
+		if (acc[cur] === undefined) {
+			acc[cur] = 1;
+		}
+		acc[cur] += 1;
+		return acc;
+	}, {} as { [key: string]: number });
+	const sortedDelayPosts = Object.entries(delayPosts).sort((a, b) => b[1] - a[1]);
+	console.log(sortedDelayPosts);
+	console.log(`A total of ${Object.keys(delayPosts).length} airports have experienced delays.`);
 })();
