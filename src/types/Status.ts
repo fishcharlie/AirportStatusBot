@@ -422,6 +422,24 @@ export class Status {
 			}
 		}
 		if (this.type.type === TypeEnum.CLOSURE) {
+			if (this.timing.start) {
+				const startDate = luxon.DateTime.fromJSDate(this.timing.start).setZone(tz ?? "UTC");
+				const currentLuxonDate = luxon.DateTime.fromJSDate(new Date()).setZone(tz ?? "UTC");
+				const minutesUntilStart = startDate.diff(currentLuxonDate, "minutes").minutes;
+				if (minutesUntilStart > 5) {
+					const isToday = startDate.hasSame(currentLuxonDate, "day");
+					const isSameWeek = startDate.hasSame(currentLuxonDate, "week");
+					const isSameYear = startDate.hasSame(currentLuxonDate, "year");
+
+					if (isToday) {
+						sentences.push(`This closure is effective as of ${luxonTimeToString(startDate)}${!Boolean(tz) ? ` UTC` : ""}`);
+					} else if (isSameWeek) {
+						sentences.push(`This closure is effective as of ${startDate.toFormat("cccc")} at ${luxonTimeToString(startDate)}${!Boolean(tz) ? ` UTC` : ""}`);
+					} else if (isSameYear) {
+						sentences.push(`This closure is effective as of ${startDate.toFormat("LLLL d")} at ${luxonTimeToString(startDate)}${!Boolean(tz) ? ` UTC` : ""}`);
+					}
+				}
+			}
 			if (this.timing.end) {
 				const luxonDate = luxon.DateTime.fromJSDate(this.timing.end).setZone(tz ?? "UTC");
 				const currentLuxonDate = luxon.DateTime.fromJSDate(new Date()).setZone(tz ?? "UTC");

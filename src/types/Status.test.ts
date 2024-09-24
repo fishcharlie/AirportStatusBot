@@ -38,7 +38,7 @@ describe("Status.fromRAW().toPost()", () => {
 					}
 				}
 			},
-			"An airport closure has been issued for Test Airport A (#AAA). The airport is expected to reopen December 13 at 4:59 PM."
+			"An airport closure has been issued for Test Airport A (#AAA). This closure is effective as of December 13 at 11:00 AM. The airport is expected to reopen December 13 at 4:59 PM."
 		],
 		[
 			{
