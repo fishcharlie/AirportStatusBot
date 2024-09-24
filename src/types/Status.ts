@@ -13,6 +13,7 @@ import * as turf from "@turf/turf";
 import bearingToString from "../utils/bearingToString";
 import getUSStateThatPointIsIn from "../utils/getUSStateThatPointIsIn";
 import getClosestLandmarkToPoint from "../utils/getClosestLandmarkToPoint";
+import { luxonTimeToString } from "../utils/luxonTimeToString";
 
 const ianaEquivalents: { [key: string]: string } = {
 	"EDT": "America/New_York",
@@ -423,19 +424,17 @@ export class Status {
 		if (this.type.type === TypeEnum.CLOSURE) {
 			if (this.timing.end) {
 				const luxonDate = luxon.DateTime.fromJSDate(this.timing.end).setZone(tz ?? "UTC");
-				const currentLuxonDate = luxon.DateTime.local({
-					"zone": tz
-				});
+				const currentLuxonDate = luxon.DateTime.fromJSDate(new Date()).setZone(tz ?? "UTC");
 				const isToday = luxonDate.hasSame(currentLuxonDate, "day");
 				const isSameWeek = luxonDate.hasSame(currentLuxonDate, "week");
 				const isSameYear = luxonDate.hasSame(currentLuxonDate, "year");
 
 				if (isToday) {
-					sentences.push(`The airport is expected to reopen at ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}`);
+					sentences.push(`The airport is expected to reopen at ${luxonTimeToString(luxonDate)}${!Boolean(tz) ? ` UTC` : ""}`);
 				} else if (isSameWeek) {
-					sentences.push(`The airport is expected to reopen ${luxonDate.toFormat("cccc")} at ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}`);
+					sentences.push(`The airport is expected to reopen ${luxonDate.toFormat("cccc")} at ${luxonTimeToString(luxonDate)}${!Boolean(tz) ? ` UTC` : ""}`);
 				} else if (isSameYear) {
-					sentences.push(`The airport is expected to reopen ${luxonDate.toFormat("LLLL L")} at ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}`);
+					sentences.push(`The airport is expected to reopen ${luxonDate.toFormat("LLLL d")} at ${luxonTimeToString(luxonDate)}${!Boolean(tz) ? ` UTC` : ""}`);
 				}
 			} else {
 				sentences.push(`It is currently unknown when the airport will reopen`);
