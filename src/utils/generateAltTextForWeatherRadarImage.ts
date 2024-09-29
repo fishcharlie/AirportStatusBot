@@ -96,7 +96,7 @@ export default async function (buffer: Buffer): Promise<string> {
 	}, {});
 
 	if (Object.keys(data).length === 0) {
-		return "The map shows no weather radar data.";
+		return "The map shows no storms based on weather radar.";
 	}
 
 	let intensityObj: {[key: string]: string[]} = {};

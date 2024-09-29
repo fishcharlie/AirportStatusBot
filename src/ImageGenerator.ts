@@ -250,7 +250,7 @@ export class ImageGenerator {
 		};
 
 		if (centerText) {
-			console.log(`A map centered ${centerText}.${radarAltText ? ` ${radarAltText}` : ""}\n\nPlease note that this alt text is in beta for AirportStatusBot and may not be fully accurate. If you notice any problems with the alt text, or have any suggestions, please contact the author.`);
+			console.log(`A map centered ${centerText}.${radarAltText ? ` ${radarAltText}` : ""}${attribution.length > 0 ? `\n\nIn the upper left-hand corner it says ${attribution.split("\n").join(" ")}.` : ""}\n\nPlease note that this alt text is in beta for AirportStatusBot and may not be fully accurate. If you notice any problems with the alt text, or have any suggestions, please contact the author.`);
 		}
 
 		return returnValue;
