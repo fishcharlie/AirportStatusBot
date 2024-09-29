@@ -89,115 +89,22 @@ export class Poster {
 	async reply(socialNetworkUUID: string, replyTo: GeneralObject<any>, content: PostContent, rawXML: string): Promise<{ [key: string]: any }> {
 		let returnObject: { [key: string]: any } = {};
 
-		const socialNetwork = this.#config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === socialNetworkUUID);
-
+		const socialNetwork = this.#config.socialNetworks.find((v) => v.uuid === socialNetworkUUID);
 		if (!socialNetwork) {
 			throw `Unknown social network UUID: ${socialNetworkUUID}`;
 		}
 
-		const socialMessage = this.formatMessage(content.message, socialNetwork);
+		let socialMessage = this.formatMessage(content.message, socialNetwork);
+
+		if (socialNetwork.type === SocialNetworkType.s3) {
+			socialMessage = `${socialMessage}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`;
+		}
 
 		try {
-			switch (socialNetwork.type) {
-				case SocialNetworkType.mastodon:
-					const masto = Masto({
-						"url": `${socialNetwork.credentials.endpoint}`,
-						"accessToken": socialNetwork.credentials.password
-					});
-					const mastodonResult = await masto.v1.statuses.create({
-						"status": socialMessage,
-						"inReplyToId": replyTo.id
-					});
-					returnObject = mastodonResult;
-					break;
-				case SocialNetworkType.bluesky:
-					const bluesky = new BskyAgent({
-						"service": socialNetwork.credentials.endpoint
-					});
-
-					await bluesky.login({
-						"identifier": socialNetwork.credentials.username ?? "",
-						"password": socialNetwork.credentials.password ?? ""
-					});
-
-					const rt = new RichText({
-						"text": socialMessage
-					});
-					await rt.detectFacets(bluesky);
-					const postRecord: Partial<AppBskyFeedPost.Record> & Omit<AppBskyFeedPost.Record, "createdAt"> = {
-						"text": rt.text,
-						"facets": rt.facets,
-						"reply": {
-							"root": {
-								"uri": replyTo.root.uri,
-								"cid": replyTo.root.cid
-							},
-							"parent": {
-								"uri": replyTo.parent.uri,
-								"cid": replyTo.parent.cid
-							}
-						}
-					};
-					const blueskyResult = await bluesky.post(postRecord);
-					returnObject = {
-						"root": replyTo.root,
-						"parent": blueskyResult
-					};
-					break;
-				case SocialNetworkType.s3:
-					const client = new S3({
-						"credentials": {
-							"accessKeyId": socialNetwork.credentials.accessKeyId,
-							"secretAccessKey": socialNetwork.credentials.secretAccessKey
-						},
-						"region": "us-west-2"
-					});
-					const key = replyTo.key;
-
-					const existingContent = await client.getObject({
-						"Bucket": socialNetwork.credentials.bucket,
-						"Key": key
-					});
-					const existingContentString = await existingContent.Body?.transformToString();
-					await client.putObject({
-						"Bucket": socialNetwork.credentials.bucket,
-						"Body": `${existingContentString}\n\n\n\n\n\n<><><><><>\n\n\n\n\n\n` + `${socialMessage}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`,
-						"Key": key
-					});
-					returnObject = {
-						key
-					};
-					break;
-				case SocialNetworkType.nostr:
-					const pool = new nostrtools.SimplePool();
-					const privateKey = nostrtools.nip19.decode(socialNetwork.credentials.privateKey);
-					if (privateKey.type !== "nsec") {
-						console.error(`Invalid private key type: ${privateKey.type}`);
-						break;
-					}
-					const existingPostTags = replyTo.event.tags.filter((tag: string[]) => tag[0] === "e");
-					let tags: string[][] = [
-						...existingPostTags,
-						["e", replyTo.event.id, "wss://nostrrelay.win", existingPostTags.length === 0 ? "root" : "reply"]
-					];
-					const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
-					if (includeHashtags) {
-						tags = [...tags, ...parseHashtags(socialMessage).map((tag) => ["t", tag.toLowerCase()])];
-					}
-					const event = nostrtools.finalizeEvent({
-						"kind": 1,
-						"created_at": Math.floor(Date.now() / 1000),
-						"tags": tags,
-						"content": socialMessage
-					}, privateKey.data);
-					try {
-						await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
-					} catch (e) {}
-					returnObject[socialNetwork.uuid] = {
-						event
-					};
-					break;
-			}
+			returnObject[socialNetwork.uuid] = await this.#posterV2.reply(socialNetwork, replyTo, {
+				"message": socialMessage,
+				"image": content.image
+			});
 		} catch (e) {
 			console.error(e);
 		}
