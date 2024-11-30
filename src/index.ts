@@ -259,6 +259,27 @@ async function run (firstRun: boolean) {
 							if (Object.keys(postResponse).length > 0) {
 								newPostResponse[socialNetworkUUID] = postResponse;
 								console.log(`[${socialNetworkUUID}] Replied: '${post}'`);
+
+								try {
+									await Promise.all(Object.entries(postResponse).map(async ([key, value]) => {
+										const socialNetworkAlreadyPostedTo = config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === key);
+
+										if (!socialNetworkAlreadyPostedTo) {
+											return;
+										}
+
+										const socialNetworksToCrosspostTo = config.socialNetworks.filter((socialNetwork) => socialNetwork.type === socialNetworkAlreadyPostedTo.type && socialNetwork.uuid !== key && socialNetwork.contentType === `FAA_${delay.airportCode}`);
+										console.log(`Crossposting to: ${socialNetworksToCrosspostTo.map((socialNetwork) => socialNetwork.uuid).join(", ")}`);
+
+										return Promise.all(socialNetworksToCrosspostTo.map(async (socialNetwork) => {
+											await poster.repost(value, socialNetwork.uuid);
+											console.log(`Crossposted to ${socialNetwork.uuid}.`);
+										}));
+									}));
+									console.log("Done crossposting.");
+								} catch (e) {
+									console.error(e);
+								}
 							} else {
 								newPostResponse[socialNetworkUUID] = oldPostResponse[socialNetworkUUID];
 								console.warn(`[${socialNetworkUUID}] Failed to reply: '${post}'.`);
