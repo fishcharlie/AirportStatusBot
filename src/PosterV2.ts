@@ -281,9 +281,6 @@ export default class PosterV2 {
 					console.error(`Invalid private key type: ${privateKey.type}`);
 					break;
 				}
-				if (!repost.event) {
-					console.error("No event to repost", repost);
-				}
 				let tags: string[][] = [
 					// @TODO: put relay URL as the 3rd element of the "e" tag array
 					["e", repost.event.id],
