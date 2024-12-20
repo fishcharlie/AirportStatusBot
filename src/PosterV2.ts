@@ -283,15 +283,15 @@ export default class PosterV2 {
 				}
 				let tags: string[][] = [
 					// @TODO: put relay URL as the 3rd element of the "e" tag array
-					["e", repost.event.id],
-					["p", repost.event.pubkey]
+					["e", repost.id],
+					["p", repost.pubkey]
 				];
 
 				const event = nostrtools.finalizeEvent({
 					"kind": 6,
 					"created_at": Math.floor(Date.now() / 1000),
 					"tags": tags,
-					"content": JSON.stringify(repost.event)
+					"content": JSON.stringify(repost)
 				}, privateKey.data);
 				try {
 					await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
