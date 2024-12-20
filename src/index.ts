@@ -272,9 +272,6 @@ async function run (firstRun: boolean) {
 										console.log(`Crossposting to: ${socialNetworksToCrosspostTo.map((socialNetwork) => socialNetwork.uuid).join(", ")}`);
 
 										return Promise.all(socialNetworksToCrosspostTo.map(async (socialNetwork) => {
-											if (!value[socialNetworkAlreadyPostedTo.uuid] || !value[socialNetworkAlreadyPostedTo.uuid].event) {
-												console.log("FAILURE HERE ", JSON.stringify(value), JSON.stringify(socialNetworkAlreadyPostedTo));
-											}
 											await poster.repost(value[socialNetworkAlreadyPostedTo.uuid], socialNetwork.uuid);
 											console.log(`Crossposted to ${socialNetwork.uuid}.`);
 										}));
