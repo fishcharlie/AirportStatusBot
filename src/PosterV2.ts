@@ -13,6 +13,7 @@ import { createHash, randomUUID, UUID } from "crypto";
 import Jimp from "jimp";
 import * as blurhash from "blurhash";
 import { GeneralObject } from "js-object-utilities";
+import { getImageSize } from "./utils/getImageSize";
 
 export interface PostContent {
 	message: string;
@@ -100,12 +101,15 @@ export default class PosterV2 {
 					"text": rt.text,
 					"facets": rt.facets
 				};
-				if (image) {
+				if (image && blueskyImage) {
+					const imageSize = await getImageSize(blueskyImage);
+
 					postRecord.embed = {
 						"images": [
 							{
 								"image": image,
-								"alt": content.image?.alt ?? ""
+								"alt": content.image?.alt ?? "",
+								"aspectRatio": imageSize
 							}
 						],
 						"$type": "app.bsky.embed.images"
