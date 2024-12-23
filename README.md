@@ -2,10 +2,10 @@
 
 This is a social media bot that will post delay information for airports in the United States.
 
-You can find it on the following social networks:
+You can find the primary accounts on the following social networks:
 
 - Mastodon - [@AirportStatusBot@mastodon.social](https://mastodon.social/@AirportStatusBot)
-- Bluesky - [@AirportStatusBot@bsky.social](https://bsky.app/profile/airportstatusbot.bsky.social)
+- Bluesky - [@AirportStatusBot.bsky.social](https://bsky.app/profile/airportstatusbot.bsky.social)
 - nostr - [npub1nzrhjlgxxuh602nej5pj3cr4gfm7uaywlg3zygzvwyavq0c6t2qs5c36v5](https://coracle.social/npub1nzrhjlgxxuh602nej5pj3cr4gfm7uaywlg3zygzvwyavq0c6t2qs5c36v5)
 
 Some airports also have dedicated accounts available. For details see [Airport Specific Accounts](docs/Airport_Specific_Accounts.md). If there is an airport you would like to see a dedicated account for, please open an issue on this repository or [contact me](https://charlie.fish/contact).
@@ -16,8 +16,8 @@ Sadly, not all features are available on all platforms. Below is a chart of what
 
 | Feature | Mastodon | Bluesky | nostr |
 |---------|----------|---------|-------|
-| Basic posts | ✅ | ✅ | ✅ |
-| Replies | ✅ | ✅ | ✅ |
+| Basic posts [3] | ✅ | ✅ | ✅ |
+| Replies [2] | ✅ | ✅ | ✅ |
 | Map Images | ✅ | ✅ | ✅ |
 | [Direct Messages](docs/Direct_Messages.md) | ❌ | ❌ | ✅[1] |
 
@@ -28,6 +28,10 @@ Sadly, not all features are available on all platforms. Below is a chart of what
 ❌ - Not Supported
 
 [1] Only supports [NIP-04](https://github.com/nostr-protocol/nips/blob/master/04.md) messages. [NIP-17](https://github.com/nostr-protocol/nips/blob/master/17.md) messages are not supported.
+
+[2] Replies includes both updates to the original delay as well as information about when the delay is no longer in effect.
+
+[3] Basic posts include information about outbound delays, inbound delays, ground stops, and certain airport closures (not all airport closures will be posted).
 
 ## Other Information
 
