@@ -8,6 +8,8 @@ You can find it on the following social networks:
 - Bluesky - [@AirportStatusBot@bsky.social](https://bsky.app/profile/airportstatusbot.bsky.social)
 - nostr - [npub1nzrhjlgxxuh602nej5pj3cr4gfm7uaywlg3zygzvwyavq0c6t2qs5c36v5](https://coracle.social/npub1nzrhjlgxxuh602nej5pj3cr4gfm7uaywlg3zygzvwyavq0c6t2qs5c36v5)
 
+Some airports also have dedicated accounts available. For details see [Airport Specific Accounts](docs/Airport_Specific_Accounts.md). If there is an airport you would like to see a dedicated account for, please open an issue on this repository or [contact me](https://charlie.fish/contact).
+
 ## Features
 
 Sadly, not all features are available on all platforms. Below is a chart of what is available where:
