@@ -376,19 +376,7 @@ async function run (firstRun: boolean) {
 			const comparisonHash = delay.previous.comparisonHash;
 			if (post) {
 				if (process.env.NODE_ENV === "production") {
-					// All updated delays are in beta.
-					if (true) {
-						// Delay is in beta
-						// Only direct message it to me so I can see it and make any fixes if needed.
-						const mastodonAccount = config.socialNetworks.find((socialNetwork) => socialNetwork.type === "mastodon");
-						if (mastodonAccount) {
-							poster.directMessage(mastodonAccount.uuid, "@fishcharlie@mstdn-social.com", undefined, {
-								"message": post
-							});
-						}
-						continue;
-					// TODO: uncomment this when we are ready to post updated delays to production. NOTE: I have just copied this code from removed delays. So I might need to make a few modifications to ensure it works right for updates. For example, I'm not sure if we want to save the updated post response to the file system.
-					}/* else if (fs.existsSync(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"))) {
+					if (fs.existsSync(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"))) {
 						const postResponseText = await fs.promises.readFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), "utf8");
 						const oldPostResponse = JSON.parse(postResponseText);
 
@@ -418,7 +406,7 @@ async function run (firstRun: boolean) {
 						await fs.promises.writeFile(path.join(__dirname, "..", "cache", "posts", comparisonHash, "postResponse.json"), JSON.stringify(newPostResponseClean));
 					} else {
 						console.warn(`Not replying: '${post}' due to no previous postResponse.json file.`);
-					}*/
+					}
 				} else {
 					console.warn(`Not posting: '${post}' due to NODE_ENV not being production.`);
 				}
