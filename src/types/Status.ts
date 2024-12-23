@@ -261,7 +261,7 @@ export class Status {
 	}
 
 	get isBeta(): boolean {
-		if (this.type.type === TypeEnum.AIRSPACE_FLOW || this.type.type === TypeEnum.CLOSURE) {
+		if (this.type.type === TypeEnum.AIRSPACE_FLOW) {
 			return true;
 		} else if (this.airportCode === undefined) {
 			return true;
