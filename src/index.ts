@@ -390,7 +390,7 @@ async function run (firstRun: boolean) {
 								"message": post
 							}, xmlResult);
 							if (Object.keys(postResponse).length > 0) {
-								newPostResponse[socialNetworkUUID] = postResponse;
+								newPostResponse[socialNetworkUUID] = postResponse[socialNetworkUUID];
 								console.log(`[${socialNetworkUUID}] Replied: '${post}'`);
 							} else {
 								newPostResponse[socialNetworkUUID] = oldPostResponse[socialNetworkUUID];
