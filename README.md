@@ -1,6 +1,6 @@
 # AirportStatusBot
 
-This is a social media bot that will post delay information for airports in the United States.
+This is a social media bot that will post delay (and more) information for airports in the United States.
 
 You can find the primary accounts on the following social networks:
 
@@ -11,6 +11,20 @@ You can find the primary accounts on the following social networks:
 Some airports also have dedicated accounts available. For details see [Airport Specific Accounts](docs/Airport_Specific_Accounts.md). If there is an airport you would like to see a dedicated account for, please open an issue on this repository or [contact me](https://charlie.fish/contact).
 
 ## Features
+
+- Posts about delays at airports in the United States.
+	- Departure delays: when aircraft departing from the given airport are delayed.
+	- Arrival delays: when aircraft arriving to the given airport are delayed.
+	- Ground stops: when aircraft are not allowed to depart for the given airport. The aircraft will be held at their departure airport until ground stop is lifted.
+	- Inbound delays: when aircraft are delayed at their departure airport due to conditions at the given airport.
+	- Airport closures: when the given airport is closed to all traffic.
+- Includes map images showing the location of the airport with radar imagery showing weather conditions.
+	- Only for thunderstorms, tornado/hurricane, and rain.
+- Replies to posts with updates to the delay information.
+- Direct messages for FAQ and other information.
+- Multi-platform support including Mastodon, Bluesky, and nostr.
+- Airport specific accounts for certain airports. See [Airport Specific Accounts](docs/Airport_Specific_Accounts.md) for more information.
+- Direct historical data access to the data we received from the FAA for data analysis, research, machine learning/artificial intelligence, etc. See the [Hugging Face repository](https://huggingface.co/datasets/fishcharlie/airportstatusbot-data) for more information.
 
 Sadly, not all features are available on all platforms. Below is a chart of what is available where:
 
