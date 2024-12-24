@@ -14,6 +14,7 @@ import bearingToString from "../utils/bearingToString";
 import getUSStateThatPointIsIn from "../utils/getUSStateThatPointIsIn";
 import getClosestLandmarkToPoint from "../utils/getClosestLandmarkToPoint";
 import { luxonTimeToString } from "../utils/luxonTimeToString";
+import { Events } from "../Events";
 
 const ianaEquivalents: { [key: string]: string } = {
 	"EDT": "America/New_York",
@@ -490,7 +491,18 @@ export class Status {
 				sentences.push(`Delays are currently averaging ${minutesToDurationString(this.length.average)}`);
 			}
 		}
-		return sentences.join(". ") + ".";
+
+		let returnString = sentences.join(". ") + ".";
+
+		const activeEvents = Events.activeEvents(this.airportCode);
+		if (activeEvents.length > 0) {
+			const hashtags = activeEvents[0].hashtags.map((hashtag) => `#${hashtag}`).join(" ");
+			if (hashtags.length > 0) {
+				returnString += ` ${hashtags}`;
+			}
+		}
+
+		return returnString;
 	}
 
 	/**

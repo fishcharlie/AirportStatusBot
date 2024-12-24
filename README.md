@@ -24,6 +24,7 @@ Some airports also have dedicated accounts available. For details see [Airport S
 - Direct messages for FAQ and other information.
 - Multi-platform support including Mastodon, Bluesky, and nostr.
 - Airport specific accounts for certain airports. See [Airport Specific Accounts](docs/Airport_Specific_Accounts.md) for more information.
+- Event hashtags included for special local events that may impact airport operations.
 - Direct historical data access to the data we received from the FAA for data analysis, research, machine learning/artificial intelligence, etc. See the [Hugging Face repository](https://huggingface.co/datasets/fishcharlie/airportstatusbot-data) for more information.
 
 Sadly, not all features are available on all platforms. Below is a chart of what is available where:
