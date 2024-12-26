@@ -32,3 +32,11 @@ Please note that this feature is still in beta testing and some glitches may occ
 - Bluesky - [@airportstatus-lax.bsky.social](https://bsky.app/profile/airportstatus-lax.bsky.social)
 - nostr - [npub1lax003evw0qsvgmus3gp7lznezjxexrvsy5c2trn443qa45lg0pqjrnz7w](https://coracle.social/npub1lax003evw0qsvgmus3gp7lznezjxexrvsy5c2trn443qa45lg0pqjrnz7w)
 
+## Denver International Airport (DEN)
+
+- nostr - [npub1den00xmfkxp35ft4twp9dzwn06w4e0tgka65djuqsqadsgews59q7fu53k](https://coracle.social/npub1den00xmfkxp35ft4twp9dzwn06w4e0tgka65djuqsqadsgews59q7fu53k)
+
+## Dallas/Fort Worth International Airport (DFW)
+
+- nostr - [npub1dfw00wwe65tm5cqsy8ff5rqr3ahktwn5m6m5ffw34sn85jkln9aqm4spq2](https://coracle.social/npub1dfw00wwe65tm5cqsy8ff5rqr3ahktwn5m6m5ffw34sn85jkln9aqm4spq2)
+
