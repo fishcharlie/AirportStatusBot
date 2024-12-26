@@ -391,6 +391,7 @@ async function run (firstRun: boolean) {
 							const postResponse = await poster.reply(socialNetworkUUID, value, {
 								"message": post
 							}, xmlResult);
+							console.log(`Post response (updated delay - ${socialNetworkUUID}): `, postResponse);
 							if (Object.keys(postResponse).length > 0) {
 								newPostResponse[socialNetworkUUID] = postResponse[socialNetworkUUID];
 								console.log(`[${socialNetworkUUID}] Replied: '${post}'`);
