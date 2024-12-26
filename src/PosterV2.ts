@@ -400,9 +400,7 @@ export default class PosterV2 {
 				try {
 					await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
 				} catch (e) {}
-				return {
-					[socialNetwork.uuid]: event
-				};
+				return event;
 		}
 	}
 

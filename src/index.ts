@@ -272,7 +272,7 @@ async function run (firstRun: boolean) {
 										console.log(`Crossposting to: ${socialNetworksToCrosspostTo.map((socialNetwork) => socialNetwork.uuid).join(", ")}`);
 
 										return Promise.all(socialNetworksToCrosspostTo.map(async (socialNetwork) => {
-											await poster.repost(value[socialNetworkAlreadyPostedTo.uuid], socialNetwork.uuid);
+											await poster.repost(value, socialNetwork.uuid);
 											console.log(`Crossposted to ${socialNetwork.uuid}.`);
 										}));
 									}));
