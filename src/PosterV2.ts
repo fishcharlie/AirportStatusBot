@@ -68,6 +68,20 @@ export default class PosterV2 {
 		return bluesky;
 	}
 
+	async post(socialNetwork: SocialNetwork & {"type": SocialNetworkType.bluesky}, content: PostContent): Promise<{
+		"root": {
+			uri: string;
+			cid: string;
+		};
+		"parent": {
+			uri: string;
+			cid: string;
+		};
+	}>;
+	async post(socialNetwork: SocialNetwork & {"type": SocialNetworkType.nostr}, content: PostContent): Promise<{
+		"event": nostrtools.VerifiedEvent;
+	}>;
+	async post(socialNetwork: SocialNetwork, content: PostContent): Promise<{[key: string]: any} | undefined>;
 	async post(socialNetwork: SocialNetwork, content: PostContent): Promise<{[key: string]: any} | undefined> {
 		switch (socialNetwork.type) {
 			case "mastodon": {
@@ -281,6 +295,20 @@ export default class PosterV2 {
 		}
 	}
 
+	async repost(socialNetwork: SocialNetwork & {"type": SocialNetworkType.bluesky}, repost: GeneralObject<any>): Promise<{
+		"root": {
+			uri: string;
+			cid: string;
+		};
+		"parent": {
+			uri: string;
+			cid: string;
+		};
+	}>;
+	async repost(socialNetwork: SocialNetwork & {"type": SocialNetworkType.nostr}, repost: GeneralObject<any>): Promise<{
+		"event": nostrtools.VerifiedEvent;
+	}>;
+	async repost(socialNetwork: SocialNetwork, repost: GeneralObject<any>): Promise<{[key: string]: any} | undefined>;
 	async repost(socialNetwork: SocialNetwork, repost: GeneralObject<any>): Promise<{[key: string]: any} | undefined> {
 		switch (socialNetwork.type) {
 			case "mastodon": {
@@ -329,6 +357,20 @@ export default class PosterV2 {
 		}
 	}
 
+	async reply(socialNetwork: SocialNetwork & {"type": SocialNetworkType.bluesky}, replyTo: GeneralObject<any>, content: PostContent): Promise<{
+		"root": {
+			uri: string;
+			cid: string;
+		};
+		"parent": {
+			uri: string;
+			cid: string;
+		};
+	}>;
+	async reply(socialNetwork: SocialNetwork & {"type": SocialNetworkType.nostr}, replyTo: GeneralObject<any>, content: PostContent): Promise<{
+		"event": nostrtools.VerifiedEvent;
+	}>;
+	async reply(socialNetwork: SocialNetwork, replyTo: GeneralObject<any>, content: PostContent): Promise<{ [key: string]: any } | undefined>;
 	async reply(socialNetwork: SocialNetwork, replyTo: GeneralObject<any>, content: PostContent): Promise<{ [key: string]: any } | undefined> {
 		switch (socialNetwork.type) {
 			case SocialNetworkType.mastodon:
