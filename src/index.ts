@@ -401,6 +401,28 @@ async function run (firstRun: boolean) {
 						}
 						console.log(`Post response: \n`, newPostResponse);
 
+						// Crosspost to airport specific accounts
+						try {
+							await Promise.all(Object.entries(newPostResponse).map(async ([key, value]) => {
+								const socialNetworkAlreadyPostedTo = config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === key);
+
+								if (!socialNetworkAlreadyPostedTo) {
+									return;
+								}
+
+								const socialNetworksToCrosspostTo = config.socialNetworks.filter((socialNetwork) => socialNetwork.type === socialNetworkAlreadyPostedTo.type && socialNetwork.uuid !== key && socialNetwork.contentType === `FAA_${delay.new.airportCode}`);
+								console.log(`Crossposting to: ${socialNetworksToCrosspostTo.map((socialNetwork) => socialNetwork.uuid).join(", ")}`);
+
+								return Promise.all(socialNetworksToCrosspostTo.map(async (socialNetwork) => {
+									await poster.repost(value, socialNetwork.uuid);
+									console.log(`Crossposted to ${socialNetwork.uuid}.`);
+								}));
+							}));
+							console.log("Done crossposting.");
+						} catch (e) {
+							console.error(e);
+						}
+
 						const newPostResponseClean = {...newPostResponse};
 						objectUtils.circularKeys(newPostResponseClean).forEach((key) => {
 							objectUtils.set(newPostResponseClean, key, "[Circular]");
