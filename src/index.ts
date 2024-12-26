@@ -260,6 +260,7 @@ async function run (firstRun: boolean) {
 								newPostResponse[socialNetworkUUID] = postResponse;
 								console.log(`[${socialNetworkUUID}] Replied: '${post}'`);
 
+								// Crosspost to airport specific accounts
 								try {
 									await Promise.all(Object.entries(postResponse).map(async ([key, value]) => {
 										const socialNetworkAlreadyPostedTo = config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === key);
@@ -334,6 +335,7 @@ async function run (firstRun: boolean) {
 						}, xmlResult, [ContentTypeEnum.ALL_FAA]);
 						console.log(`Posted: '${post}'`);
 
+						// Crosspost to airport specific accounts
 						try {
 							await Promise.all(Object.entries(postResponse).map(async ([key, value]) => {
 								const socialNetworkAlreadyPostedTo = config.socialNetworks.find((socialNetwork) => socialNetwork.uuid === key);
