@@ -31,7 +31,43 @@ export interface PostContent {
 
 const BLUESKY_MAX_IMAGE_SIZE_BYTES = 999997; // 976.56KiB is limit. Bluesky states: `but the maximum size is 976.56KB`, but they also convert our bytes to MiB instead of MB while they state it's MB.
 
+type UUIDType = `${string}-${string}-${string}-${string}-${string}`;
+
 export default class PosterV2 {
+	#blueskyAgents: Map<UUIDType, BskyAgent> = new Map();
+
+	async #getBlueskyAgent(socialNetwork: SocialNetwork & {"type": SocialNetworkType.bluesky}): Promise<BskyAgent> {
+		const existingAgent = this.#blueskyAgents.get(socialNetwork.uuid);
+		if (existingAgent) {
+			console.log(`Using existing Bluesky agent (${socialNetwork.uuid})`);
+
+			// I'm not completely sure if we need to check if the agent has a session and resume it. But I'm doing it just in case here.
+			if (existingAgent.hasSession && existingAgent.session) {
+				console.log(`Bluesky agent has session (${socialNetwork.uuid})`);
+				await existingAgent.resumeSession(existingAgent.session);
+
+				return existingAgent;
+			} else {
+				console.log(`Existing Bluesky agent does not have session (${socialNetwork.uuid})`);
+			}
+		}
+
+		const {username, password, endpoint} = socialNetwork.credentials;
+		const bluesky = new BskyAgent({
+			"service": endpoint
+		});
+		if (!username || !password) {
+			throw new Error(`Missing username or password for Bluesky (${socialNetwork.uuid})`);
+		}
+		console.log(`Logging in to Bluesky - ${username} (${socialNetwork.uuid})`);
+		await bluesky.login({
+			"identifier": username,
+			"password": password
+		});
+		this.#blueskyAgents.set(socialNetwork.uuid, bluesky);
+		return bluesky;
+	}
+
 	async post(socialNetwork: SocialNetwork, content: PostContent): Promise<{[key: string]: any} | undefined> {
 		switch (socialNetwork.type) {
 			case "mastodon": {
@@ -60,14 +96,7 @@ export default class PosterV2 {
 				return mastodonResult;
 			}
 			case "bluesky": {
-				const bluesky = new BskyAgent({
-					"service": socialNetwork.credentials.endpoint
-				});
-
-				await bluesky.login({
-					"identifier": socialNetwork.credentials.username ?? "",
-					"password": socialNetwork.credentials.password ?? ""
-				});
+				const bluesky = await this.#getBlueskyAgent(socialNetwork);
 
 				let resizeTimes = 0;
 				let blueskyImage = content.image?.content;
@@ -263,14 +292,7 @@ export default class PosterV2 {
 				return mastodonResult;
 			}
 			case "bluesky": {
-				const bluesky = new BskyAgent({
-					"service": socialNetwork.credentials.endpoint
-				});
-
-				await bluesky.login({
-					"identifier": socialNetwork.credentials.username ?? "",
-					"password": socialNetwork.credentials.password ?? ""
-				});
+				const bluesky = await this.#getBlueskyAgent(socialNetwork);
 
 				const blueskyResult = await bluesky.repost(repost.root.uri, repost.root.cid);
 				return {
@@ -320,14 +342,7 @@ export default class PosterV2 {
 				});
 				return mastodonResult;
 			case SocialNetworkType.bluesky:
-				const bluesky = new BskyAgent({
-					"service": socialNetwork.credentials.endpoint
-				});
-
-				await bluesky.login({
-					"identifier": socialNetwork.credentials.username ?? "",
-					"password": socialNetwork.credentials.password ?? ""
-				});
+				const bluesky = await this.#getBlueskyAgent(socialNetwork);
 
 				const rt = new RichText({
 					"text": content.message
