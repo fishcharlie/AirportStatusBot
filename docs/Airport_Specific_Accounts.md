@@ -22,9 +22,13 @@ Please note that this feature is still in beta testing and some glitches may occ
 
 ## Chicago O'Hare International Airport (ORD)
 
+- Mastodon - [@AirportStatusBot_ORD@mastodon.social](https://mastodon.social/@AirportStatusBot_ORD)
+- Bluesky - [@airportstatus-ord.bsky.social](https://bsky.app/profile/airportstatus-ord.bsky.social)
 - nostr - [npub10rd00sd5qp78a7qd3yjj7jhanc5s654w2kq87sr95uzrt9nrccsqzrjgjy](https://coracle.social/npub10rd00sd5qp78a7qd3yjj7jhanc5s654w2kq87sr95uzrt9nrccsqzrjgjy)
 
 ## Los Angeles International Airport (LAX)
 
+- Mastodon - [@AirportStatusBot_LAX@mastodon.social](https://mastodon.social/@AirportStatusBot_LAX)
+- Bluesky - [@airportstatus-lax.bsky.social](https://bsky.app/profile/airportstatus-lax.bsky.social)
 - nostr - [npub1lax003evw0qsvgmus3gp7lznezjxexrvsy5c2trn443qa45lg0pqjrnz7w](https://coracle.social/npub1lax003evw0qsvgmus3gp7lznezjxexrvsy5c2trn443qa45lg0pqjrnz7w)
 
