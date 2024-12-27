@@ -103,8 +103,8 @@ export class Poster {
 		}
 
 		if (socialNetwork.type === SocialNetworkType.nostr) {
-			if (!replyTo.event) {
-				console.log("No event for Nostr reply", replyTo);
+			if (!replyTo.id) {
+				console.log("No id for Nostr reply", replyTo);
 			}
 		}
 

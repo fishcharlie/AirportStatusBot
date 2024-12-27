@@ -439,10 +439,10 @@ export default class PosterV2 {
 					console.error(`Invalid private key type: ${privateKey.type}`);
 					break;
 				}
-				const existingPostTags = replyTo.event.tags.filter((tag: string[]) => tag[0] === "e");
+				const existingPostTags = replyTo.tags.filter((tag: string[]) => tag[0] === "e");
 				let tags: string[][] = [
 					...existingPostTags,
-					["e", replyTo.event.id, "wss://nostrrelay.win", existingPostTags.length === 0 ? "root" : "reply"]
+					["e", replyTo.id, "wss://nostrrelay.win", existingPostTags.length === 0 ? "root" : "reply"]
 				];
 				const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
 				if (includeHashtags) {
