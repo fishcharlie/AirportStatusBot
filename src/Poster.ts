@@ -178,13 +178,13 @@ export class Poster {
 						console.error(`Invalid private key type: ${privateKey.type}`);
 						break;
 					}
-					const existingPostTags = (replyTo?.event?.tags ?? []).filter((tag: string[]) => tag[0] === "e");
+					const existingPostTags = (replyTo?.tags ?? []).filter((tag: string[]) => tag[0] === "e");
 					let tags: string[][] = [
 						...existingPostTags,
 						["p", userToMessage]
 					];
-					if (replyTo?.event?.id !== undefined) {
-						tags.push(["e", replyTo.event.id, existingPostTags.length === 0 ? "root" : "reply"]);
+					if (replyTo?.id !== undefined) {
+						tags.push(["e", replyTo.id, existingPostTags.length === 0 ? "root" : "reply"]);
 					}
 					const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
 					if (includeHashtags) {
@@ -216,13 +216,13 @@ export class Poster {
 					// 	console.error(`Invalid private key type: ${privateKey.type}`);
 					// 	break;
 					// }
-					// const existingPostTags = replyTo?.event.tags.filter((tag: string[]) => tag[0] === "e") ?? [];
+					// const existingPostTags = replyTo?.tags.filter((tag: string[]) => tag[0] === "e") ?? [];
 					// let tags: string[][] = [
 					// 	...existingPostTags,
 					// 	["p", userToMessage]
 					// ];
 					// if (replyTo) {
-					// 	tags.push(["e", replyTo.event.id, existingPostTags.length === 0 ? "root" : "reply"]);
+					// 	tags.push(["e", replyTo.id, existingPostTags.length === 0 ? "root" : "reply"]);
 					// }
 					// const includeHashtags: boolean = socialNetwork.settings?.includeHashtags ?? defaultIncludeHashtags(socialNetwork.type);
 					// if (includeHashtags) {
