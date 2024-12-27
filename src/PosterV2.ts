@@ -78,9 +78,7 @@ export default class PosterV2 {
 			cid: string;
 		};
 	}>;
-	async post(socialNetwork: SocialNetwork & {"type": SocialNetworkType.nostr}, content: PostContent): Promise<{
-		"event": nostrtools.VerifiedEvent;
-	}>;
+	async post(socialNetwork: SocialNetwork & {"type": SocialNetworkType.nostr}, content: PostContent): Promise<nostrtools.VerifiedEvent>;
 	async post(socialNetwork: SocialNetwork, content: PostContent): Promise<{[key: string]: any} | undefined>;
 	async post(socialNetwork: SocialNetwork, content: PostContent): Promise<{[key: string]: any} | undefined> {
 		switch (socialNetwork.type) {
@@ -289,9 +287,7 @@ export default class PosterV2 {
 				try {
 					await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
 				} catch (e) {}
-				return {
-					event
-				};
+				return event;
 		}
 	}
 
@@ -305,9 +301,7 @@ export default class PosterV2 {
 			cid: string;
 		};
 	}>;
-	async repost(socialNetwork: SocialNetwork & {"type": SocialNetworkType.nostr}, repost: GeneralObject<any>): Promise<{
-		"event": nostrtools.VerifiedEvent;
-	}>;
+	async repost(socialNetwork: SocialNetwork & {"type": SocialNetworkType.nostr}, repost: GeneralObject<any>): Promise<nostrtools.VerifiedEvent>;
 	async repost(socialNetwork: SocialNetwork, repost: GeneralObject<any>): Promise<{[key: string]: any} | undefined>;
 	async repost(socialNetwork: SocialNetwork, repost: GeneralObject<any>): Promise<{[key: string]: any} | undefined> {
 		switch (socialNetwork.type) {
@@ -350,9 +344,7 @@ export default class PosterV2 {
 				try {
 					await Promise.all(pool.publish(socialNetwork.credentials.relays, event));
 				} catch (e) {}
-				return {
-					event
-				};
+				return event;
 			}
 		}
 	}
@@ -367,9 +359,7 @@ export default class PosterV2 {
 			cid: string;
 		};
 	}>;
-	async reply(socialNetwork: SocialNetwork & {"type": SocialNetworkType.nostr}, replyTo: GeneralObject<any>, content: PostContent): Promise<{
-		"event": nostrtools.VerifiedEvent;
-	}>;
+	async reply(socialNetwork: SocialNetwork & {"type": SocialNetworkType.nostr}, replyTo: GeneralObject<any>, content: PostContent): Promise<nostrtools.VerifiedEvent>;
 	async reply(socialNetwork: SocialNetwork, replyTo: GeneralObject<any>, content: PostContent): Promise<{ [key: string]: any } | undefined>;
 	async reply(socialNetwork: SocialNetwork, replyTo: GeneralObject<any>, content: PostContent): Promise<{ [key: string]: any } | undefined> {
 		switch (socialNetwork.type) {
