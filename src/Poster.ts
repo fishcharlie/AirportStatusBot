@@ -83,6 +83,8 @@ export class Poster {
 			throw `Unknown social network UUID: ${socialNetworkUUID}`;
 		}
 
+		console.log(`Reposting to ${socialNetwork.uuid}`, post);
+
 		return this.#posterV2.repost(socialNetwork, post);
 	}
 
@@ -98,6 +100,12 @@ export class Poster {
 
 		if (socialNetwork.type === SocialNetworkType.s3) {
 			socialMessage = `${socialMessage}${socialNetwork.settings?.includeRAWXML ? `\n\n---\n\n${rawXML}` : ""}`;
+		}
+
+		if (socialNetwork.type === SocialNetworkType.nostr) {
+			if (!replyTo.event) {
+				console.log("No event for Nostr reply", replyTo);
+			}
 		}
 
 		try {
