@@ -322,7 +322,7 @@ export default class PosterV2 {
 			case "bluesky": {
 				const bluesky = await this.#getBlueskyAgent(socialNetwork);
 
-				const blueskyResult = await bluesky.repost(repost.root.uri, repost.root.cid);
+				const blueskyResult = await bluesky.repost(repost.parent.uri, repost.parent.cid);
 				return {
 					"root": blueskyResult,
 					"parent": blueskyResult
