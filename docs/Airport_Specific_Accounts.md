@@ -34,9 +34,13 @@ Please note that this feature is still in beta testing and some glitches may occ
 
 ## Denver International Airport (DEN)
 
+- Mastodon - [@AirportStatusBot_DEN@mastodon.social](https://mastodon.social/@AirportStatusBot_DEN)
+- Bluesky - [@airportstatus-den.bsky.social](https://bsky.app/profile/airportstatus-den.bsky.social)
 - nostr - [npub1den00xmfkxp35ft4twp9dzwn06w4e0tgka65djuqsqadsgews59q7fu53k](https://coracle.social/npub1den00xmfkxp35ft4twp9dzwn06w4e0tgka65djuqsqadsgews59q7fu53k)
 
 ## Dallas/Fort Worth International Airport (DFW)
 
+- Mastodon - [@AirportStatusBot_DFW@mastodon.social](https://mastodon.social/@AirportStatusBot_DFW)
+- Bluesky - [@airportstatus-dfw.bsky.social](https://bsky.app/profile/airportstatus-dfw.bsky.social)
 - nostr - [npub1dfw00wwe65tm5cqsy8ff5rqr3ahktwn5m6m5ffw34sn85jkln9aqm4spq2](https://coracle.social/npub1dfw00wwe65tm5cqsy8ff5rqr3ahktwn5m6m5ffw34sn85jkln9aqm4spq2)
 
