@@ -102,7 +102,7 @@ describe("Status.fromRAW().toPost()", () => {
 					}
 				}
 			},
-			"Inbound aircraft to Test Airport A (#AAA) are currently being held at their origin airport due to thunderstorms. Operations are expected to resume at 10:15 PM."
+			"Inbound aircraft to Test Airport A (#AAA) are currently being held at their origin airport due to thunderstorms. Operations are expected to resume at 9:15 PM."
 		],
 		[
 			{
