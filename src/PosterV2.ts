@@ -14,6 +14,7 @@ import Jimp from "jimp";
 import * as blurhash from "blurhash";
 import { GeneralObject } from "js-object-utilities";
 import { getImageSize } from "./utils/getImageSize";
+import { Main } from "@atproto/api/dist/client/types/app/bsky/richtext/facet";
 
 export interface PostContent {
 	message: string;
@@ -142,6 +143,10 @@ export default class PosterV2 {
 					"text": rt.text,
 					"facets": rt.facets
 				};
+				const extraFacets = handleExtraBlueskyFacets(rt.text, rt.facets);
+				if (extraFacets) {
+					postRecord.facets = postRecord.facets ? [...postRecord.facets, ...extraFacets] : extraFacets;
+				}
 				if (image && blueskyImage) {
 					const imageSize = await getImageSize(blueskyImage);
 
@@ -394,6 +399,10 @@ export default class PosterV2 {
 						}
 					}
 				};
+				const extraFacets = handleExtraBlueskyFacets(rt.text, rt.facets);
+				if (extraFacets) {
+					postRecord.facets = postRecord.facets ? [...postRecord.facets, ...extraFacets] : extraFacets;
+				}
 				const blueskyResult = await bluesky.post(postRecord);
 				return {
 					"root": replyTo.root,
@@ -451,4 +460,63 @@ export default class PosterV2 {
 		}
 	}
 
+}
+
+/**
+ * This function is used to handle the case where Bluesky doesn't add hashtags when the hashtag is within parentheses.
+ *
+ * This will become unnecessary once https://github.com/bluesky-social/atproto/pull/3104 is merged and released
+ * @param text The text of the social media post
+ * @param existingFacets Existing facets from the post to ensure that we don't duplicate them
+ * @returns An array of new facets or undefined if no new facets are found
+ */
+export function handleExtraBlueskyFacets(text: string, existingFacets: Main[] | undefined): Main[] | undefined {
+	const newFacets: Main[] = [];
+
+	const matches = text.matchAll(/\((#(.*?))(?: |\))/gmu);
+	for (const match of matches) {
+		if (match.index !== undefined) {
+			const start = match.index + 1;
+			const end = start + match[1].length;
+			newFacets.push({
+				"features": [
+					{
+						"$type": "app.bsky.richtext.facet#tag",
+						"name": match[2]
+					}
+				],
+				"index": {
+					"byteEnd": end,
+					"byteStart": start
+				},
+			});
+		}
+	}
+
+	if (newFacets.length === 0) {
+		return undefined;
+	} else {
+		if (existingFacets) {
+			// For each new facet, check if it already exists in the existing facets. If it does, remove it from the new facets array.
+			for (const newFacet of newFacets) {
+				const existingFacetIndex = existingFacets.findIndex((existingFacet) => {
+					if (existingFacet.index.byteStart === newFacet.index.byteStart && existingFacet.index.byteEnd === newFacet.index.byteEnd) {
+						return true;
+					} else {
+						return false;
+					}
+				});
+				if (existingFacetIndex !== -1) {
+					newFacets.splice(newFacets.indexOf(newFacet), 1);
+				}
+			}
+		}
+
+		// Return the new facets
+		if (newFacets.length === 0) {
+			return undefined;
+		} else {
+			return newFacets;
+		}
+	}
 }
