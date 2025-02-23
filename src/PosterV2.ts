@@ -482,7 +482,7 @@ export function handleExtraBlueskyFacets(text: string, existingFacets: Main[] | 
 				"features": [
 					{
 						"$type": "app.bsky.richtext.facet#tag",
-						"name": match[2]
+						"tag": match[2]
 					}
 				],
 				"index": {

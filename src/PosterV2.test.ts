@@ -12,7 +12,7 @@ describe("handleExtraBlueskyFacets", () => {
 			"output": [{
 				"features": [{
 					"$type": "app.bsky.richtext.facet#tag",
-					"name": "hashtag"
+					"tag": "hashtag"
 				}],
 				"index": {
 					"byteEnd": 9,
@@ -30,7 +30,7 @@ describe("handleExtraBlueskyFacets", () => {
 			"inputFacets": [{
 				"features": [{
 					"$type": "app.bsky.richtext.facet#tag",
-					"name": "hashtag"
+					"tag": "hashtag"
 				}],
 				"index": {
 					"byteEnd": 9,
@@ -43,7 +43,7 @@ describe("handleExtraBlueskyFacets", () => {
 			"output": [{
 				"features": [{
 					"$type": "app.bsky.richtext.facet#tag",
-					"name": "hashtag"
+					"tag": "hashtag"
 				}],
 				"index": {
 					"byteEnd": 9,
