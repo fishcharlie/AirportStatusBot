@@ -50,6 +50,19 @@ describe("handleExtraBlueskyFacets", () => {
 					"byteStart": 1
 				}
 			}]
+		},
+		{
+			"input": "A departure delay has been issued for Minneapolis–Saint Paul International #Airport / Wold–Chamberlain Field (#MSP) due to #thunderstorms. Current delays are 31-45 minutes and increasing. #AirportStatusBot",
+			"output": [{
+				"features": [{
+					"$type": "app.bsky.richtext.facet#tag",
+					"tag": "MSP"
+				}],
+				"index": {
+					"byteEnd": 118,
+					"byteStart": 114
+				}
+			}]
 		}
 	];
 

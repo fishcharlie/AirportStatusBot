@@ -474,10 +474,17 @@ export function handleExtraBlueskyFacets(text: string, existingFacets: Main[] | 
 	const newFacets: Main[] = [];
 
 	const matches = text.matchAll(/\((#(.*?))(?: |\))/gmu);
+	const encoder = new TextEncoder();
 	for (const match of matches) {
 		if (match.index !== undefined) {
-			const start = match.index + 1;
-			const end = start + match[1].length;
+			// Get the character positions of the match
+			const charStart = match.index + 1;
+			const charEnd = charStart + match[1].length;
+
+			// Calculate the byte positions by encoding the string up to each character position
+			const byteStart = encoder.encode(text.substring(0, charStart)).length;
+			const byteEnd = encoder.encode(text.substring(0, charEnd)).length;
+
 			newFacets.push({
 				"features": [
 					{
@@ -486,8 +493,8 @@ export function handleExtraBlueskyFacets(text: string, existingFacets: Main[] | 
 					}
 				],
 				"index": {
-					"byteEnd": end,
-					"byteStart": start
+					"byteEnd": byteEnd,
+					"byteStart": byteStart
 				},
 			});
 		}
