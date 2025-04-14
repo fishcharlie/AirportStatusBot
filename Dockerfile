@@ -1,5 +1,5 @@
 # Use the official Node.js image as a parent image
-FROM node:20.11.1
+FROM node:22.14.0
 
 # Set environment variables to avoid user interaction during package installation
 ENV DEBIAN_FRONTEND=noninteractive
