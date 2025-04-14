@@ -51,6 +51,7 @@
     "sqlite3": "^5.1.7",
     "tstl": "^3.0.0",
     "unzipper": "^0.12.3",
+    "websocket-polyfill": "^0.0.3",
     "ws": "^8.18.1"
   }
 }
