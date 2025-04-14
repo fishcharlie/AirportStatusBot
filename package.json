@@ -40,7 +40,7 @@
     "geojson-to-tile-images": "^1.0.0",
     "html-to-text": "^9.0.5",
     "jimp": "^0.22.10",
-    "js-object-utilities": "^2.2.0",
+    "js-object-utilities": "^2.2.1",
     "luxon": "^3.4.4",
     "maptoimage": "^1.2.1",
     "masto": "^6.10.1",
