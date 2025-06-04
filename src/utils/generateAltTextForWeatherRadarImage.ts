@@ -106,9 +106,9 @@ export default async function (buffer: Buffer): Promise<string> {
 	}
 
 	let returnArray: string[] = [];
-	Object.entries(intensityObj).forEach(([intensity, directions]) => {
-		returnArray.push(`${intensity} perception to the ${directions.join(" and ")}`);
-	});
+        Object.entries(intensityObj).forEach(([intensity, directions]) => {
+                returnArray.push(`${intensity} precipitation to the ${directions.join(" and ")}`);
+        });
 
 	return `The map has a weather radar layer showing ${returnArray.join(" and ")}.`;
 }
