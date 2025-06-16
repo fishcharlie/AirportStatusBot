@@ -1,6 +1,6 @@
 import { parseDurationString } from "./parseDurationString";
 
-const tests = [
+const tests: Array<[string, number | undefined]> = [
 	["1 minute", 1],
 	["5 minutes", 5],
 	["15 minutes", 15],
@@ -13,6 +13,8 @@ const tests = [
 	["5 hours", 300],
 	["5 hours and 1 minute", 301],
 	["5 hours and 30 minutes", 330],
+	["ten minutes", undefined],
+	["1 hr", undefined],
 ];
 
 test.each(tests)("parseDurationString(%p) === %p", (input, expected) => {
