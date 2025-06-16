@@ -10,11 +10,11 @@ const tests: Array<[string, number | undefined]> = [
 	["1 hour", 60],
 	["1 hour and 1 minute", 61],
 	["1 hour and 5 minutes", 65],
-        ["5 hours", 300],
-        ["5 hours and 1 minute", 301],
-        ["5 hours and 30 minutes", 330],
-        ["ten minutes", undefined],
-        ["1 hr", undefined],
+	["5 hours", 300],
+	["5 hours and 1 minute", 301],
+	["5 hours and 30 minutes", 330],
+	["ten minutes", undefined],
+	["1 hr", undefined],
 ];
 
 test.each(tests)("parseDurationString(%p) === %p", (input, expected) => {
