@@ -91,7 +91,9 @@ if (config.webServer) {
 	});
 }
 
-const ENDPOINT = "https://nasstatus.faa.gov/api/airport-status-information";
+const XML_ENDPOINT = "https://nasstatus.faa.gov/api/airport-status-information";
+const JSON_ENDPOINT_AIRPORT_EVENTS = "https://nasstatus.faa.gov/api/airport-events";
+const JSON_ENDPOINT_OPERATIONS_PLAN = "https://nasstatus.faa.gov/api/operations-plan";
 const USER_AGENT = `AirportStatusBot/${packageJSON.version} (+${packageJSON.homepage})`;
 
 const ourAirportsDataManager = new OurAirportsDataManager(USER_AGENT);
@@ -119,7 +121,7 @@ async function run (firstRun: boolean) {
 
 	let xmlResult: string;
 	try {
-		xmlResult = await (await fetch(ENDPOINT, {
+		xmlResult = await (await fetch(XML_ENDPOINT, {
 			"method": "GET",
 			"headers": {
 				"User-Agent": USER_AGENT
