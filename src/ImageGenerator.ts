@@ -6,6 +6,8 @@ import * as turf from "@turf/turf";
 import getClosestLandmarkToPoint from "./utils/getClosestLandmarkToPoint";
 import { NaturalEarthDataManager } from "./NaturalEarthDataManager";
 import generateAltTextForWeatherRadarImage from "./utils/generateAltTextForWeatherRadarImage";
+import * as fs from "fs";
+import * as path from "path";
 
 const SIZE = {
 	"width": 1280,
@@ -89,10 +91,30 @@ export class ImageGenerator {
 		async function fetchRadarTile(z: number, x: number, y: number): Promise<Buffer> {
 			const url = `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::USCOMP-N0Q-0/${z}/${x}/${y}.png`;
 			console.log(`Fetching tile: ${url}`);
-			const img = await fetch(url);
-			const arrayBuffer = await img.arrayBuffer();
-			const buffer = Buffer.from(arrayBuffer);
-			return buffer;
+			async function run() {
+				const img = await fetch(url, { signal: AbortSignal.timeout(5000) });
+				if (!img.ok) {
+					throw new Error(`HTTP ${img.status}: ${img.statusText}`);
+				}
+				const arrayBuffer = await img.arrayBuffer();
+				const buffer = Buffer.from(arrayBuffer);
+				return buffer;
+			}
+
+			let attempts = 0;
+			while (attempts < 3) {
+				attempts++;
+				if (attempts > 1) {
+					await new Promise(resolve => setTimeout(resolve, 500)); // Wait half a second before retrying
+				}
+				try {
+					return await run();
+				} catch (error) {
+					console.error(`Error fetching tile ${z}/${x}/${y}:`, error);
+				}
+			}
+			// Fallback to a placeholder image if all attempts fail
+			return fs.promises.readFile(path.join(__dirname, "../assets/failed_tile.png"));
 		}
 		if (this.types.includes(ImageType.radar)) {
 			layers.push(async (z: number, x: number, y: number): Promise<Buffer> => {
