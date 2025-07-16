@@ -1,7 +1,7 @@
 import { minutesToDurationString } from "./minutesToDurationString";
 
 const tests = [
-        [0.01667, "1 second"],
+	[0.01667, "1 second"],
 	[0.1667, "10 seconds"],
 	[0.25, "15 seconds"],
 	[0.5, "30 seconds"],

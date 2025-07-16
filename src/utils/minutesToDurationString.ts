@@ -1,8 +1,8 @@
 export function minutesToDurationString(minutes: number): string {
-        if (minutes < 1 && minutes !== 0) {
-                const seconds = Math.floor(minutes * 60);
-                return `${seconds} second${seconds === 1 ? "" : "s"}`;
-        }
+	if (minutes < 1 && minutes !== 0) {
+		const seconds = Math.floor(minutes * 60);
+		return `${seconds} second${seconds === 1 ? "" : "s"}`;
+	}
 
 	const hours = Math.floor(minutes / 60);
 	const remainingMinutes = minutes % 60;
