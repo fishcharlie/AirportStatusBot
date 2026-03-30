@@ -11,6 +11,7 @@ import { NaturalEarthDataManager } from "./NaturalEarthDataManager";
 import { ImageGenerator } from "./ImageGenerator";
 import express from "express";
 import { minutesToDurationString } from "./utils/minutesToDurationString";
+import { fetchWithRetry } from "./utils/fetchWithRetry";
 import { S3 } from "@aws-sdk/client-s3";
 
 const packageJSON = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
@@ -120,19 +121,18 @@ async function run (firstRun: boolean) {
 	}
 
 	let xmlResult: string;
-	try {
-		xmlResult = await (await fetch(XML_ENDPOINT, {
-			"method": "GET",
-			"headers": {
-				"User-Agent": USER_AGENT
-			}
-		})).text();
-		console.log("Got XML", xmlResult);
-	} catch (e) {
-		console.error("Failed to get XML");
-		console.error(e);
+	const xmlResponse = await fetchWithRetry(XML_ENDPOINT, {
+		"method": "GET",
+		"headers": {
+			"User-Agent": USER_AGENT
+		}
+	});
+	if (!xmlResponse) {
+		console.error("Failed to get XML after all retry attempts. Skipping this run.");
 		return;
 	}
+	xmlResult = await xmlResponse.text();
+	console.log("Got XML", xmlResult);
 
 	console.time("Run Parse");
 	const previousPath = path.join(__dirname, "..", "cache", "previous.xml");
