@@ -354,6 +354,12 @@ describe("Status.fromRAW().toEndedPost()", () => {
 });
 
 describe("Status.updatedPost()", () => {
+	// Used by the date-aware branch tests below. Computed once at load time so
+	// the Reopen dates (which Luxon parses into the current year) stay in sync.
+	const thisYear = new Date().getFullYear();
+	// Day name for April 9 in the current year, as seen in the America/Denver zone.
+	const apr9DayName = new Intl.DateTimeFormat("en-US", { "weekday": "long", "timeZone": "America/Denver" }).format(new Date(`${thisYear}-04-09T20:00:00Z`));
+
 	const tests = [
 		[
 			{
@@ -887,15 +893,149 @@ describe("Status.updatedPost()", () => {
 				}
 			},
 			"The ground delay at Test Airport A (#AAA) now has an average delay of 45 minutes and a maximum delay of 4 hours."
+		],
+		[
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 13 at 18:00 UTC."
+					}
+				}
+			},
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 21 at 18:00 UTC."
+					}
+				}
+			},
+			"The airport closure at Test Airport A (#AAA) has been extended by 192 hours to December 21 at 11:00 AM."
+		],
+		[
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 21 at 18:00 UTC."
+					}
+				}
+			},
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 13 at 18:00 UTC."
+					}
+				}
+			},
+			"The airport closure at Test Airport A (#AAA) has been reduced by 192 hours to December 13 at 11:00 AM."
+		],
+		// isToday branch: new end is on the same local day as now → output is time-only
+		// Apr 08 19:00 UTC = 1:00 PM MDT (America/Denver, UTC-6 in April)
+		[
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Apr 08 at 18:00 UTC.",
+						"Reopen": "Apr 08 at 18:00 UTC."
+					}
+				}
+			},
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Apr 08 at 18:00 UTC.",
+						"Reopen": "Apr 08 at 19:00 UTC."
+					}
+				}
+			},
+			"The airport closure at Test Airport A (#AAA) has been extended by 1 hour to 1:00 PM.",
+			new Date(`${thisYear}-04-08T12:00:00Z`)
+		],
+		// isSameWeek branch: new end is the next day (same ISO week) → output is day-name + time.
+		// Apr 09 20:00 UTC = 2:00 PM MDT. Day name is computed dynamically to stay correct across years.
+		[
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Apr 08 at 18:00 UTC.",
+						"Reopen": "Apr 08 at 18:00 UTC."
+					}
+				}
+			},
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Apr 08 at 18:00 UTC.",
+						"Reopen": "Apr 09 at 20:00 UTC."
+					}
+				}
+			},
+			`The airport closure at Test Airport A (#AAA) has been extended by 26 hours to ${apr9DayName} at 2:00 PM.`,
+			new Date(`${thisYear}-04-08T12:00:00Z`)
+		],
+		// differentYear branch: now is in the previous year so the end date falls in a different year
+		// → output includes the full year. isSameYear is already covered by the Dec 21 tests above.
+		[
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 13 at 18:00 UTC."
+					}
+				}
+			},
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 21 at 18:00 UTC."
+					}
+				}
+			},
+			`The airport closure at Test Airport A (#AAA) has been extended by 192 hours to December 21, ${thisYear} at 11:00 AM.`,
+			new Date(`${thisYear - 1}-04-08T12:00:00Z`)
 		]
 	];
 
-	tests.forEach(([oldJSON, newJSON, expected]) => {
+	tests.forEach(([oldJSON, newJSON, expected, now]) => {
 		test(`Status.updatedPost() === ${expected}`, async () => {
 			const oldObj: any = Status.fromRaw(oldJSON as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
 			const newObj: any = Status.fromRaw(newJSON as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
 
-			expect(await Status.updatedPost(oldObj, newObj)).toStrictEqual(expected);
+			expect(await Status.updatedPost(oldObj, newObj, now as Date | undefined)).toStrictEqual(expected);
 		});
 	});
 });
