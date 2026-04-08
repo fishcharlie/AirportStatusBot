@@ -380,7 +380,7 @@ export class Status {
 				if (closestAirport && closestAirport.distance < 3) {
 					return ` ${this.geoJSON?.type === "LineString" ? "near" : "around"} ${closestAirport.airport.airportString}`;
 				} else if (state && state.properties) {
-					return ` in the #${state.properties?.name} region`;
+					return ` over #${state.properties?.name}`;
 				} else if (this.geoJSON) {
 					const statesGeoJSON = await this.#naturalEarthDataManager?.geoJSON("ne_110m_admin_1_states_provinces");
 					if (!statesGeoJSON) {

@@ -145,7 +145,7 @@ describe("Status.fromRAW().toPost()", () => {
 					}
 				}
 			},
-			"An en route delay is currently in effect in the #Florida region due to thunderstorms. This delay applies to aircraft flying between 18,000 and 60,000 feet. Delays are currently averaging 22 minutes."
+			"An en route delay is currently in effect over #Florida due to thunderstorms. This delay applies to aircraft flying between 18,000 and 60,000 feet. Delays are currently averaging 22 minutes."
 		],
 		[
 			{
