@@ -508,7 +508,7 @@ export class Status {
 	/**
 	 * This function is used when a status has been updated to generate a message for a new post.
 	 */
-	static async updatedPost(from: Status, to: Status): Promise<string | undefined> {
+	static async updatedPost(from: Status, to: Status, now: Date = new Date()): Promise<string | undefined> {
 		if (!from.isValid || !to.isValid) {
 			return undefined;
 		}
@@ -531,7 +531,7 @@ export class Status {
 			if (from.timing.end.toISOString() !== to.timing.end.toISOString()) {
 				const extendedByDuration = luxon.DateTime.fromJSDate(to.timing.end).diff(luxon.DateTime.fromJSDate(from.timing.end), "minutes").minutes;
 				const luxonDate = luxon.DateTime.fromJSDate(to.timing.end).setZone(tz ?? "UTC");
-				const currentLuxonDate = luxon.DateTime.fromJSDate(new Date()).setZone(tz ?? "UTC");
+				const currentLuxonDate = luxon.DateTime.fromJSDate(now).setZone(tz ?? "UTC");
 				const isToday = luxonDate.hasSame(currentLuxonDate, "day");
 				const isSameWeek = luxonDate.hasSame(currentLuxonDate, "week");
 				const isSameYear = luxonDate.hasSame(currentLuxonDate, "year");

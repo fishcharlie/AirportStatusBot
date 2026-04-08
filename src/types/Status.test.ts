@@ -948,4 +948,69 @@ describe("Status.updatedPost()", () => {
 			expect(await Status.updatedPost(oldObj, newObj)).toStrictEqual(expected);
 		});
 	});
+
+	// Explicit tests for each date-aware branch in updatedPost().
+	// AAA is in America/Denver: MDT (UTC-6) in spring, MST (UTC-7) in winter.
+	// All tests pass an explicit `now` to avoid coupling to the real system clock.
+	describe("date-aware end time formatting", () => {
+		const dm = new OurAirportsDataManager("Test");
+		const ndm = new NaturalEarthDataManager("Test");
+		const closureRaw = (start: string, reopen: string) => ({
+			"Name": "Airport Closures",
+			"Airport_Closure_List": {
+				"Airport": {
+					"ARPT": "AAA",
+					"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+					"Start": start,
+					"Reopen": reopen
+				}
+			}
+		});
+
+		test("isToday: shows time only (no date)", async () => {
+			// now = April 8, 2026 noon UTC → April 8 6:00 AM MDT (UTC-6)
+			// new Reopen = Apr 08 at 21:00 UTC → April 8 3:00 PM MDT → isToday
+			const now = new Date("2026-04-08T12:00:00Z");
+			const oldObj = Status.fromRaw(closureRaw("Apr 08 at 18:00 UTC.", "Apr 08 at 18:00 UTC."), dm, ndm) as Status;
+			const newObj = Status.fromRaw(closureRaw("Apr 08 at 18:00 UTC.", "Apr 08 at 21:00 UTC."), dm, ndm) as Status;
+			expect(await Status.updatedPost(oldObj, newObj, now)).toBe(
+				"The airport closure at Test Airport A (#AAA) has been extended by 3 hours to 3:00 PM."
+			);
+		});
+
+		test("isSameWeek: shows day name + time", async () => {
+			// now = April 8, 2026 (Wednesday) noon UTC
+			// new Reopen = Apr 10 at 18:00 UTC → April 10 (Friday) noon MDT → same ISO week, not today
+			const now = new Date("2026-04-08T12:00:00Z");
+			const oldObj = Status.fromRaw(closureRaw("Apr 08 at 18:00 UTC.", "Apr 08 at 18:00 UTC."), dm, ndm) as Status;
+			const newObj = Status.fromRaw(closureRaw("Apr 08 at 18:00 UTC.", "Apr 10 at 18:00 UTC."), dm, ndm) as Status;
+			expect(await Status.updatedPost(oldObj, newObj, now)).toBe(
+				"The airport closure at Test Airport A (#AAA) has been extended by 48 hours to Friday at noon."
+			);
+		});
+
+		test("isSameYear: shows month + day + time", async () => {
+			// now = April 8, 2026; new Reopen = Dec 21, 2026 → same year, different week
+			// Dec 21 at 18:00 UTC → Dec 21 11:00 AM MST (UTC-7)
+			const now = new Date("2026-04-08T12:00:00Z");
+			const oldObj = Status.fromRaw(closureRaw("Dec 13 at 18:00 UTC.", "Dec 13 at 18:00 UTC."), dm, ndm) as Status;
+			const newObj = Status.fromRaw(closureRaw("Dec 13 at 18:00 UTC.", "Dec 21 at 18:00 UTC."), dm, ndm) as Status;
+			expect(await Status.updatedPost(oldObj, newObj, now)).toBe(
+				"The airport closure at Test Airport A (#AAA) has been extended by 192 hours to December 21 at 11:00 AM."
+			);
+		});
+
+		test("different year: shows full date with year + time", async () => {
+			// now = Dec 31, 2026; new end = Jan 5, 2027 → different year
+			// Jan 5, 2027 18:00 UTC → Jan 5 11:00 AM MST (UTC-7)
+			const now = new Date("2026-12-31T12:00:00Z");
+			const oldObj = Status.fromRaw(closureRaw("Dec 31 at 18:00 UTC.", "Dec 31 at 18:00 UTC."), dm, ndm) as Status;
+			const newObj = Status.fromRaw(closureRaw("Dec 31 at 18:00 UTC.", "Dec 31 at 18:00 UTC."), dm, ndm) as Status;
+			// Override timing.end to a date in the next year, bypassing the format's year-defaulting
+			newObj.timing.end = new Date("2027-01-05T18:00:00Z");
+			expect(await Status.updatedPost(oldObj, newObj, now)).toBe(
+				"The airport closure at Test Airport A (#AAA) has been extended by 120 hours to January 5, 2027 at 11:00 AM."
+			);
+		});
+	});
 });
