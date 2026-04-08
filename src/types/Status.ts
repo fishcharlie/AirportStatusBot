@@ -531,7 +531,21 @@ export class Status {
 			if (from.timing.end.toISOString() !== to.timing.end.toISOString()) {
 				const extendedByDuration = luxon.DateTime.fromJSDate(to.timing.end).diff(luxon.DateTime.fromJSDate(from.timing.end), "minutes").minutes;
 				const luxonDate = luxon.DateTime.fromJSDate(to.timing.end).setZone(tz ?? "UTC");
-				return `The ${from.type.toString()} at ${await to.airportString()} has been ${extendedByDuration > 0 ? "extended" : "reduced"} by ${minutesToDurationString(Math.abs(extendedByDuration))} to ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}.`;
+				const currentLuxonDate = luxon.DateTime.fromJSDate(new Date()).setZone(tz ?? "UTC");
+				const isToday = luxonDate.hasSame(currentLuxonDate, "day");
+				const isSameWeek = luxonDate.hasSame(currentLuxonDate, "week");
+				const isSameYear = luxonDate.hasSame(currentLuxonDate, "year");
+				let newEndString: string;
+				if (isToday) {
+					newEndString = luxonTimeToString(luxonDate);
+				} else if (isSameWeek) {
+					newEndString = `${luxonDate.toFormat("cccc")} at ${luxonTimeToString(luxonDate)}`;
+				} else if (isSameYear) {
+					newEndString = `${luxonDate.toFormat("LLLL d")} at ${luxonTimeToString(luxonDate)}`;
+				} else {
+					newEndString = `${luxonDate.toFormat("LLLL d, yyyy")} at ${luxonTimeToString(luxonDate)}`;
+				}
+				return `The ${from.type.toString()} at ${await to.airportString()} has been ${extendedByDuration > 0 ? "extended" : "reduced"} by ${minutesToDurationString(Math.abs(extendedByDuration))} to ${newEndString}${!Boolean(tz) ? ` UTC` : ""}.`;
 			}
 		}
 		if (from.length.trend !== undefined && to.length.trend !== undefined && from.length.min !== undefined && to.length.min !== undefined && from.length.max !== undefined && to.length.max !== undefined) {

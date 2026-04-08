@@ -887,6 +887,56 @@ describe("Status.updatedPost()", () => {
 				}
 			},
 			"The ground delay at Test Airport A (#AAA) now has an average delay of 45 minutes and a maximum delay of 4 hours."
+		],
+		[
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 13 at 18:00 UTC."
+					}
+				}
+			},
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 21 at 18:00 UTC."
+					}
+				}
+			},
+			"The airport closure at Test Airport A (#AAA) has been extended by 192 hours to December 21 at 11:00 AM."
+		],
+		[
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 21 at 18:00 UTC."
+					}
+				}
+			},
+			{
+				"Name": "Airport Closures",
+				"Airport_Closure_List": {
+					"Airport": {
+						"ARPT": "AAA",
+						"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+						"Start": "Dec 13 at 18:00 UTC.",
+						"Reopen": "Dec 13 at 18:00 UTC."
+					}
+				}
+			},
+			"The airport closure at Test Airport A (#AAA) has been reduced by 192 hours to December 13 at 11:00 AM."
 		]
 	];
 
