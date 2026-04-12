@@ -15,6 +15,12 @@ const tests: Array<[string, number | undefined]> = [
 	["5 hours and 30 minutes", 330],
 	["ten minutes", undefined],
 	["1 hr", undefined],
+	// Additional edge cases
+	["0 hours", 0],
+	["0 hours and 0 minutes", 0],
+	["2 hours and 15 minutes", 135],
+	["10 hours and 45 minutes", 645],
+	["", undefined],
 ];
 
 test.each(tests)("parseDurationString(%p) === %p", (input, expected) => {
