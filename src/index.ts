@@ -209,7 +209,7 @@ async function run (firstRun: boolean) {
 			const previousText: string | undefined = await previousDelay.toPost();
 			const updateText: string | undefined = await Status.updatedPost(previousDelay, delay);
 
-			if (!newDelayText || !newDelayText) {
+			if (!newDelayText || !previousText) {
 				return undefined;
 			}
 

@@ -7,7 +7,7 @@ export function parseDurationString(str: string): number | undefined {
 	}
 
 	let hours = parseInt(matches[1]);
-	let minutes = parseInt(matches[2]);
+	let minutes = parseInt(matches[3]);
 
 	if (isNaN(hours) && isNaN(minutes)) {
 		return undefined;
