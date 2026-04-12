@@ -407,6 +407,7 @@ export class Listener {
 							console.log("No item or error in Mastodon listener.")
 						}
 					});
+				break;
 				case SocialNetworkType.s3:
 					break;
 				case SocialNetworkType.bluesky:

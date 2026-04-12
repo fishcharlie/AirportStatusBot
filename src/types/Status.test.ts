@@ -1039,3 +1039,49 @@ describe("Status.updatedPost()", () => {
 		});
 	});
 });
+
+describe("Status.updatedPost() with invalid statuses", () => {
+	// These tests verify that updatedPost() correctly returns undefined when either
+	// the from or to status is invalid (i.e., its toPost() would return undefined).
+	// This is relevant to the guard condition in index.ts that checks both
+	// newDelayText and previousText before building the update log entry.
+
+	const invalidClosureJSON = {
+		"Name": "Airport Closures",
+		"Airport_Closure_List": {
+			"Airport": {
+				"ARPT": "AAA",
+				// Non-full closure (has exceptions) — isValid returns false for this
+				"Reason": "!RDM 01/300 RDM AD AP CLSD EXC COMMERCIAL AIRLINES AND LIFE FLT 2401211633-2401220100",
+				"Start": "Dec 13 at 18:00 UTC.",
+				"Reopen": "Dec 21 at 18:00 UTC."
+			}
+		}
+	};
+
+	const validClosureJSON = {
+		"Name": "Airport Closures",
+		"Airport_Closure_List": {
+			"Airport": {
+				"ARPT": "AAA",
+				"Reason": "!AAA 09/001 AAA AD AP CLSD 2109010000-2109012359",
+				"Start": "Dec 13 at 18:00 UTC.",
+				"Reopen": "Dec 21 at 18:00 UTC."
+			}
+		}
+	};
+
+	test("returns undefined when from status is invalid (toPost() would return undefined)", async () => {
+		const fromObj: any = Status.fromRaw(invalidClosureJSON as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
+		const toObj: any = Status.fromRaw(validClosureJSON as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
+
+		expect(await Status.updatedPost(fromObj, toObj)).toStrictEqual(undefined);
+	});
+
+	test("returns undefined when to status is invalid (toPost() would return undefined)", async () => {
+		const fromObj: any = Status.fromRaw(validClosureJSON as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
+		const toObj: any = Status.fromRaw(invalidClosureJSON as any, new OurAirportsDataManager("Test"), new NaturalEarthDataManager("Test"));
+
+		expect(await Status.updatedPost(fromObj, toObj)).toStrictEqual(undefined);
+	});
+});
