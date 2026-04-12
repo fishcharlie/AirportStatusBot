@@ -503,27 +503,19 @@ export function handleExtraBlueskyFacets(text: string, existingFacets: Main[] | 
 	if (newFacets.length === 0) {
 		return undefined;
 	} else {
-		if (existingFacets) {
-			// For each new facet, check if it already exists in the existing facets. If it does, remove it from the new facets array.
-			for (const newFacet of newFacets) {
-				const existingFacetIndex = existingFacets.findIndex((existingFacet) => {
-					if (existingFacet.index.byteStart === newFacet.index.byteStart && existingFacet.index.byteEnd === newFacet.index.byteEnd) {
-						return true;
-					} else {
-						return false;
-					}
-				});
-				if (existingFacetIndex !== -1) {
-					newFacets.splice(newFacets.indexOf(newFacet), 1);
-				}
-			}
-		}
+		// Filter out any new facets that already exist in the existing facets.
+		const haveSameByteRange = (a: Main, b: Main): boolean =>
+			a.index.byteStart === b.index.byteStart && a.index.byteEnd === b.index.byteEnd;
+
+		const filteredFacets = existingFacets
+			? newFacets.filter((newFacet) => !existingFacets.some((existingFacet) => haveSameByteRange(existingFacet, newFacet)))
+			: newFacets;
 
 		// Return the new facets
-		if (newFacets.length === 0) {
+		if (filteredFacets.length === 0) {
 			return undefined;
 		} else {
-			return newFacets;
+			return filteredFacets;
 		}
 	}
 }
