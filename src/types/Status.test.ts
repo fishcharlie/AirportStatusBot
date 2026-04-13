@@ -270,6 +270,23 @@ describe("Status.fromRAW().toPost()", () => {
 			},
 			"A departure delay has been issued for Test Airport A (#AAA) due to heavy traffic volume. Current delays are 0-15 minutes and increasing."
 		],
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Min": "46 minutes",
+							"Max": "1 hour",
+						},
+					}
+				}
+			},
+			"A departure delay has been issued for Test Airport A (#AAA) due to heavy traffic volume."
+		],
 	];
 
 	tests.forEach(([obj, expected]) => {

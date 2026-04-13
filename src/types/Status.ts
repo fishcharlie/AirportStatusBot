@@ -138,7 +138,7 @@ export class Status {
 				length.max = maxValue;
 			}
 
-			length.trend = detailsObject.Arrival_Departure.Trend.toLowerCase() as "increasing" | "decreasing";
+			length.trend = detailsObject.Arrival_Departure.Trend?.toLowerCase() as "increasing" | "decreasing" | undefined;
 			if (length.trend !== "increasing" && length.trend !== "decreasing") {
 				length.trend = undefined;
 			}
