@@ -463,7 +463,7 @@ export class Status {
 			if (this.timing.end) {
 				const luxonDate = luxon.DateTime.fromJSDate(this.timing.end).setZone(tz ?? "UTC");
 
-				sentences.push(`Operations are expected to resume at ${luxonDate.toFormat("t")}${!Boolean(tz) ? ` UTC` : ""}`);
+				sentences.push(`Operations are expected to resume at ${luxonTimeToString(luxonDate)}${!Boolean(tz) ? ` UTC` : ""}`);
 			} else {
 				sentences.push(`It is currently unknown when operations will resume`);
 			}
