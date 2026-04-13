@@ -106,6 +106,19 @@ describe("Status.fromRAW().toPost()", () => {
 		],
 		[
 			{
+				"Name": "Ground Stop Programs",
+				"Ground_Stop_List": {
+					"Program": {
+						"ARPT": "AAA",
+						"Reason": "thunderstorms",
+						"End_Time": "2:00 am EDT"
+					}
+				}
+			},
+			"Inbound aircraft to Test Airport A (#AAA) are currently being held at their origin airport due to thunderstorms. Operations are expected to resume at midnight."
+		],
+		[
+			{
 				"Name": "Airspace Flow Programs",
 				"Airspace_Flow_List": {
 					"Airspace_Flow": {
