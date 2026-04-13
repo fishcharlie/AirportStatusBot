@@ -129,11 +129,13 @@ export class Status {
 
 		let length: { "min"?: number, "max"?: number, "average"?: number, "trend"?: "increasing" | "decreasing" } = {};
 		if (detailsObject.Arrival_Departure) {
-			if (parseDurationString(detailsObject.Arrival_Departure.Min)) {
-				length.min = parseDurationString(detailsObject.Arrival_Departure.Min);
+			const minValue = parseDurationString(detailsObject.Arrival_Departure.Min);
+			if (minValue !== undefined) {
+				length.min = minValue;
 			}
-			if (parseDurationString(detailsObject.Arrival_Departure.Max)) {
-				length.max = parseDurationString(detailsObject.Arrival_Departure.Max);
+			const maxValue = parseDurationString(detailsObject.Arrival_Departure.Max);
+			if (maxValue !== undefined) {
+				length.max = maxValue;
 			}
 
 			length.trend = detailsObject.Arrival_Departure.Trend.toLowerCase() as "increasing" | "decreasing";
@@ -142,13 +144,15 @@ export class Status {
 			}
 		}
 		if (detailsObject.Avg) {
-			if (parseDurationString(detailsObject.Avg)) {
-				length.average = parseDurationString(detailsObject.Avg);
+			const avgValue = parseDurationString(detailsObject.Avg);
+			if (avgValue !== undefined) {
+				length.average = avgValue;
 			}
 		}
 		if (detailsObject.Max) {
-			if (parseDurationString(detailsObject.Max)) {
-				length.max = parseDurationString(detailsObject.Max);
+			const overrideMaxValue = parseDurationString(detailsObject.Max);
+			if (overrideMaxValue !== undefined) {
+				length.max = overrideMaxValue;
 			}
 		}
 
@@ -414,7 +418,7 @@ export class Status {
 		}
 
 		if (this.type.type === TypeEnum.DELAY) {
-			if (this.length.min && this.length.max && this.length.trend) {
+			if (this.length.min !== undefined && this.length.max !== undefined && this.length.trend) {
 				if (this.length.min === this.length.max) {
 					sentences.push(`Current delays are ${this.length.min} minutes and ${this.length.trend}`);
 				} else {
