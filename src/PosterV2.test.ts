@@ -63,6 +63,32 @@ describe("handleExtraBlueskyFacets", () => {
 					"byteStart": 114
 				}
 			}]
+		},
+		{
+			"input": "(#hashtag1) and (#hashtag2)",
+			"output": undefined,
+			"inputFacets": [
+				{
+					"features": [{
+						"$type": "app.bsky.richtext.facet#tag",
+						"tag": "hashtag1"
+					}],
+					"index": {
+						"byteStart": 1,
+						"byteEnd": 10
+					}
+				},
+				{
+					"features": [{
+						"$type": "app.bsky.richtext.facet#tag",
+						"tag": "hashtag2"
+					}],
+					"index": {
+						"byteStart": 17,
+						"byteEnd": 26
+					}
+				}
+			]
 		}
 	];
 
