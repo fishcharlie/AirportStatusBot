@@ -234,8 +234,8 @@ export class ImageGenerator {
 				const radarOnlyImg = await mapToImage({
 					"image": {
 						"dimensions": {
-							"height": Math.max(SIZE.height, SIZE.height),
-							"width": Math.max(SIZE.height, SIZE.height)
+							"height": Math.max(SIZE.height, SIZE.width),
+							"width": Math.max(SIZE.height, SIZE.width)
 						}
 					},
 					"map": {
