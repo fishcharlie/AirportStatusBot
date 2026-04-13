@@ -220,7 +220,7 @@ describe("Status.fromRAW().toPost()", () => {
 				}
 			},
 			"An en route delay is currently in effect around Test Airport A (#AAA). This delay applies to aircraft flying below 60,000 feet. Delays are currently averaging 11 minutes."
-		]
+		],
 		// [
 		// 	{
 		// 		"Name": "Airspace Flow Programs",
@@ -252,6 +252,24 @@ describe("Status.fromRAW().toPost()", () => {
 		// 	},
 		// 	"An en route delay is currently in effect to the west of Florida. This delay applies to aircraft flying below 60,000 feet. Delays are currently averaging 11 minutes."
 		// ]
+		[
+			{
+				"Name": "General Arrival/Departure Delay Info",
+				"Arrival_Departure_Delay_List": {
+					"Delay": {
+						"ARPT": "AAA",
+						"Reason": "TM Initiatives:MIT:VOL",
+						"Arrival_Departure": {
+							"@_Type": "Departure",
+							"Trend": "Increasing",
+							"Min": "0 minutes",
+							"Max": "15 minutes",
+						},
+					}
+				}
+			},
+			"A departure delay has been issued for Test Airport A (#AAA) due to heavy traffic volume. Current delays are 0-15 minutes and increasing."
+		],
 	];
 
 	tests.forEach(([obj, expected]) => {
