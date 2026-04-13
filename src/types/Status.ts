@@ -150,9 +150,9 @@ export class Status {
 			}
 		}
 		if (detailsObject.Max) {
-			const maxValue2 = parseDurationString(detailsObject.Max);
-			if (maxValue2 !== undefined) {
-				length.max = maxValue2;
+			const overrideMaxValue = parseDurationString(detailsObject.Max);
+			if (overrideMaxValue !== undefined) {
+				length.max = overrideMaxValue;
 			}
 		}
 
