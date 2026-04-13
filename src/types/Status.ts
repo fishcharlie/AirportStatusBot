@@ -18,9 +18,13 @@ import { Events } from "../Events";
 
 const ianaEquivalents: { [key: string]: string } = {
 	"EDT": "America/New_York",
+	"EST": "UTC-5",
 	"CDT": "America/Chicago",
+	"CST": "UTC-6",
 	"MDT": "America/Denver",
-	"PDT": "America/Los_Angeles"
+	"MST": "UTC-7",
+	"PDT": "America/Los_Angeles",
+	"PST": "UTC-8"
 };
 
 export class Status {
