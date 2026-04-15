@@ -47,6 +47,7 @@
     "masto": "^6.10.4",
     "nostr-tools": "^2.12.0",
     "rimraf": "^6.0.1",
+    "socialmediamanager": "^1.0.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "tstl": "^3.0.0",

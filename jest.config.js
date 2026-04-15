@@ -3,5 +3,8 @@ module.exports = {
 	"testEnvironment": "node",
 	"testMatch": ["**/src/**/*.test.[jt]s?(x)"],
 	"coverageReporters": ["json", "lcov", "text", "html"],
-	"transformIgnorePatterns": ["dist/.+\\.js"]
+	"transformIgnorePatterns": ["node_modules/(?!(@noble|@scure|nostr-tools|masto)/)", "dist/.+\\.js"],
+	"transform": {
+		"^.+\\.[jt]sx?$": ["ts-jest", { "tsconfig": "tsconfig.json" }]
+	}
 };
