@@ -1,8 +1,5 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as crypto from "crypto";
-import { GeneralObject } from "js-object-utilities";
-import { Airport } from "./types/Airport";
 const fetch = require("node-fetch");
 const unzipper = require("unzipper");
 const { exec } = require("child_process");
@@ -32,6 +29,7 @@ const items = [
 
 export class NaturalEarthDataManager {
 	#lastUpdatedDate: number | undefined;
+	#geoJSONCache = new Map<string, GeoJSON.FeatureCollection>();
 	userAgent: string;
 
 	constructor(userAgent: string) {
@@ -46,6 +44,13 @@ export class NaturalEarthDataManager {
 		return items.every((item) => fs.existsSync(path.join(dataPath(), `${item.name}.geojson`)));
 	}
 
+	/**
+	 * Clears parsed GeoJSON objects after the on-disk cache changes.
+	 */
+	clearGeoJSONCache() {
+		this.#geoJSONCache.clear();
+	}
+
 	async updateCache(force: boolean = false) {
 		const oneDayInMS = 24 * 60 * 60 * 1000; // 1 day in milliseconds
 		const shouldRun = force || !this.#cacheExists || !this.#lastUpdatedDate || this.#lastUpdatedDate < Date.now() - oneDayInMS;
@@ -54,6 +59,7 @@ export class NaturalEarthDataManager {
 		} else {
 			try {
 				console.log("Updating NaturalEarth cache");
+				this.clearGeoJSONCache();
 
 				await fs.promises.mkdir(dataPath(), {
 					"recursive": true
@@ -105,6 +111,7 @@ export class NaturalEarthDataManager {
 
 				this.#lastUpdatedDate = Date.now();
 				await fs.promises.writeFile(path.join(dataPath(), "..", "lastUpdatedDate.txt"), this.#lastUpdatedDate.toString());
+				this.clearGeoJSONCache();
 				console.log("NaturalEarth Cache updated");
 			} catch (e) {
 				console.error("Failed to update NaturalEarth cache");
@@ -118,11 +125,17 @@ export class NaturalEarthDataManager {
 		if (!item) {
 			return undefined;
 		} else {
+			if (this.#geoJSONCache.has(type)) {
+				return this.#geoJSONCache.get(type);
+			}
+
 			const geoJSONPath = path.join(dataPath(), `${item.name}.geojson`);
 			if (!fs.existsSync(geoJSONPath)) {
 				await this.updateCache();
 			}
-			return JSON.parse(fs.readFileSync(geoJSONPath, "utf8"));
+			const geoJSON = JSON.parse(fs.readFileSync(geoJSONPath, "utf8"));
+			this.#geoJSONCache.set(type, geoJSON);
+			return geoJSON;
 		}
 	}
 }

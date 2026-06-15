@@ -17,7 +17,10 @@ RUN npm run build
 # Run the bot with only runtime dependencies and system tools.
 FROM node:22.14.0-bookworm AS runtime
 
+# Keep the long-running bot inside a conservative memory envelope.
 ENV NODE_ENV=production
+ENV NODE_OPTIONS=--max-old-space-size=384
+ENV MALLOC_ARENA_MAX=2
 ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /project

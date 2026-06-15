@@ -8,7 +8,6 @@ import * as objectUtils from "js-object-utilities";
 import * as rimraf from "rimraf";
 import { OurAirportsDataManager } from "./OurAirportsDataManager";
 import { NaturalEarthDataManager } from "./NaturalEarthDataManager";
-import { ImageGenerator } from "./ImageGenerator";
 import express from "express";
 import { minutesToDurationString } from "./utils/minutesToDurationString";
 import { fetchWithRetry } from "./utils/fetchWithRetry";
@@ -70,7 +69,17 @@ if (config.webServer) {
 						res.setHeader("Content-Length", data.ContentLength);
 					}
 
-					res.send(Buffer.from(await data.Body.transformToByteArray()));
+					const body = data.Body as NodeJS.ReadableStream & { transformToByteArray?: () => Promise<Uint8Array> };
+					if (typeof body.pipe === "function") {
+						// Stream S3 images to avoid buffering large assets in process memory.
+						body.on("error", next);
+						body.pipe(res);
+					} else if (typeof body.transformToByteArray === "function") {
+						res.send(Buffer.from(await body.transformToByteArray()));
+					} else {
+						console.warn(`Unsupported S3 object body for image: ${key}`);
+						next();
+					}
 				} else {
 					console.warn(`No body for S3 object: ${key}`, data);
 					next();
@@ -103,6 +112,22 @@ const naturalEarthDataManager = new NaturalEarthDataManager(USER_AGENT);
 const poster = new Poster(config);
 
 let currentDelays: Status[] | null = null;
+
+/**
+ * Generate an image only when a status advertises an image type.
+ */
+async function generateImageForDelay(delay: Status) {
+	const imageTypes = [
+		...delay.reason.imageType(),
+		...delay.imageType()
+	];
+	if (imageTypes.length === 0) {
+		return undefined;
+	}
+
+	const { ImageGenerator } = await import("./ImageGenerator");
+	return new ImageGenerator(delay, naturalEarthDataManager).generate();
+}
 
 async function run (firstRun: boolean) {
 	console.log(`Start run: ${Date.now()}`);
@@ -310,7 +335,7 @@ async function run (firstRun: boolean) {
 			const post = await delay.toPost();
 			let image;
 			try {
-				image = await new ImageGenerator(delay, naturalEarthDataManager).generate();
+				image = await generateImageForDelay(delay);
 			} catch (e) {
 				console.error("Failed to generate image:");
 				console.error(e);

@@ -62,6 +62,24 @@ Sadly, not all features are available on all platforms. Below is a chart of what
 - A lot of the terminology used in the API is referenced in the [FAA Glossary](https://www.fly.faa.gov/Products/Glossary_of_Terms/glossary_of_terms.html).
 - Data is refreshed every minute from the FAA API. This means that the bot will post a new status within 60 seconds of the FAA reporting a delay.
 
+## Memory Checks
+
+After building the project, run the local memory harnesses with the same 512 MiB target used for the production bot:
+
+```sh
+npm run build
+MEMORY_TARGET_MIB=512 npm run memory:startup
+MEMORY_TARGET_MIB=512 npm run memory:status
+MEMORY_TARGET_MIB=512 npm run memory:image
+```
+
+The image harness performs real map/radar image generation and may need outbound network access for map tiles. On the server, verify the running process with one of these commands:
+
+```sh
+docker stats --no-stream <container-name-or-id>
+ps -o rss= -p <node-pid> | awk '{printf "%.1f MiB\n", $1 / 1024}'
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
