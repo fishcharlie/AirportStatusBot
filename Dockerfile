@@ -10,6 +10,7 @@ RUN npm ci --ignore-scripts
 COPY tsconfig.json ./
 COPY src ./src
 COPY assets ./assets
+COPY migrations ./migrations
 COPY radarColorIndex.csv ./
 RUN npm run build
 
@@ -38,6 +39,7 @@ RUN apt-get update \
 
 COPY --from=build /project/dist ./dist
 COPY --from=build /project/assets ./assets
+COPY --from=build /project/migrations ./migrations
 COPY --from=build /project/radarColorIndex.csv ./radarColorIndex.csv
 
 # Runtime cache and config are mounted by Compose in production.
