@@ -1,13 +1,11 @@
 import { mapToImage } from "maptoimage";
-import { Status } from "./types/Status";
+import type { Status } from "./types/Status";
 import Jimp from "jimp";
-import GeoJSONToTileImages from "geojson-to-tile-images";
-import * as turf from "@turf/turf";
-import getClosestLandmarkToPoint from "./utils/getClosestLandmarkToPoint";
-import { NaturalEarthDataManager } from "./NaturalEarthDataManager";
+import type { NaturalEarthDataManager } from "./NaturalEarthDataManager";
 import generateAltTextForWeatherRadarImage from "./utils/generateAltTextForWeatherRadarImage";
 import * as fs from "fs";
 import * as path from "path";
+import { ImageType } from "./ImageType";
 
 const SIZE = {
 	"width": 1280,
@@ -45,11 +43,6 @@ function getZoomLevel(bbox: any, mapWidth: number, mapHeight: number): number {
 	return adjustedZoomLevel;
 }
 
-
-export enum ImageType {
-	"radar",
-	"geojson"
-}
 
 interface ImageOutput {
 	"content": Buffer;
@@ -125,6 +118,7 @@ export class ImageGenerator {
 			attribution += "\nRadar data from Iowa Environmental Mesonet.";
 		}
 		if (this.types.includes(ImageType.geojson) && this.#status.geoJSON !== undefined) {
+			const { default: GeoJSONToTileImages } = await import("geojson-to-tile-images");
 			const geojson = this.#status.geoJSON;
 			layers.push(async (z: number, x: number, y: number): Promise<Buffer> => {
 				return await GeoJSONToTileImages({
@@ -156,6 +150,8 @@ export class ImageGenerator {
 					"lng": airport.longitude_deg
 				};
 			} else if (this.#status.geoJSON) {
+				const turf = await import("@turf/turf");
+				const { default: getClosestLandmarkToPoint } = await import("./utils/getClosestLandmarkToPoint");
 				const centerPoint = turf.center(this.#status.geoJSON);
 				const states = await this.#naturalEarthDataManager.geoJSON("ne_110m_admin_1_states_provinces");
 				const statesCenterPoints = states ? turf.featureCollection(states.features.map((feature) => {
@@ -179,6 +175,8 @@ export class ImageGenerator {
 		})();
 		const zoom: number = await (async () => {
 			if (this.types.includes(ImageType.geojson) && this.#status.geoJSON) {
+				const turf = await import("@turf/turf");
+				const { default: getClosestLandmarkToPoint } = await import("./utils/getClosestLandmarkToPoint");
 				const us = (await this.#naturalEarthDataManager.geoJSON("ne_110m_admin_0_countries"))?.features.find((feature) => feature.properties?.NAME === "United States of America");
 				if (us === undefined) {
 					throw new Error("United States not found in Natural Earth data.");

@@ -18,5 +18,10 @@ COPY . /project
 # Install project dependencies
 RUN npm install
 
+# Keep the long-running bot inside a conservative memory envelope.
+ENV NODE_ENV=production
+ENV NODE_OPTIONS=--max-old-space-size=384
+ENV MALLOC_ARENA_MAX=2
+
 # Set the command to run your app
 CMD ["node", "dist/index.js"]

@@ -3,75 +3,51 @@ import * as fs from "fs";
 import path from "path";
 import bearingToString from "./bearingToString";
 
+const NO_REFLECTIVITY = -1;
+let radarColorIndexCache: Map<string, number> | undefined;
+
 export default async function (buffer: Buffer): Promise<string> {
 	const jimpImg = await Jimp.read(buffer);
 	const width = jimpImg.getWidth();
 	const height = jimpImg.getHeight();
 
-	const radarColorIndex = convertCSVToJSONWithHeaders(fs.readFileSync(path.join(__dirname, "..", "..", "radarColorIndex.csv"), "utf-8"));
-
+	const radarColorIndex = getRadarColorIndex();
 	const scanIterator = jimpImg.scanIterator(0, 0, jimpImg.getWidth(), jimpImg.getHeight());
-	let radarDbzPerPixel = [];
+	const center = { x: width / 2, y: height / 2 };
+	const res: {[key: string]: {[key: number]: number}} = {};
+
 	for (const { idx, x, y } of scanIterator) {
 		const r = jimpImg.bitmap.data[idx + 0];
 		const g = jimpImg.bitmap.data[idx + 1];
 		const b = jimpImg.bitmap.data[idx + 2];
 		const a = jimpImg.bitmap.data[idx + 3];
-
-		if (a === 0) {
-			radarDbzPerPixel.push(null);
-		} else {
-			const colorIndex = radarColorIndex.find((obj, i) => {
-				return obj.Red === r && obj.Green === g && obj.Blue === b;
-			});
-			if (!colorIndex) {
-				throw new Error(`No color index found for color ${r}, ${g}, ${b}, ${idx}, ${x}, ${y}`);
-			}
-			radarDbzPerPixel.push(colorIndex["Value (dBZ)"]);
-		}
-	}
-
-	const reflectivityPerPixel = radarDbzPerPixel.map((dbz) => {
-		if (dbz === null) {
-			return null;
-		} else if (dbz < 0) {
-			return ReflectivityIntensity.extremelyLight;
-		} else if (dbz < 20) {
-			return ReflectivityIntensity.veryLight;
-		} else if (dbz < 40) {
-			return ReflectivityIntensity.light;
-		} else if (dbz < 50) {
-			return ReflectivityIntensity.moderate;
-		} else if (dbz < 65) {
-			return ReflectivityIntensity.heavy;
-		} else {
-			return ReflectivityIntensity.extremelyHeavy;
-		}
-	});
-
-	const center = { x: width / 2, y: height / 2 };
-	const res = reflectivityPerPixel.reduce((previousValue: any, reflectivity, i) => {
-		const x = i % width;
-		const y = Math.floor(i / width);
 		const bearing = Math.atan2(y - center.y, x - center.x) * 180 / Math.PI;
-
 		const bearingStr = bearingToString(bearing, true);
 		if (!bearingStr) {
-			return previousValue;
+			continue;
 		}
 
-		if (!previousValue[bearingStr]) {
-			previousValue[bearingStr] = {
-				[reflectivity ?? -1]: 1
-			};
-		} else if (previousValue[bearingStr] && !previousValue[bearingStr][reflectivity ?? -1]) {
-			previousValue[bearingStr][reflectivity ?? -1] = 1;
+		let reflectivity: ReflectivityIntensity | typeof NO_REFLECTIVITY;
+		if (a === 0) {
+			reflectivity = NO_REFLECTIVITY;
 		} else {
-			previousValue[bearingStr][reflectivity ?? -1]++;
+			const dbz = radarColorIndex.get(`${r},${g},${b}`);
+			if (dbz === undefined) {
+				throw new Error(`No color index found for color ${r}, ${g}, ${b}, ${idx}, ${x}, ${y}`);
+			}
+			reflectivity = reflectivityIntensityForDbz(dbz);
 		}
 
-		return previousValue;
-	}, {});
+		if (!res[bearingStr]) {
+			res[bearingStr] = {
+				[reflectivity]: 1
+			};
+		} else if (!res[bearingStr][reflectivity]) {
+			res[bearingStr][reflectivity] = 1;
+		} else {
+			res[bearingStr][reflectivity]++;
+		}
+	}
 
 	const data = Object.entries(res).reduce((previousValue: any, currentValue: any) => {
 		const noReflectivity = currentValue[1]["-1"] ?? 0;
@@ -127,6 +103,17 @@ function convertCSVToJSONWithHeaders(string: string): {[key: string]: any}[] {
 	});
 }
 
+/**
+ * Build a reusable lookup table for radar RGB values.
+ */
+function getRadarColorIndex(): Map<string, number> {
+	if (!radarColorIndexCache) {
+		const radarColorIndex = convertCSVToJSONWithHeaders(fs.readFileSync(path.join(__dirname, "..", "..", "radarColorIndex.csv"), "utf-8"));
+		radarColorIndexCache = new Map(radarColorIndex.map((obj) => [`${obj.Red},${obj.Green},${obj.Blue}`, obj["Value (dBZ)"]]));
+	}
+	return radarColorIndexCache;
+}
+
 // https://www.noaa.gov/jetstream/reflectivity
 enum ReflectivityIntensity {
 	extremelyLight, // -35 to 0 dBZ
@@ -137,8 +124,28 @@ enum ReflectivityIntensity {
 	extremelyHeavy, // >65 dBZ
 }
 
-function reflectivityIntensityToString(intensity: ReflectivityIntensity): string {
-	switch (intensity) {
+/**
+ * Convert a radar dBZ value into a coarse intensity bucket.
+ */
+function reflectivityIntensityForDbz(dbz: number): ReflectivityIntensity {
+	if (dbz < 0) {
+		return ReflectivityIntensity.extremelyLight;
+	} else if (dbz < 20) {
+		return ReflectivityIntensity.veryLight;
+	} else if (dbz < 40) {
+		return ReflectivityIntensity.light;
+	} else if (dbz < 50) {
+		return ReflectivityIntensity.moderate;
+	} else if (dbz < 65) {
+		return ReflectivityIntensity.heavy;
+	} else {
+		return ReflectivityIntensity.extremelyHeavy;
+	}
+}
+
+function reflectivityIntensityToString(intensity: ReflectivityIntensity | string): string {
+	const normalizedIntensity = typeof intensity === "string" ? parseInt(intensity) : intensity;
+	switch (normalizedIntensity) {
 		case ReflectivityIntensity.extremelyLight:
 			return "extremely light";
 		case ReflectivityIntensity.veryLight:
@@ -152,4 +159,5 @@ function reflectivityIntensityToString(intensity: ReflectivityIntensity): string
 		case ReflectivityIntensity.extremelyHeavy:
 			return "heavy";
 	}
+	return "unknown";
 }

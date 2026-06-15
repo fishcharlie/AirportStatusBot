@@ -1,20 +1,14 @@
 import "websocket-polyfill";
 
-import { Config, ContentTypeEnum, SocialNetwork, SocialNetworkType, defaultIncludeHashtags } from "./types/Config";
-import { S3 } from "@aws-sdk/client-s3";
-import { BskyAgent, RichText, AppBskyFeedPost, BlobRef } from "@atproto/api";
+import { Config, SocialNetwork, SocialNetworkType, defaultIncludeHashtags } from "./types/Config";
 import { GeneralObject } from "js-object-utilities";
 import * as nostrtools from "nostr-tools";
 import { parseHashtags } from "./utils/parseHashtags";
-import { createRestAPIClient as Masto, createStreamingAPIClient as MastoStream } from "masto";
-import * as htmlToText from "html-to-text";
-import { resizeImage } from "./utils/resizeImage";
 import * as fs from "fs";
 import * as path from "path";
-import { randomUUID, UUID, createHash } from "crypto";
-import Jimp from "jimp";
-import * as blurhash from "blurhash";
-import PosterV2, { PostContent } from "./PosterV2";
+import type { PostContent } from "./PosterV2";
+
+type PosterV2Instance = import("./PosterV2").default;
 
 const hashtagWords = [
 	"weather",
@@ -36,10 +30,20 @@ interface Post {
 export class Poster {
 	#config: Config;
 
-	#posterV2: PosterV2 = new PosterV2();
+	#posterV2: Promise<PosterV2Instance> | undefined;
 
 	constructor(config: Config) {
 		this.#config = config;
+	}
+
+	/**
+	 * Lazily load the heavier social posting package only when posting is required.
+	 */
+	async #getPosterV2(): Promise<PosterV2Instance> {
+		if (!this.#posterV2) {
+			this.#posterV2 = import("./PosterV2").then(({ default: PosterV2 }) => new PosterV2());
+		}
+		return this.#posterV2;
 	}
 
 	/**
@@ -51,6 +55,7 @@ export class Poster {
 	 */
 	async post(content: PostContent, rawXML: string, contentTypes: string[]): Promise<{ [key: string]: any }> {
 		let returnObject: { [key: string]: any } = {};
+		const posterV2 = await this.#getPosterV2();
 
 		await Promise.all(this.#config.socialNetworks.map(async (socialNetwork) => {
 			if (!contentTypes.includes(socialNetwork.contentType)) {
@@ -65,7 +70,7 @@ export class Poster {
 			}
 
 			try {
-				returnObject[socialNetwork.uuid] = await this.#posterV2.post(socialNetwork, {
+				returnObject[socialNetwork.uuid] = await posterV2.post(socialNetwork, {
 					"message": socialMessage,
 					"image": content.image
 				});
@@ -86,11 +91,13 @@ export class Poster {
 
 		console.log(`Reposting to ${socialNetwork.uuid}`, post);
 
-		return this.#posterV2.repost(socialNetwork, post);
+		const posterV2 = await this.#getPosterV2();
+		return posterV2.repost(socialNetwork, post);
 	}
 
 	async reply(socialNetworkUUID: string, replyTo: GeneralObject<any>, content: PostContent, rawXML: string): Promise<{ [key: string]: any }> {
 		let returnObject: { [key: string]: any } = {};
+		const posterV2 = await this.#getPosterV2();
 
 		const socialNetwork = this.#config.socialNetworks.find((v) => v.uuid === socialNetworkUUID);
 		if (!socialNetwork) {
@@ -110,7 +117,7 @@ export class Poster {
 		}
 
 		try {
-			returnObject[socialNetwork.uuid] = await this.#posterV2.reply(socialNetwork, replyTo, {
+			returnObject[socialNetwork.uuid] = await posterV2.reply(socialNetwork, replyTo, {
 				"message": socialMessage,
 				"image": content.image
 			});
@@ -136,7 +143,8 @@ export class Poster {
 
 		try {
 			switch (socialNetwork.type) {
-				case SocialNetworkType.mastodon:
+				case SocialNetworkType.mastodon: {
+					const { createRestAPIClient: Masto } = await import("masto");
 					const masto = Masto({
 						"url": `${socialNetwork.credentials.endpoint}`,
 						"accessToken": socialNetwork.credentials.password
@@ -168,6 +176,7 @@ export class Poster {
 						throw e;
 					}
 					break;
+				}
 				case SocialNetworkType.bluesky:
 					break;
 				case SocialNetworkType.s3:
@@ -365,7 +374,9 @@ export class Listener {
 			}
 
 			switch (socialNetwork.type) {
-				case SocialNetworkType.mastodon:
+				case SocialNetworkType.mastodon: {
+					const { createStreamingAPIClient: MastoStream } = await import("masto");
+					const htmlToText = await import("html-to-text");
 					const masto = MastoStream({
 						"accessToken": socialNetwork.credentials.password,
 						"streamingApiUrl": `${(socialNetwork.credentials.streamingEndpoint ?? socialNetwork.credentials.endpoint).replace("https://", "wss://")}/api/v1/streaming`
@@ -407,7 +418,8 @@ export class Listener {
 							console.log("No item or error in Mastodon listener.")
 						}
 					});
-				break;
+					break;
+				}
 				case SocialNetworkType.s3:
 					break;
 				case SocialNetworkType.bluesky:

@@ -13,7 +13,10 @@
     "build": "tsc",
     "build:watch": "npm run build -- --watch",
     "build:clean": "rimraf dist",
-    "test": "jest"
+    "test": "jest",
+    "memory:startup": "node --expose-gc scripts/memoryHarness.js startup",
+    "memory:status": "node --expose-gc scripts/memoryHarness.js status",
+    "memory:image": "node --expose-gc scripts/memoryHarness.js image"
   },
   "author": "Charlie Fish",
   "license": "MIT",

@@ -7,7 +7,7 @@ import { parseDurationString } from "../utils/parseDurationString";
 import { minutesToDurationString } from "../utils/minutesToDurationString";
 import { OurAirportsDataManager } from "../OurAirportsDataManager";
 import { NaturalEarthDataManager } from "../NaturalEarthDataManager";
-import { ImageType } from "../ImageGenerator";
+import { ImageType } from "../ImageType";
 import formatNumber from "../utils/formatNumber";
 import * as turf from "@turf/turf";
 import bearingToString from "../utils/bearingToString";

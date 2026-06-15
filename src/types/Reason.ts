@@ -1,4 +1,4 @@
-import { ImageType } from "../ImageGenerator";
+import { ImageType } from "../ImageType";
 
 enum ParentType {
 	WEATHER = "WX",
