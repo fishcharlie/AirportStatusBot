@@ -1,0 +1,49 @@
+name: Publish Image
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the app source before building the runtime image.
+      - uses: actions/checkout@v4
+
+      # Buildx prints the immutable digest that infrastructure pins.
+      - uses: docker/setup-buildx-action@v3
+
+      # Publish to GHCR with the repository workflow token.
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # The short SHA tag keeps deployments traceable to source commits.
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/fishcharlie/airportstatusbot
+          tags: |
+            type=sha,prefix=sha-,format=short
+
+      # Push the production image to the package registry.
+      - id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # Print a copy-pasteable immutable reference for infrastructure updates.
+      - name: Print immutable image reference
+        run: echo "ghcr.io/fishcharlie/airportstatusbot@${{ steps.build.outputs.digest }}"

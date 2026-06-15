@@ -1,0 +1,10 @@
+# Keep local runtime data and development artifacts out of production images.
+.git
+.github
+node_modules
+dist
+coverage
+cache
+tmpXML
+config.json
+npm-debug.log*
