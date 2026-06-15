@@ -28,7 +28,13 @@ RUN apt-get update \
 
 # Keep the runtime layer smaller than the build layer.
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends python3 make g++ \
+	&& npm ci --omit=dev --ignore-scripts \
+	&& npm rebuild sqlite3 --build-from-source \
+	&& apt-get purge -y --auto-remove make g++ \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& npm cache clean --force
 
 COPY --from=build /project/dist ./dist
 COPY --from=build /project/assets ./assets
